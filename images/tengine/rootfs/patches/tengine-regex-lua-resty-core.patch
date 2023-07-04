@@ -1,0 +1,33 @@
+--- a/lua/resty/core/regex.lua
++++ b/lua/resty/core/regex.lua
+@@ -50,18 +50,18 @@
+ ]]
+ 
+ 
+-local pcre_ver
+-
+-if not pcall(function() pcre_ver = ffi_string(C.pcre_version()) end) then
+-    setmetatable(ngx.re, {
+-        __index = function(_, key)
+-            error("no support for 'ngx.re." .. key .. "': OpenResty was " ..
+-                  "compiled without PCRE support", 2)
+-        end
+-    })
+-
+-    return _M
+-end
++--local pcre_ver
++--
++--if not pcall(function() pcre_ver = ffi_string(C.pcre_version()) end) then
++--    setmetatable(ngx.re, {
++--        __index = function(_, key)
++--            error("no support for 'ngx.re." .. key .. "': OpenResty was " ..
++--                  "compiled without PCRE support", 2)
++--        end
++--    })
++--
++--    return _M
++--end
+ 
+ 
+ local MAX_ERR_MSG_LEN = 128
