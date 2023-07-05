@@ -13,10 +13,10 @@ Tengine-Ingress is an Ingress controller for Kubernetes using [Tengine](https://
 ## Features
 
 * Dynamically reconfigure the servers, locations and upstreams for Ingress, Secret, Service and Endpoint changes, without reloading or restarting worker processes.
-* Support for hybrid ECC and RSA certificates for the same ingress/path.
-* Dynamically reconfigure certificates and keys.
-* Dynamically reconfigure anary routing based on standard and custom HTTP headers, header value, and weights.
+* Dynamically reconfigure canary routing based on standard and custom HTTP headers, header value, and weights.
 * Dynamically reconfigure timeout setting, SSL Redirects, CORS and enabling/disabling robots for the ingress/path.
+* Dynamically reconfigure certificates and keys.
+* Support for hybrid ECC and RSA certificates for the same ingress/path.
 * HTTP/3 support (QUIC v1 and draft-29).
 * Supports watching Ingress and Secrets in a dedicated storage k8s cluster via kubeconfig.
 * Watch changes in Ingress and Secrets and do rolling upgrades for associated StatefulSet of Tengine-Ingress, without tengine reload.
