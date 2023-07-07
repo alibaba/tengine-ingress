@@ -13,11 +13,13 @@
 # limitations under the License.
 
 
-FROM reg.docker.alibaba-inc.com/alibase/alios7u2:latest as builder
+ARG BASE_IMAGE
+
+FROM ${BASE_IMAGE}  as builder
 
 COPY . /
 
-RUN /build.sh
+RUN sh /build.sh
 
 # Use a multi-stage build
 FROM reg.docker.alibaba-inc.com/alibase/alios7u2:latest

@@ -62,6 +62,9 @@ export BUILD_PATH=/tmp/build
 export TENGINE_USER=admin
 export TENGINE_GROUP=admin
 
+WITH_XUDP="0"
+WITH_XUDP_MODULE=""
+
 ARCH=$(uname -m)
 
 get_src()
@@ -89,24 +92,20 @@ get_src_local()
   rm -rf "$f"
 }
 
-yum clean all && rpm --rebuilddb
+if [ ""`which yum 2>/dev/null` != "" ]; then
+    yum clean all
+    yum install -y cmake gcc curl-devel clang llvm kernel-headers autoconf automake libtool perl-FindBin perl-lib pcre-devel git
+elif [ ""`which apk 2>/dev/null` != "" ]; then
+    apk add bash gcc clang libc-dev make automake openssl-dev pcre-dev zlib-dev linux-headers libxslt-dev gd-dev geoip-dev perl-dev libedit-dev mercurial alpine-sdk findutils curl ca-certificates patch libaio-dev openssl cmake util-linux lmdb-tools wget curl-dev libprotobuf git g++ pkgconf flex bison doxygen yajl-dev lmdb-dev libtool autoconf libxml2 libxml2-dev python3 libmaxminddb-dev bc unzip dos2unix yaml-cpp coreutils
+else
+    echo "no yum and apk"
+    exit -1
+fi
 
-yum install -y -b current cmake
-yum install -y -b current gcc54
-export CC=/usr/local/gcc-$GCC_VERSION/bin/gcc
-export CXX=/usr/local/gcc-$GCC_VERSION/bin/g++
-export PATH=/usr/local/gcc-$GCC_VERSION/bin:/usr/local/bin:$PATH
+# export CC=/usr/local/gcc-$GCC_VERSION/bin/gcc
+# export CXX=/usr/local/gcc-$GCC_VERSION/bin/g++
+# export PATH=/usr/local/gcc-$GCC_VERSION/bin:/usr/local/bin:$PATH
 
-yum install -y curl-devel
-yum install -y pcre-devel
-#yum install -y openssl-devel
-yum install -y geoip-devel
-yum install -y libnl3-devel
-yum install -y elfutils-libelf-devel
-yum install -y clang
-yum install -y llvm
-yum install -y libcap-devel
-yum install -y -b current kernel-headers
 
 mkdir -p /etc/nginx/owasp-modsecurity-crs/
 
@@ -285,20 +284,27 @@ cmake -DXQC_SUPPORT_SENDMMSG_BUILD=1 -DXQC_ENABLE_BBR2=1 -DXQC_DISABLE_RENO=0 -D
 make
 cp "$BUILD_PATH/xquic-$XQUIC_VERSION/build/libxquic.so" /usr/local/lib/
 
-# build xudp library
-get_src_local "/source/libxudp-v$XUDP_LIB_VERSION.tar.gz"
-cd "$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION"
-make
-cp "$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION/objs/libxudp.so.$XUDP_LIB_VERSION" /usr/local/lib/
-cd /usr/local/lib/
-ln -s libxudp.so.$XUDP_LIB_VERSION libxudp.so.1
-ln -s libxudp.so.$XUDP_LIB_VERSION libxudp.so
-
-# build xquic-xdp
 get_src_local "/source/tengine-$TENGINE_VERSION.tar.gz"
-cd "$BUILD_PATH/tengine-$TENGINE_VERSION/modules/mod_xudp/xquic-xdp"
-make config root="$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION"
-make
+
+if [[ ${WITH_XUDP} == "1" ]]; then
+    # build xudp library
+    get_src_local "/source/libxudp-v$XUDP_LIB_VERSION.tar.gz"
+    cd "$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION"
+    make
+    cp "$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION/objs/libxudp.so.$XUDP_LIB_VERSION" /usr/local/lib/
+    cd /usr/local/lib/
+    ln -s libxudp.so.$XUDP_LIB_VERSION libxudp.so.1
+    ln -s libxudp.so.$XUDP_LIB_VERSION libxudp.so
+
+    # build xquic-xdp
+    cd "$BUILD_PATH/tengine-$TENGINE_VERSION/modules/mod_xudp/xquic-xdp"
+    make config root="$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION"
+    make
+    WITH_XUDP_MODULE="--with-xudp-inc=$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION/objs \
+	--with-xudp-lib=$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION/objs \
+        --with-xquic_xdp-inc=$BUILD_PATH/tengine-$TENGINE_VERSION/modules/mod_xudp/xquic-xdp \
+        --add-module=modules/mod_xudp"
+fi
 
 # build modsecurity library
 cd "$BUILD_PATH"
@@ -422,11 +428,11 @@ CC_OPT="-g -Og -fstack-protector-strong \
 LD_OPT="-fPIC -Wl,-z,relro -Wl,-z,now,-rpath=/usr/local/lib/ -L/usr/local/lib/ -lm"
 
 if [[ ${ARCH} != "aarch64" ]]; then
-  WITH_FLAGS+=" --with-file-aio"
+  WITH_FLAGS="${WITH_FLAGS} --with-file-aio"
 fi
 
 if [[ ${ARCH} == "x86_64" ]]; then
-  CC_OPT+=' -m64 -mtune=native'
+  CC_OPT="${CC_OPT} -m64 -mtune=native"
 fi
 
 WITH_MODULES="--add-module=$BUILD_PATH/lua-nginx-module-$LUA_NGX_VERSION \
@@ -462,9 +468,6 @@ WITH_MODULES="--add-module=$BUILD_PATH/lua-nginx-module-$LUA_NGX_VERSION \
   --with-pcre-opt=-fPIC \
   --with-xquic-inc="$BUILD_PATH/xquic-$XQUIC_VERSION/include" \
   --with-xquic-lib="$BUILD_PATH/xquic-$XQUIC_VERSION/build" \
-  --with-xudp-inc="$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION/objs" \
-  --with-xudp-lib="$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION/objs" \
-  --with-xquic_xdp-inc="$BUILD_PATH/tengine-$TENGINE_VERSION/modules/mod_xudp/xquic-xdp" \
   --without-select_module \
   --without-poll_module \
   --without-mail_pop3_module \
@@ -481,7 +484,7 @@ WITH_MODULES="--add-module=$BUILD_PATH/lua-nginx-module-$LUA_NGX_VERSION \
   --add-module=modules/mod_strategy \
   --add-module=modules/ngx_backtrace_module \
   --add-module=modules/ngx_http_xquic_module \
-  --add-module=modules/mod_xudp \
+  ${WITH_XUDP_MODULE}	\
   --add-module=modules/ngx_http_sysguard_module \
   --add-module=modules/ngx_http_footer_filter_module \
   --add-module=modules/ngx_http_trim_filter_module \
