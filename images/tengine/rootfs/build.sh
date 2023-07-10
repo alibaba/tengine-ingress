@@ -109,7 +109,11 @@ then
     apk add bash gcc clang libc-dev make automake openssl-dev pcre-dev zlib-dev linux-headers libxslt-dev gd-dev geoip-dev perl-dev libedit-dev mercurial alpine-sdk findutils curl ca-certificates patch libaio-dev openssl cmake util-linux lmdb-tools wget curl-dev libprotobuf git g++ pkgconf flex bison doxygen yajl-dev lmdb-dev libtool autoconf libxml2 libxml2-dev python3 libmaxminddb-dev bc unzip dos2unix yaml-cpp coreutils
 elif [[ $LINUX_RELEASE =~ "ubuntu" ]]
 then
-    apt-get install bash gcc clang libc-dev make automake openssl-dev pcre-dev zlib-dev linux-headers libxslt-dev gd-dev geoip-dev perl-dev libedit-dev mercurial alpine-sdk findutils curl ca-certificates patch libaio-dev openssl cmake util-linux lmdb-tools wget curl-dev libprotobuf git g++ pkgconf flex bison doxygen yajl-dev lmdb-dev libtool autoconf libxml2 libxml2-dev python3 libmaxminddb-dev bc unzip dos2unix yaml-cpp coreutils
+    chmod a+x /tmp
+    apt-get clean
+    apt-get update
+    apt-get install -y bash gcc clang libc-dev make automake libpcre3-dev libxslt-dev libgd-dev libgeoip-dev libperl-dev libedit-dev mercurial findutils curl ca-certificates patch libaio-dev cmake util-linux wget libprotobuf-dev git g++ pkgconf flex bison doxygen libyajl-dev liblmdb-dev libtool autoconf libxml2 libxml2-dev python3 libmaxminddb-dev bc unzip dos2unix libyaml-cpp-dev coreutils
+    # apt-get linux-headers
 else
     echo "unkown linux release:" $LINUX_RELEASE
     exit 1

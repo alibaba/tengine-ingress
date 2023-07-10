@@ -19,7 +19,7 @@ FROM ${BASE_IMAGE} as builder
 
 COPY . /
 
-ARG LINUX_RELEASE=openanolis
+ARG LINUX_RELEASE=anolisos
 
 RUN sh /build.sh ${LINUX_RELEASE}
 
@@ -36,7 +36,11 @@ COPY --from=builder /usr/local /usr/local
 COPY --from=builder /opt /opt
 COPY --from=builder /etc/nginx /etc/nginx
 
+RUN groupadd -f admin && id admin || useradd -m -g admin admin
+
 RUN rm -rf /usr/local/nginx/sbin/nginx && chmod 6755 /usr/local/tengine/sbin/tengine && chown root:admin /usr/local/tengine/sbin/tengine
+
+# RUN rpm -rebuilddb && yum install -y epel-release && yum install -y GeoIP GeoIP-devel dumb-init
 
 RUN test ! -d /home/coredump && mkdir /home/coredump && chmod 777 /home/coredump
 
