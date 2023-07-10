@@ -13,16 +13,17 @@
 # limitations under the License.
 
 
-ARG BASE_IMAGE
+ARG BASE_IMAGE="docker.io/openanolis/anolisos:latest"
 
-FROM ${BASE_IMAGE}  as builder
+FROM ${BASE_IMAGE} as builder
 
 COPY . /
 
-RUN sh /build.sh
+ARG LINUX_RELEASE=openanolis
+
+RUN sh /build.sh ${LINUX_RELEASE}
 
 # Use a multi-stage build
-FROM reg.docker.alibaba-inc.com/alibase/alios7u2:latest
 
 ENV PATH=$PATH:/usr/local/luajit/bin:/usr/local/tengine/sbin:/usr/local/tengine/bin
 
@@ -34,10 +35,6 @@ COPY --from=builder /opt /opt
 COPY --from=builder /etc/nginx /etc/nginx
 
 RUN rm -rf /usr/local/nginx/sbin/nginx && chmod 6755 /usr/local/tengine/sbin/tengine && chown root:admin /usr/local/tengine/sbin/tengine
-
-RUN rpm -rebuilddb && yum install -y GeoIP GeoIP-devel
-
-RUN rpm -rebuilddb && yum install -y -b current t-dumb-init && ln -s /usr/local/bin/dumb-init /usr/bin/dumb-init
 
 RUN test ! -d /home/coredump && mkdir /home/coredump && chmod 777 /home/coredump
 

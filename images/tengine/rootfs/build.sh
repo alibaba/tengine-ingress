@@ -92,20 +92,28 @@ get_src_local()
   rm -rf "$f"
 }
 
-if [ ""`which yum 2>/dev/null` != "" ]; then
+# add admin group and user
+groupadd -f admin
+id admin || useradd -m -g admin admin
+
+LINUX_RELEASE=$1
+if [[ $LINUX_RELEASE =~ "anolisos" ]]
+then
     yum clean all
-    yum install -y cmake gcc curl-devel clang llvm kernel-headers autoconf automake libtool perl-FindBin perl-lib pcre-devel git
-elif [ ""`which apk 2>/dev/null` != "" ]; then
+    yum install -y cmake gcc curl-devel clang llvm kernel-headers autoconf automake libtool gcc-c++ pcre-devel git unzip epel-release
+    yum install -y GeoIP GeoIP-devel dumb-init
+    yum install -y libnl3-devel elfutils-libelf-devel libcap-devel
+    WITH_XUDP="1"
+elif [[ $LINUX_RELEASE =~ "alpine" ]]
+then
     apk add bash gcc clang libc-dev make automake openssl-dev pcre-dev zlib-dev linux-headers libxslt-dev gd-dev geoip-dev perl-dev libedit-dev mercurial alpine-sdk findutils curl ca-certificates patch libaio-dev openssl cmake util-linux lmdb-tools wget curl-dev libprotobuf git g++ pkgconf flex bison doxygen yajl-dev lmdb-dev libtool autoconf libxml2 libxml2-dev python3 libmaxminddb-dev bc unzip dos2unix yaml-cpp coreutils
+elif [[ $LINUX_RELEASE =~ "ubuntu" ]]
+then
+    apt-get install bash gcc clang libc-dev make automake openssl-dev pcre-dev zlib-dev linux-headers libxslt-dev gd-dev geoip-dev perl-dev libedit-dev mercurial alpine-sdk findutils curl ca-certificates patch libaio-dev openssl cmake util-linux lmdb-tools wget curl-dev libprotobuf git g++ pkgconf flex bison doxygen yajl-dev lmdb-dev libtool autoconf libxml2 libxml2-dev python3 libmaxminddb-dev bc unzip dos2unix yaml-cpp coreutils
 else
-    echo "no yum and apk"
-    exit -1
+    echo "unkown linux release:" $LINUX_RELEASE
+    exit 1
 fi
-
-# export CC=/usr/local/gcc-$GCC_VERSION/bin/gcc
-# export CXX=/usr/local/gcc-$GCC_VERSION/bin/g++
-# export PATH=/usr/local/gcc-$GCC_VERSION/bin:/usr/local/bin:$PATH
-
 
 mkdir -p /etc/nginx/owasp-modsecurity-crs/
 
@@ -262,7 +270,7 @@ cd "$BUILD_PATH/libmaxminddb-$LIBMAXMINDDB_VERSION"
 make
 make check
 make install
-ldconfig
+# ldconfig
 
 # build xquic with babassl
 get_src_local "/source/xquic-$XQUIC_VERSION.tar.gz"
@@ -280,6 +288,7 @@ SSL_LIB_PATH_STR="${PWD}/libssl.a;${PWD}/libcrypto.a"
 
 cd "$BUILD_PATH/xquic-$XQUIC_VERSION"
 mkdir -p build; cd build
+export CFLAGS="-Wno-dangling-pointer"
 cmake -DXQC_SUPPORT_SENDMMSG_BUILD=1 -DXQC_ENABLE_BBR2=1 -DXQC_DISABLE_RENO=0 -DSSL_TYPE=${SSL_TYPE_STR} -DSSL_PATH=${SSL_PATH_STR} -DSSL_INC_PATH=${SSL_INC_PATH_STR} -DSSL_LIB_PATH=${SSL_LIB_PATH_STR} ..
 make
 cp "$BUILD_PATH/xquic-$XQUIC_VERSION/build/libxquic.so" /usr/local/lib/
@@ -293,15 +302,15 @@ if [[ ${WITH_XUDP} == "1" ]]; then
     make
     cp "$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION/objs/libxudp.so.$XUDP_LIB_VERSION" /usr/local/lib/
     cd /usr/local/lib/
-    ln -s libxudp.so.$XUDP_LIB_VERSION libxudp.so.1
-    ln -s libxudp.so.$XUDP_LIB_VERSION libxudp.so
+    ln -s -f libxudp.so.$XUDP_LIB_VERSION libxudp.so.1
+    ln -s -f libxudp.so.$XUDP_LIB_VERSION libxudp.so
 
     # build xquic-xdp
     cd "$BUILD_PATH/tengine-$TENGINE_VERSION/modules/mod_xudp/xquic-xdp"
     make config root="$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION"
     make
     WITH_XUDP_MODULE="--with-xudp-inc=$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION/objs \
-	--with-xudp-lib=$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION/objs \
+        --with-xudp-lib=$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION/objs \
         --with-xquic_xdp-inc=$BUILD_PATH/tengine-$TENGINE_VERSION/modules/mod_xudp/xquic-xdp \
         --add-module=modules/mod_xudp"
 fi
