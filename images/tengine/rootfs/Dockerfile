@@ -25,6 +25,8 @@ RUN sh /build.sh ${LINUX_RELEASE}
 
 # Use a multi-stage build
 
+FROM ${BASE_IMAGE}
+
 ENV PATH=$PATH:/usr/local/luajit/bin:/usr/local/tengine/sbin:/usr/local/tengine/bin
 
 ENV LUA_PATH="/usr/local/share/luajit-2.1.0-beta3/?.lua;/usr/local/share/lua/5.1/?.lua;/usr/local/lib/lua/?.lua;;"
