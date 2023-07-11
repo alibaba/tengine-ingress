@@ -36,7 +36,7 @@ WORKDIR  /etc/nginx
 
 COPY --chown=admin:admin . /
 
-RUN rpm --rebuilddb && yum install -y -b current golang-bin
+RUN rpm --rebuilddb && yum install -y golang-bin
 
 RUN set -eux; \
 	export \
