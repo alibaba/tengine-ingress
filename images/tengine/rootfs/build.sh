@@ -313,6 +313,8 @@ if [[ ${WITH_XUDP} == "1" ]]; then
     cd "$BUILD_PATH/tengine-$TENGINE_VERSION/modules/mod_xudp/xquic-xdp"
     make config root="$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION"
     make
+    mkdir -p /usr/local/lib64/xquic_xdp/
+    cp kern_xquic.o /usr/local/lib64/xquic_xdp/kern_xquic.o
     WITH_XUDP_MODULE="--with-xudp-inc=$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION/objs \
         --with-xudp-lib=$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION/objs \
         --with-xquic_xdp-inc=$BUILD_PATH/tengine-$TENGINE_VERSION/modules/mod_xudp/xquic-xdp \
