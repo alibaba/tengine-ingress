@@ -879,7 +879,7 @@ func NewDefault() Configuration {
 		UseXQUICxUDP:                 false,
 		HTTP3xQUICDefaultCert:        "",
 		HTTP3xQUICDefaultKey:         "",
-		HTTP3xQUICDefaultPort:        443,
+		HTTP3xQUICDefaultPort:        2443,
 	}
 
 	if klog.V(5) {
