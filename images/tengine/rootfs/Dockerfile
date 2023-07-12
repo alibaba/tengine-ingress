@@ -35,6 +35,7 @@ ENV LUA_CPATH="/usr/local/lib/lua/?/?.so;/usr/local/lib/lua/?.so;;"
 COPY --from=builder /usr/local /usr/local
 COPY --from=builder /opt /opt
 COPY --from=builder /etc/nginx /etc/nginx
+COPY --from=builder /usr/bin/dumb-init /usr/bin/
 
 RUN groupadd -f admin && id admin || useradd -m -g admin admin
 
