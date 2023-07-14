@@ -191,7 +191,7 @@ func hotReload(oldMD5 string, cfg ngx_config.Configuration, ingressCfg ingress.C
 done:
 	if err != nil {
 		lock.ReleaseFileLock(file)
-		klog.Errorf("Close shm [%v] with the hot reload fails")
+		klog.Errorf("Close shm [%v] with the hot reload fails", err)
 		return oldMD5, err
 	}
 
