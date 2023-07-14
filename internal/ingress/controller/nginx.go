@@ -986,6 +986,10 @@ func (n *NGINXController) configureDynamically(pcfg *ingress.Configuration) erro
 
 	serversChanged := !reflect.DeepEqual(n.runningConfig.Servers, pcfg.Servers)
 	if serversChanged {
+		if n.store == nil {
+			return nil
+		}
+
 		ready, err0 := secretCheck(n.store.ListSecretsWithAnnotation(), n.store.ListLocalSecretCheckSums(nil))
 		if ready {
 			n.checksumStatus.SecretChecksumStatus = true
