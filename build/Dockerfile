@@ -26,7 +26,7 @@ LABEL org.opencontainers.image.vendor="The Alibaba Authors"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
 LABEL org.opencontainers.image.version="${VERSION}"
 
-RUN rpm --rebuilddb && yum install -y golang-bin gcc git
+RUN yum install -y golang-bin gcc git
 
 RUN mkdir -p /tmp/tengine-ingress/
 COPY . /tmp/tengine-ingress/
