@@ -65,6 +65,8 @@ export TENGINE_GROUP=admin
 WITH_XUDP="0"
 WITH_XUDP_MODULE=""
 
+WITH_BACKTRACE_MODULE="--add-module=modules/ngx_backtrace_module"
+
 ARCH=$(uname -m)
 
 get_src()
@@ -91,12 +93,12 @@ get_src_local()
   tar xzf "$f"
   rm -rf "$f"
 }
-
-# add admin group and user
-groupadd -f admin
-id admin || useradd -m -g admin admin
-
 LINUX_RELEASE=$1
+
+# Add admin group and user
+id admin || groupadd -f admin && useradd -m -g admin admin || adduser -D -g admin admin
+
+# Install dependencies
 if [[ $LINUX_RELEASE =~ "anolisos" ]]
 then
     yum clean all
@@ -106,7 +108,11 @@ then
     WITH_XUDP="1"
 elif [[ $LINUX_RELEASE =~ "alpine" ]]
 then
-    apk add bash gcc clang libc-dev make automake openssl-dev pcre-dev zlib-dev linux-headers libxslt-dev gd-dev geoip-dev perl-dev libedit-dev mercurial alpine-sdk findutils curl ca-certificates patch libaio-dev openssl cmake util-linux lmdb-tools wget curl-dev libprotobuf git g++ pkgconf flex bison doxygen yajl-dev lmdb-dev libtool autoconf libxml2 libxml2-dev python3 libmaxminddb-dev bc unzip dos2unix yaml-cpp coreutils
+    sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+
+    apk add bash gcc clang libc-dev make automake openssl-dev pcre-dev zlib-dev linux-headers libxslt-dev gd-dev geoip-dev perl-dev libedit-dev mercurial alpine-sdk findutils curl ca-certificates patch libaio-dev openssl cmake util-linux lmdb-tools wget curl-dev libprotobuf git g++ pkgconf flex bison doxygen yajl-dev lmdb-dev libtool autoconf libxml2 libxml2-dev python3 libmaxminddb-dev bc unzip dos2unix yaml-cpp coreutils dumb-init
+
+    WITH_BACKTRACE_MODULE=""
 elif [[ $LINUX_RELEASE =~ "ubuntu" ]]
 then
     chmod a+x /tmp
@@ -497,9 +503,9 @@ WITH_MODULES="--add-module=$BUILD_PATH/lua-nginx-module-$LUA_NGX_VERSION \
   --add-module=modules/ngx_debug_pool \
   --add-module=modules/mod_common \
   --add-module=modules/mod_strategy \
-  --add-module=modules/ngx_backtrace_module \
+  ${WITH_BACKTRACE_MODULE} \
   --add-module=modules/ngx_http_xquic_module \
-  ${WITH_XUDP_MODULE}	\
+  ${WITH_XUDP_MODULE} \
   --add-module=modules/ngx_http_sysguard_module \
   --add-module=modules/ngx_http_footer_filter_module \
   --add-module=modules/ngx_http_trim_filter_module \
@@ -591,24 +597,18 @@ make
 make install
 
 # update image permissions
-writeDirs=( \
-  /etc/nginx \
-  /usr/local/tengine \
-  /opt/modsecurity/var/log \
-  /opt/modsecurity/var/upload \
-  /opt/modsecurity/var/audit \
-  /var/log/audit \
-  /home/admin/tengine-ingress/logs \
-);
-
-#cd /usr/local/lib
-#    patch -p1 < /patches/tengine-regex-lua-resty-core.patch
-#cd -
-
-for dir in "${writeDirs[@]}"; do
-  mkdir -p ${dir};
-  chown -R ${TENGINE_USER}.${TENGINE_GROUP} ${dir};
-done
+while IFS= read -r dir
+do
+    mkdir -p ${dir};
+    chown -R ${TENGINE_USER}.${TENGINE_GROUP} ${dir};
+done <<- END
+/etc/nginx
+/usr/local/tengine
+/opt/modsecurity/var/log
+/opt/modsecurity/var/upload
+/opt/modsecurity/var/audit
+/var/log/audit
+END
 
 rm -rf /etc/nginx/owasp-modsecurity-crs/.git
 rm -rf /etc/nginx/owasp-modsecurity-crs/util/regression-tests
