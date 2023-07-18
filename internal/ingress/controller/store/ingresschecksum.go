@@ -18,7 +18,7 @@ package store
 
 import (
 	"k8s.io/client-go/tools/cache"
-	ingcheckv1 "tengine.taobao.org/checksum/ingress/apis/checksum/v1"
+	ingcheckv1 "k8s.io/ingress-nginx/internal/checksum/ingress/apis/checksum/v1"
 )
 
 // IngressCheckSumLister makes a Store that lists IngressCheckSum

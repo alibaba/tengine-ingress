@@ -21,6 +21,7 @@ import (
 	"os"
 	"time"
 
+	"k8s.io/ingress-nginx/internal/k8s"
 	"k8s.io/klog"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -95,20 +96,23 @@ func setupLeaderElection(config *leaderElectionConfig) {
 		Host:      hostname,
 	})
 
-	lock := resourcelock.ConfigMapLock{
-		ConfigMapMeta: metav1.ObjectMeta{Namespace: config.PodNamespace, Name: config.ElectionID},
-		Client:        config.Client.CoreV1(),
-		LockConfig: resourcelock.ResourceLockConfig{
-			Identity:      config.PodName,
-			EventRecorder: recorder,
-		},
+	objectMeta := metav1.ObjectMeta{Namespace: k8s.IngressPodDetails.Namespace, Name: config.ElectionID}
+	resourceLockConfig := resourcelock.ResourceLockConfig{
+		Identity:      k8s.IngressPodDetails.Name,
+		EventRecorder: recorder,
+	}
+
+	lock := &resourcelock.LeaseLock{
+		LeaseMeta:  objectMeta,
+		Client:     config.Client.CoordinationV1(),
+		LockConfig: resourceLockConfig,
 	}
 
 	ttl := 30 * time.Second
 	var err error
 
 	elector, err = leaderelection.NewLeaderElector(leaderelection.LeaderElectionConfig{
-		Lock:          &lock,
+		Lock:          lock,
 		LeaseDuration: ttl,
 		RenewDeadline: ttl / 2,
 		RetryPeriod:   ttl / 4,

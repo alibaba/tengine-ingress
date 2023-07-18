@@ -20,9 +20,10 @@ import (
 	"fmt"
 	"testing"
 
-	"k8s.io/api/admission/v1beta1"
-	networking "k8s.io/api/networking/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
+	networking "k8s.io/api/networking/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/json"
 )
 
@@ -37,6 +38,11 @@ func (ftc failTestChecker) CheckIngress(ing *networking.Ingress) error {
 	return nil
 }
 
+func (ftc failTestChecker) CheckWarning(ing *networking.Ingress) ([]string, error) {
+	ftc.t.Error("checker should not be called")
+	return nil, nil
+}
+
 type testChecker struct {
 	t   *testing.T
 	err error
@@ -49,61 +55,77 @@ func (tc testChecker) CheckIngress(ing *networking.Ingress) error {
 	return tc.err
 }
 
+func (tc testChecker) CheckWarning(ing *networking.Ingress) ([]string, error) {
+	if ing.ObjectMeta.Name != testIngressName {
+		tc.t.Errorf("CheckWarning should be called with %v ingress, but got %v", testIngressName, ing.ObjectMeta.Name)
+	}
+	return nil, tc.err
+}
+
 func TestHandleAdmission(t *testing.T) {
 	adm := &IngressAdmission{
 		Checker: failTestChecker{t: t},
 	}
-	review := &v1beta1.AdmissionReview{
-		Request: &v1beta1.AdmissionRequest{
-			Resource: v1.GroupVersionResource{Group: "", Version: "v1", Resource: "pod"},
+
+	result, err := adm.HandleAdmission(&admissionv1.AdmissionReview{
+		Request: &admissionv1.AdmissionRequest{
+			Kind: v1.GroupVersionKind{Group: "", Version: "v1", Kind: "Pod"},
 		},
-	}
-	err := adm.HandleAdmission(review)
-	if !review.Response.Allowed {
-		t.Errorf("with a non ingress resource, the check should pass")
-	}
-	if err != nil {
-		t.Errorf("with a non ingress resource, no error should be returned")
-	}
-
-	review.Request.Resource = v1.GroupVersionResource{Group: networking.SchemeGroupVersion.Group, Version: networking.SchemeGroupVersion.Version, Resource: "ingresses"}
-	review.Request.Object.Raw = []byte{0xff}
-
-	err = adm.HandleAdmission(review)
-	if review.Response.Allowed {
-		t.Errorf("when the request object is not decodable, the request should not be allowed")
-	}
+	})
 	if err == nil {
-		t.Errorf("when the request object is not decodable, an error should be returned")
+		t.Fatalf("with a non ingress resource, the check should not pass")
+	}
+
+	result, err = adm.HandleAdmission(nil)
+	if err == nil {
+		t.Fatalf("with a nil AdmissionReview request, the check should not pass")
+	}
+
+	result, err = adm.HandleAdmission(&admissionv1.AdmissionReview{
+		Request: &admissionv1.AdmissionRequest{
+			Kind: v1.GroupVersionKind{Group: networking.GroupName, Version: "v1", Kind: "Ingress"},
+			Object: runtime.RawExtension{
+				Raw: []byte{0xff},
+			},
+		},
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	review, isV1 := (result).(*admissionv1.AdmissionReview)
+	if !isV1 {
+		t.Fatalf("expected AdmissionReview V1 object but %T returned", result)
+	}
+
+	if review.Response.Allowed {
+		t.Fatalf("when the request object is not decodable, the request should not be allowed")
 	}
 
 	raw, err := json.Marshal(networking.Ingress{ObjectMeta: v1.ObjectMeta{Name: testIngressName}})
 	if err != nil {
-		t.Errorf("failed to prepare test ingress data: %v", err.Error())
+		t.Fatalf("failed to prepare test ingress data: %v", err.Error())
 	}
+
 	review.Request.Object.Raw = raw
 
 	adm.Checker = testChecker{
 		t:   t,
 		err: fmt.Errorf("this is a test error"),
 	}
-	err = adm.HandleAdmission(review)
+
+	adm.HandleAdmission(review)
 	if review.Response.Allowed {
-		t.Errorf("when the checker returns an error, the request should not be allowed")
-	}
-	if err == nil {
-		t.Errorf("when the checker returns an error, an error should be returned")
+		t.Fatalf("when the checker returns an error, the request should not be allowed")
 	}
 
 	adm.Checker = testChecker{
 		t:   t,
 		err: nil,
 	}
-	err = adm.HandleAdmission(review)
+
+	adm.HandleAdmission(review)
 	if !review.Response.Allowed {
-		t.Errorf("when the checker returns no error, the request should be allowed")
-	}
-	if err != nil {
-		t.Errorf("when the checker returns no error, no error should be returned")
+		t.Fatalf("when the checker returns no error, the request should be allowed")
 	}
 }

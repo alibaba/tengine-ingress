@@ -29,7 +29,7 @@ import (
 
 var (
 	// AnnotationsPrefix defines the common prefix for the Secret
-	AnnotationsPrefix = "tengine.taobao.org"
+	AnnotationsPrefix = "nginx.ingress.kubernetes.io"
 )
 
 // SecretAnnotation has a method to parse annotations located in Secret

@@ -16,12 +16,19 @@
 
 set -o errexit
 set -o nounset
-set -o pipefail
-
-export GO111MODULE=off
 
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
-CODEGEN_PKG=${CODEGEN_PKG:-$(cd "${SCRIPT_ROOT}"; ls -d -1 ./vendor/k8s.io/code-generator 2>/dev/null || echo ../code-generator)}
+CODEGEN_VERSION=$(grep 'k8s.io/code-generator' go.sum | awk '{print $2}' | sed 's/\/go.mod//g' | tail -1)
+
+CODEGEN_PKG=$(echo `go env GOPATH`"/pkg/mod/k8s.io/code-generator@${CODEGEN_VERSION}")
+
+if [[ ! -d ${CODEGEN_PKG} ]]; then
+  echo "${CODEGEN_PKG} is missing. Running 'go mod download'."
+  go mod download
+fi
+
+# Ensure we can execute.
+chmod +x ${CODEGEN_PKG}/generate-groups.sh
 
 # generate the code with:
 # --output-base    because this script should also be able to run inside the vendor dir of
@@ -31,11 +38,24 @@ CODEGEN_PKG=${CODEGEN_PKG:-$(cd "${SCRIPT_ROOT}"; ls -d -1 ./vendor/k8s.io/code-
 #  k8s.io/ingress-nginx/pkg/client k8s.io/ingress-nginx/pkg/apis \
 #  nginxingress:v1alpha1 \
 #  --output-base "$(dirname ${BASH_SOURCE})/../../.."
-mkdir -p ${CODEGEN_PKG}/hack
-cp ${SCRIPT_ROOT}/hack/boilerplate/boilerplate.go.txt ${CODEGEN_PKG}/hack/boilerplate.go.txt
-chmod +x ${CODEGEN_PKG}/*.sh
+
+# generate the code for CRD ingresschecksums
+${CODEGEN_PKG}/generate-groups.sh "all" \
+  k8s.io/ingress-nginx/internal/checksum/ingress/client k8s.io/ingress-nginx/internal/checksum/ingress/apis \
+  checksum:v1 \
+  --output-base "$(dirname ${BASH_SOURCE})/../../.." \
+  --go-header-file ${SCRIPT_ROOT}/hack/boilerplate/boilerplate.generated.go.txt
+
+# generate the code for CRD secretchecksums
+${CODEGEN_PKG}/generate-groups.sh "all" \
+  k8s.io/ingress-nginx/internal/checksum/secret/client k8s.io/ingress-nginx/internal/checksum/secret/apis \
+  checksum:v1 \
+  --output-base "$(dirname ${BASH_SOURCE})/../../.." \
+  --go-header-file ${SCRIPT_ROOT}/hack/boilerplate/boilerplate.generated.go.txt
 
 ${CODEGEN_PKG}/generate-groups.sh "deepcopy" \
   k8s.io/ingress-nginx/internal k8s.io/ingress-nginx/internal \
   .:ingress \
-  --output-base "$(dirname ${BASH_SOURCE})/../../.."
+  --output-base "$(dirname ${BASH_SOURCE})/../../.." \
+  --go-header-file ${SCRIPT_ROOT}/hack/boilerplate/boilerplate.generated.go.txt
+

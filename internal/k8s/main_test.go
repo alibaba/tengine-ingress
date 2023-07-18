@@ -1,5 +1,6 @@
 /*
 Copyright 2015 The Kubernetes Authors.
+Copyright 2023 The Alibaba Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -214,36 +215,36 @@ func TestGetNodeIP(t *testing.T) {
 	}
 }
 
-func TestGetPodDetails(t *testing.T) {
+func TestGetIngressPod(t *testing.T) {
 	// POD_NAME & POD_NAMESPACE not exist
 	os.Setenv("POD_NAME", "")
 	os.Setenv("POD_NAMESPACE", "")
-	_, err1 := GetPodDetails(testclient.NewSimpleClientset())
-	if err1 == nil {
+	err := GetIngressPod(testclient.NewSimpleClientset())
+	if err == nil {
 		t.Errorf("expected an error but returned nil")
 	}
 
 	// POD_NAME not exist
 	os.Setenv("POD_NAME", "")
 	os.Setenv("POD_NAMESPACE", apiv1.NamespaceDefault)
-	_, err2 := GetPodDetails(testclient.NewSimpleClientset())
-	if err2 == nil {
+	err = GetIngressPod(testclient.NewSimpleClientset())
+	if err == nil {
 		t.Errorf("expected an error but returned nil")
 	}
 
 	// POD_NAMESPACE not exist
 	os.Setenv("POD_NAME", "testpod")
 	os.Setenv("POD_NAMESPACE", "")
-	_, err3 := GetPodDetails(testclient.NewSimpleClientset())
-	if err3 == nil {
+	err = GetIngressPod(testclient.NewSimpleClientset())
+	if err == nil {
 		t.Errorf("expected an error but returned nil")
 	}
 
 	// POD not exist
 	os.Setenv("POD_NAME", "testpod")
 	os.Setenv("POD_NAMESPACE", apiv1.NamespaceDefault)
-	_, err4 := GetPodDetails(testclient.NewSimpleClientset())
-	if err4 == nil {
+	err = GetIngressPod(testclient.NewSimpleClientset())
+	if err == nil {
 		t.Errorf("expected an error but returned nil")
 	}
 
@@ -254,8 +255,11 @@ func TestGetPodDetails(t *testing.T) {
 				Name:      "testpod",
 				Namespace: apiv1.NamespaceDefault,
 				Labels: map[string]string{
-					"first":  "first_label",
-					"second": "second_label",
+					"first":                       "first_label",
+					"second":                      "second_label",
+					"app.kubernetes.io/component": "controller",
+					"app.kubernetes.io/instance":  "tengine-ingress",
+					"app.kubernetes.io/name":      "tengine-ingress",
 				},
 			},
 		}}},
@@ -273,13 +277,9 @@ func TestGetPodDetails(t *testing.T) {
 			},
 		}}})
 
-	epi, err5 := GetPodDetails(fkClient)
-	if err5 != nil {
-		t.Errorf("expected a PodInfo but returned error")
+	err = GetIngressPod(fkClient)
+	if err != nil {
+		t.Errorf("expected a PodInfo but returned error: %v", err)
 		return
-	}
-
-	if epi == nil {
-		t.Errorf("expected a PodInfo but returned nil")
 	}
 }

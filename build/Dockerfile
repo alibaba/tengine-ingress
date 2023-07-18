@@ -18,7 +18,7 @@ ARG BASE_IMAGE
 FROM ${BASE_IMAGE} as builder
 
 ARG VERSION
-ARG GOLANG_VERSION="1.13.8"
+ARG GOLANG_VERSION="1.20.6"
 
 LABEL org.opencontainers.image.title="Tengine Ingress Controller for Kubernetes"
 LABEL org.opencontainers.image.documentation="https://tengine.taobao.org/ingress/"

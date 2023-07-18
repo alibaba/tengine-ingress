@@ -19,7 +19,7 @@ package class
 import (
 	"k8s.io/klog"
 
-	networking "k8s.io/api/networking/v1beta1"
+	networking "k8s.io/api/networking/v1"
 )
 
 const (

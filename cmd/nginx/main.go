@@ -1,6 +1,6 @@
 /*
 Copyright 2015 The Kubernetes Authors.
-Copyright 2022 The Alibaba Authors.
+Copyright 2022-2023 The Alibaba Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"net/http"
@@ -41,6 +42,8 @@ import (
 	certutil "k8s.io/client-go/util/cert"
 	"k8s.io/klog"
 
+	ingcheck "k8s.io/ingress-nginx/internal/checksum/ingress/client/clientset/versioned"
+	secretcheck "k8s.io/ingress-nginx/internal/checksum/secret/client/clientset/versioned"
 	"k8s.io/ingress-nginx/internal/file"
 	"k8s.io/ingress-nginx/internal/ingress/controller"
 	"k8s.io/ingress-nginx/internal/ingress/metric"
@@ -48,8 +51,6 @@ import (
 	"k8s.io/ingress-nginx/internal/net/ssl"
 	"k8s.io/ingress-nginx/internal/nginx"
 	"k8s.io/ingress-nginx/version"
-	ingcheck "tengine.taobao.org/checksum/ingress/client/clientset/versioned"
-	secretcheck "tengine.taobao.org/checksum/secret/client/clientset/versioned"
 )
 
 func main() {
@@ -94,7 +95,7 @@ func main() {
 			klog.Fatal(err)
 		}
 
-		_, err = kubeClient.CoreV1().Services(defSvcNs).Get(defSvcName, metav1.GetOptions{})
+		_, err = kubeClient.CoreV1().Services(defSvcNs).Get(context.TODO(), defSvcName, metav1.GetOptions{})
 		if err != nil {
 			if errors.IsUnauthorized(err) || errors.IsForbidden(err) {
 				klog.Fatal("✖ The cluster seems to be running with a restrictive Authorization mode and the Ingress controller does not have the required permissions to operate normally.")
@@ -105,7 +106,7 @@ func main() {
 	}
 
 	if conf.Namespace != "" {
-		_, err = kubeClient.CoreV1().Namespaces().Get(conf.Namespace, metav1.GetOptions{})
+		_, err = kubeClient.CoreV1().Namespaces().Get(context.TODO(), conf.Namespace, metav1.GetOptions{})
 		if err != nil {
 			klog.Fatalf("No namespace with name %v found: %v", conf.Namespace, err)
 		}
@@ -114,9 +115,8 @@ func main() {
 	conf.FakeCertificate = ssl.GetFakeSSLCert()
 	klog.Infof("SSL fake certificate created %v", conf.FakeCertificate.PemFileName)
 
-	k8s.IsNetworkingIngressAvailable = k8s.NetworkingIngressAvailable(kubeClient)
-	if !k8s.IsNetworkingIngressAvailable {
-		klog.Warningf("Using deprecated \"k8s.io/api/extensions/v1beta1\" package because Kubernetes version is < v1.14.0")
+	if !k8s.NetworkingIngressAvailable(kubeClient) {
+		klog.Fatalf("tengine-ingress requires Kubernetes v1.19.0 or higher")
 	}
 
 	conf.Client = kubeClient

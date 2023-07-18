@@ -41,7 +41,7 @@ var _ = framework.IngressNginxDescribe("[TCP] tcp-services", func() {
 		config, err := f.KubeClientSet.
 			CoreV1().
 			ConfigMaps(f.Namespace).
-			Get("tcp-services", metav1.GetOptions{})
+			Get(context.TODO(), "tcp-services", metav1.GetOptions{})
 		assert.Nil(ginkgo.GinkgoT(), err, "unexpected error obtaining tcp-services configmap")
 		assert.NotNil(ginkgo.GinkgoT(), config, "expected a configmap but none returned")
 
@@ -54,13 +54,13 @@ var _ = framework.IngressNginxDescribe("[TCP] tcp-services", func() {
 		_, err = f.KubeClientSet.
 			CoreV1().
 			ConfigMaps(f.Namespace).
-			Update(config)
+			Update(context.TODO(), config, metav1.UpdateOptions{})
 		assert.Nil(ginkgo.GinkgoT(), err, "unexpected error updating configmap")
 
 		svc, err := f.KubeClientSet.
 			CoreV1().
 			Services(f.Namespace).
-			Get("nginx-ingress-controller", metav1.GetOptions{})
+			Get(context.TODO(), "nginx-ingress-controller", metav1.GetOptions{})
 		assert.Nil(ginkgo.GinkgoT(), err, "unexpected error obtaining ingress-nginx service")
 		assert.NotNil(ginkgo.GinkgoT(), svc, "expected a service but none returned")
 
@@ -72,7 +72,7 @@ var _ = framework.IngressNginxDescribe("[TCP] tcp-services", func() {
 		_, err = f.KubeClientSet.
 			CoreV1().
 			Services(f.Namespace).
-			Update(svc)
+			Update(context.TODO(), svc, metav1.UpdateOptions{})
 		assert.Nil(ginkgo.GinkgoT(), err, "unexpected error updating service")
 
 		f.WaitForNginxConfiguration(
@@ -120,7 +120,7 @@ var _ = framework.IngressNginxDescribe("[TCP] tcp-services", func() {
 		svc, err := f.KubeClientSet.
 			CoreV1().
 			Services(f.Namespace).
-			Get("nginx-ingress-controller", metav1.GetOptions{})
+			Get(context.TODO(), "nginx-ingress-controller", metav1.GetOptions{})
 		assert.Nil(ginkgo.GinkgoT(), err, "unexpected error obtaining ingress-nginx service")
 		assert.NotNil(ginkgo.GinkgoT(), svc, "expected a service but none returned")
 
@@ -132,14 +132,14 @@ var _ = framework.IngressNginxDescribe("[TCP] tcp-services", func() {
 		_, err = f.KubeClientSet.
 			CoreV1().
 			Services(f.Namespace).
-			Update(svc)
+			Update(context.TODO(), svc, metav1.UpdateOptions{})
 		assert.Nil(ginkgo.GinkgoT(), err, "unexpected error updating service")
 
 		// Update the TCP configmap to link port 5353 to the DNS external name service
 		config, err := f.KubeClientSet.
 			CoreV1().
 			ConfigMaps(f.Namespace).
-			Get("tcp-services", metav1.GetOptions{})
+			Get(context.TODO(), "tcp-services", metav1.GetOptions{})
 		assert.Nil(ginkgo.GinkgoT(), err, "unexpected error obtaining tcp-services configmap")
 		assert.NotNil(ginkgo.GinkgoT(), config, "expected a configmap but none returned")
 
@@ -152,7 +152,7 @@ var _ = framework.IngressNginxDescribe("[TCP] tcp-services", func() {
 		_, err = f.KubeClientSet.
 			CoreV1().
 			ConfigMaps(f.Namespace).
-			Update(config)
+			Update(context.TODO(), config, metav1.UpdateOptions{})
 		assert.Nil(ginkgo.GinkgoT(), err, "unexpected error updating configmap")
 
 		// Validate that the generated nginx config contains the expected `proxy_upstream_name` value

@@ -22,7 +22,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/spf13/cobra"
-	networking "k8s.io/api/networking/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"k8s.io/ingress-nginx/cmd/plugin/request"

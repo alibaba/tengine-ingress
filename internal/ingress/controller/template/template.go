@@ -33,6 +33,7 @@ import (
 	"regexp"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	text_template "text/template"
 	"time"
@@ -67,8 +68,8 @@ type Template struct {
 	bp *BufferPool
 }
 
-//NewTemplate returns a new Template instance or an
-//error if the specified template file contains errors
+// NewTemplate returns a new Template instance or an
+// error if the specified template file contains errors
 func NewTemplate(file string) (*Template, error) {
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
@@ -189,9 +190,10 @@ var (
 // escapeLiteralDollar will replace the $ character with ${literal_dollar}
 // which is made to work via the following configuration in the http section of
 // the template:
-// geo $literal_dollar {
-//     default "$";
-// }
+//
+//	geo $literal_dollar {
+//	    default "$";
+//	}
 func escapeLiteralDollar(input interface{}) string {
 	inputStr, ok := input.(string)
 	if !ok {
@@ -813,6 +815,7 @@ func isValidByteSize(input interface{}, isOffset bool) bool {
 
 type ingressInformation struct {
 	Namespace   string
+	Path        string
 	Rule        string
 	Service     string
 	ServicePort string
@@ -852,7 +855,7 @@ func getIngressInformation(i, h, p interface{}) *ingressInformation {
 		return &ingressInformation{}
 	}
 
-	path, ok := p.(string)
+	ingressPath, ok := p.(string)
 	if !ok {
 		klog.Errorf("expected a 'string' type but %T was returned", p)
 		return &ingressInformation{}
@@ -866,12 +869,20 @@ func getIngressInformation(i, h, p interface{}) *ingressInformation {
 		Namespace:   ing.GetNamespace(),
 		Rule:        ing.GetName(),
 		Annotations: ing.Annotations,
+		Path:        ingressPath,
 	}
 
-	if ing.Spec.Backend != nil {
-		info.Service = ing.Spec.Backend.ServiceName
-		if ing.Spec.Backend.ServicePort.String() != "0" {
-			info.ServicePort = ing.Spec.Backend.ServicePort.String()
+	if ingressPath == "" {
+		ingressPath = "/"
+		info.Path = "/"
+	}
+
+	if ing.Spec.DefaultBackend != nil && ing.Spec.DefaultBackend.Service != nil {
+		info.Service = ing.Spec.DefaultBackend.Service.Name
+		if ing.Spec.DefaultBackend.Service.Port.Number > 0 {
+			info.ServicePort = strconv.Itoa(int(ing.Spec.DefaultBackend.Service.Port.Number))
+		} else {
+			info.ServicePort = ing.Spec.DefaultBackend.Service.Port.Name
 		}
 	}
 
@@ -880,19 +891,41 @@ func getIngressInformation(i, h, p interface{}) *ingressInformation {
 			continue
 		}
 
-		if hostname != "" && hostname != rule.Host {
+		if hostname != "_" && rule.Host == "" {
+			continue
+		}
+
+		host := "_"
+		if rule.Host != "" {
+			host = rule.Host
+		}
+
+		if hostname != host {
 			continue
 		}
 
 		for _, rPath := range rule.HTTP.Paths {
-			if path == rPath.Path {
-				info.Service = rPath.Backend.ServiceName
-				if rPath.Backend.ServicePort.String() != "0" {
-					info.ServicePort = rPath.Backend.ServicePort.String()
-				}
+			if ingressPath != rPath.Path {
+				continue
+			}
 
+			if rPath.Backend.Service == nil {
+				continue
+			}
+
+			if info.Service != "" && rPath.Backend.Service.Name == "" {
+				// empty rule. Only contains a Path and PathType
 				return info
 			}
+
+			info.Service = rPath.Backend.Service.Name
+			if rPath.Backend.Service.Port.Number > 0 {
+				info.ServicePort = strconv.Itoa(int(rPath.Backend.Service.Port.Number))
+			} else {
+				info.ServicePort = rPath.Backend.Service.Port.Name
+			}
+
+			return info
 		}
 	}
 

@@ -1,6 +1,6 @@
 /*
 Copyright 2017 The Kubernetes Authors.
-Copyright 2022 The Alibaba Authors.
+Copyright 2022-2023 The Alibaba Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ limitations under the License.
 package store
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
@@ -31,8 +32,7 @@ import (
 
 	"github.com/eapache/channels"
 	corev1 "k8s.io/api/core/v1"
-	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
-	networkingv1beta1 "k8s.io/api/networking/v1beta1"
+	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	k8sruntime "k8s.io/apimachinery/pkg/runtime"
@@ -45,6 +45,14 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/ingress-nginx/internal/astsutils"
+	ingcheckv1 "k8s.io/ingress-nginx/internal/checksum/ingress/apis/checksum/v1"
+	ingcheckclient "k8s.io/ingress-nginx/internal/checksum/ingress/client/clientset/versioned"
+	ingcheckscheme "k8s.io/ingress-nginx/internal/checksum/ingress/client/clientset/versioned/scheme"
+	ingcheckinformers "k8s.io/ingress-nginx/internal/checksum/ingress/client/informers/externalversions"
+	secretcheckv1 "k8s.io/ingress-nginx/internal/checksum/secret/apis/checksum/v1"
+	secretcheckclient "k8s.io/ingress-nginx/internal/checksum/secret/client/clientset/versioned"
+	secretcheckscheme "k8s.io/ingress-nginx/internal/checksum/secret/client/clientset/versioned/scheme"
+	secretcheckinformers "k8s.io/ingress-nginx/internal/checksum/secret/client/informers/externalversions"
 	"k8s.io/ingress-nginx/internal/file"
 	"k8s.io/ingress-nginx/internal/ingress"
 	"k8s.io/ingress-nginx/internal/ingress/annotations"
@@ -59,14 +67,6 @@ import (
 	"k8s.io/ingress-nginx/internal/ingress/secannotations"
 	"k8s.io/ingress-nginx/internal/k8s"
 	"k8s.io/ingress-nginx/internal/nginx"
-	ingcheckv1 "tengine.taobao.org/checksum/ingress/apis/checksum/v1"
-	ingcheckclient "tengine.taobao.org/checksum/ingress/client/clientset/versioned"
-	ingcheckscheme "tengine.taobao.org/checksum/ingress/client/clientset/versioned/scheme"
-	ingcheckinformers "tengine.taobao.org/checksum/ingress/client/informers/externalversions"
-	secretcheckv1 "tengine.taobao.org/checksum/secret/apis/checksum/v1"
-	secretcheckclient "tengine.taobao.org/checksum/secret/client/clientset/versioned"
-	secretcheckscheme "tengine.taobao.org/checksum/secret/client/clientset/versioned/scheme"
-	secretcheckinformers "tengine.taobao.org/checksum/secret/client/informers/externalversions"
 )
 
 // IngressFilterFunc decides if an Ingress should be omitted or not
@@ -405,11 +405,11 @@ func New(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (k8sruntime.Object, error) {
 				options.LabelSelector = labelSelector.String()
-				return client.CoreV1().Pods(store.pod.Namespace).List(options)
+				return client.CoreV1().Pods(store.pod.Namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 				options.LabelSelector = labelSelector.String()
-				return client.CoreV1().Pods(store.pod.Namespace).Watch(options)
+				return client.CoreV1().Pods(store.pod.Namespace).Watch(context.TODO(), options)
 			},
 		},
 		&corev1.Pod{},
@@ -427,7 +427,7 @@ func New(
 				klog.Errorf("couldn't get object from tombstone %#v", obj)
 				return
 			}
-			ing, ok = tombstone.Obj.(*networkingv1beta1.Ingress)
+			ing, ok = tombstone.Obj.(*networkingv1.Ingress)
 			if !ok {
 				klog.Errorf("Tombstone contained object that is not an Ingress: %#v", obj)
 				return
@@ -813,7 +813,7 @@ func New(
 
 	// do not wait for informers to read the configmap configuration
 	ns, name, _ := k8s.ParseNameNS(configmap)
-	cm, err := client.CoreV1().ConfigMaps(ns).Get(name, metav1.GetOptions{})
+	cm, err := client.CoreV1().ConfigMaps(ns).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		klog.Warningf("Unexpected error reading configuration configmap: %v", err)
 	}
@@ -826,13 +826,13 @@ func New(
 
 // isCatchAllIngress returns whether or not an ingress produces a
 // catch-all server, and so should be ignored when --disable-catch-all is set
-func isCatchAllIngress(spec networkingv1beta1.IngressSpec) bool {
-	return spec.Backend != nil && len(spec.Rules) == 0
+func isCatchAllIngress(spec networkingv1.IngressSpec) bool {
+	return spec.DefaultBackend != nil && len(spec.Rules) == 0
 }
 
 // syncIngress parses ingress annotations converting the value of the
 // annotation to a go struct
-func (s *k8sStore) syncIngress(ing *networkingv1beta1.Ingress) {
+func (s *k8sStore) syncIngress(ing *networkingv1.Ingress) {
 	key := k8s.MetaNamespaceKey(ing)
 	klog.V(3).Infof("updating annotations information for ingress %v", key)
 
@@ -847,7 +847,7 @@ func (s *k8sStore) syncIngress(ing *networkingv1beta1.Ingress) {
 		return
 	}
 
-	copyIng := &networkingv1beta1.Ingress{}
+	copyIng := &networkingv1.Ingress{}
 	ing.ObjectMeta.DeepCopyInto(&copyIng.ObjectMeta)
 	ing.Spec.DeepCopyInto(&copyIng.Spec)
 	ing.Status.DeepCopyInto(&copyIng.Status)
@@ -875,7 +875,7 @@ func (s *k8sStore) syncIngress(ing *networkingv1beta1.Ingress) {
 
 // updateSecretIngressMap takes an Ingress and updates all Secret objects it
 // references in secretIngressMap.
-func (s *k8sStore) updateSecretIngressMap(ing *networkingv1beta1.Ingress) {
+func (s *k8sStore) updateSecretIngressMap(ing *networkingv1.Ingress) {
 	key := k8s.MetaNamespaceKey(ing)
 	klog.V(3).Infof("updating references to secrets for ingress %v", key)
 
@@ -919,7 +919,7 @@ func (s *k8sStore) updateSecretIngressMap(ing *networkingv1beta1.Ingress) {
 
 // objectRefAnnotationNsKey returns an object reference formatted as a
 // 'namespace/name' key from the given annotation name.
-func objectRefAnnotationNsKey(ann string, ing *networkingv1beta1.Ingress) (string, error) {
+func objectRefAnnotationNsKey(ann string, ing *networkingv1.Ingress) (string, error) {
 	annValue, err := parser.GetStringAnnotation(ann, ing)
 	if err != nil {
 		return "", err
@@ -938,7 +938,7 @@ func objectRefAnnotationNsKey(ann string, ing *networkingv1beta1.Ingress) (strin
 
 // syncSecrets synchronizes data from all Secrets referenced by the given
 // Ingress with the local store and file system.
-func (s *k8sStore) syncSecrets(ing *networkingv1beta1.Ingress) {
+func (s *k8sStore) syncSecrets(ing *networkingv1.Ingress) {
 	key := k8s.MetaNamespaceKey(ing)
 	for _, secrKey := range s.secretIngressMap.ReferencedBy(key) {
 		gray, _ := s.GetSecretGrayStatus(secrKey)
@@ -974,7 +974,7 @@ func (s *k8sStore) GetService(key string) (*corev1.Service, error) {
 }
 
 // getIngress returns the Ingress matching key.
-func (s *k8sStore) getIngress(key string) (*networkingv1beta1.Ingress, error) {
+func (s *k8sStore) getIngress(key string) (*networkingv1.Ingress, error) {
 	ing, err := s.listers.IngressWithAnnotation.ByKey(key)
 	if err != nil {
 		return nil, err
@@ -1036,7 +1036,7 @@ func (s *k8sStore) ListLocalIngressCheckSums(filter IngressCheckFilterFunc) []*i
 			klog.V(3).Infof("IngressCheckSum %v and %v have identical CreationTimestamp", in, jn)
 			return in < jn
 		}
-		return ir.After(&jr)
+		return !ir.Before(&jr)
 	})
 
 	return ingressCheckSums
@@ -1172,38 +1172,15 @@ func (s k8sStore) GetRunningControllerPodsCount() int {
 var runtimeScheme = k8sruntime.NewScheme()
 
 func init() {
-	extensionsv1beta1.AddToScheme(runtimeScheme)
-	networkingv1beta1.AddToScheme(runtimeScheme)
+	networkingv1.AddToScheme(runtimeScheme)
 	ingcheckv1.AddToScheme(runtimeScheme)
 	runtime.Must(ingcheckscheme.AddToScheme(scheme.Scheme))
 	secretcheckv1.AddToScheme(runtimeScheme)
 	runtime.Must(secretcheckscheme.AddToScheme(scheme.Scheme))
 }
 
-func fromExtensions(old *extensionsv1beta1.Ingress) (*networkingv1beta1.Ingress, error) {
-	networkingIngress := &networkingv1beta1.Ingress{}
-
-	err := runtimeScheme.Convert(old, networkingIngress, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return networkingIngress, nil
-}
-
-func toIngress(obj interface{}) (*networkingv1beta1.Ingress, bool) {
-	oldVersion, inExtension := obj.(*extensionsv1beta1.Ingress)
-	if inExtension {
-		ing, err := fromExtensions(oldVersion)
-		if err != nil {
-			klog.Errorf("unexpected error converting Ingress from extensions package: %v", err)
-			return nil, false
-		}
-
-		return ing, true
-	}
-
-	if ing, ok := obj.(*networkingv1beta1.Ingress); ok {
+func toIngress(obj interface{}) (*networkingv1.Ingress, bool) {
+	if ing, ok := obj.(*networkingv1.Ingress); ok {
 		return ing, true
 	}
 
@@ -1242,7 +1219,7 @@ func (s *k8sStore) GetSecretWithAnnotation(key string) (*ingress.Secret, error) 
 }
 
 // updateIngWithAnnotation updates Ingress with annotations
-func (s *k8sStore) updateIngWithAnnotation(ing *networkingv1beta1.Ingress) {
+func (s *k8sStore) updateIngWithAnnotation(ing *networkingv1.Ingress) {
 	key := k8s.MetaNamespaceKey(ing)
 	klog.Infof("updating annotations information for ingress [%v]", key)
 
@@ -1402,7 +1379,7 @@ func (s *k8sStore) ListLocalSecretCheckSums(filter SecretCheckFilterFunc) []*sec
 			klog.V(3).Infof("IngressCheckSum %v and %v have identical CreationTimestamp", in, jn)
 			return in < jn
 		}
-		return ir.After(&jr)
+		return !ir.Before(&jr)
 	})
 
 	return secretCheckSums
@@ -1422,17 +1399,10 @@ func (s *k8sStore) GetLocalSecretCheckSum(key string) (*secretcheckv1.SecretChec
 func (s *k8sStore) getIngInformer(useStorageCluster bool, infFactory informers.SharedInformerFactory, ingFactory informers.SharedInformerFactory) cache.SharedIndexInformer {
 	var ingInformer cache.SharedIndexInformer
 	if useStorageCluster {
-		if k8s.IsNetworkingIngressAvailable {
-			ingInformer = ingFactory.Networking().V1beta1().Ingresses().Informer()
-		} else {
-			ingInformer = ingFactory.Extensions().V1beta1().Ingresses().Informer()
-		}
+		ingInformer = ingFactory.Networking().V1().Ingresses().Informer()
+
 	} else {
-		if k8s.IsNetworkingIngressAvailable {
-			ingInformer = infFactory.Networking().V1beta1().Ingresses().Informer()
-		} else {
-			ingInformer = infFactory.Extensions().V1beta1().Ingresses().Informer()
-		}
+		ingInformer = infFactory.Networking().V1().Ingresses().Informer()
 	}
 
 	return ingInformer

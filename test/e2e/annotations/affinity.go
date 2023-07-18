@@ -24,7 +24,7 @@ import (
 
 	"github.com/onsi/ginkgo"
 	"github.com/stretchr/testify/assert"
-	networking "k8s.io/api/networking/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
@@ -85,7 +85,7 @@ var _ = framework.DescribeAnnotation("affinity session-cookie-name", func() {
 
 		ing.ObjectMeta.Annotations["nginx.ingress.kubernetes.io/session-cookie-name"] = "OTHERCOOKIENAME"
 
-		_, err := f.KubeClientSet.NetworkingV1beta1().Ingresses(f.Namespace).Update(ing)
+		_, err := f.KubeClientSet.NetworkingV1().Ingresses(f.Namespace).Update(ing)
 		assert.Nil(ginkgo.GinkgoT(), err, "updating ingress")
 		time.Sleep(5 * time.Second)
 

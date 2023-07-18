@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	api "k8s.io/api/core/v1"
-	networking "k8s.io/api/networking/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/parser"
 	"k8s.io/ingress-nginx/internal/ingress/resolver"
@@ -90,7 +90,6 @@ func TestAnnotations(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		parser.AnnotationsPrefix = "tengine.taobao.org"
 		data[parser.GetAnnotationWithPrefix("ingress-rollout")] = strconv.FormatBool(test.ingGrayFlag)
 		data[parser.GetAnnotationWithPrefix("ingress-rollout-current-revision")] = test.ingGrayCurVer
 		data[parser.GetAnnotationWithPrefix("ingress-rollout-update-revision")] = test.ingGrayNewVer
