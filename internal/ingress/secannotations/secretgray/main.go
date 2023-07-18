@@ -88,7 +88,6 @@ func NewParser(r resolver.Resolver) parser.SecretAnnotation {
 func (a secretgray) Parse(secret *apiv1.Secret) (interface{}, error) {
 	var err error
 	config := &Config{}
-	parser.AnnotationsPrefix = "tengine.taobao.org"
 
 	config.SecGrayFlag, err = parser.GetBoolAnnotation(SecretGrayFlag, secret)
 	if err != nil {

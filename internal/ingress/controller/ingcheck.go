@@ -24,10 +24,10 @@ import (
 	"strconv"
 	"strings"
 
+	ingcheckv1 "k8s.io/ingress-nginx/internal/checksum/ingress/apis/checksum/v1"
 	"k8s.io/ingress-nginx/internal/ingress"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/checksum"
 	"k8s.io/klog"
-	ingcheckv1 "tengine.taobao.org/checksum/ingress/apis/checksum/v1"
 )
 
 const (

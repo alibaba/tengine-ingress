@@ -14,6 +14,7 @@ limitations under the License.
 package framework
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"net/http"
@@ -26,7 +27,7 @@ import (
 	"gopkg.in/gavv/httpexpect.v2"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
-	networking "k8s.io/api/networking/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	apiextcs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -172,7 +173,7 @@ func (f *Framework) GetNginxIP() string {
 	s, err := f.KubeClientSet.
 		CoreV1().
 		Services(f.Namespace).
-		Get("nginx-ingress-controller", metav1.GetOptions{})
+		Get(context.TODO(), "nginx-ingress-controller", metav1.GetOptions{})
 	assert.Nil(ginkgo.GinkgoT(), err, "obtaining NGINX IP address")
 	return s.Spec.ClusterIP
 }
@@ -182,7 +183,7 @@ func (f *Framework) GetNginxPodIP() []string {
 	e, err := f.KubeClientSet.
 		CoreV1().
 		Endpoints(f.Namespace).
-		Get("nginx-ingress-controller", metav1.GetOptions{})
+		Get(context.TODO(), "nginx-ingress-controller", metav1.GetOptions{})
 	assert.Nil(ginkgo.GinkgoT(), err, "obtaining NGINX IP address")
 	eips := make([]string, 0)
 	for _, s := range e.Subsets {
@@ -275,7 +276,7 @@ func (f *Framework) getConfigMap(name string) (*v1.ConfigMap, error) {
 	config, err := f.KubeClientSet.
 		CoreV1().
 		ConfigMaps(f.Namespace).
-		Get(name, metav1.GetOptions{})
+		Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -294,7 +295,7 @@ func (f *Framework) SetNginxConfigMapData(cmData map[string]string) {
 	_, err = f.KubeClientSet.
 		CoreV1().
 		ConfigMaps(f.Namespace).
-		Update(cfgMap)
+		Update(context.TODO(), cfgMap, metav1.UpdateOptions{})
 	assert.Nil(ginkgo.GinkgoT(), err, "updating configuration configmap")
 
 	time.Sleep(5 * time.Second)
@@ -302,13 +303,13 @@ func (f *Framework) SetNginxConfigMapData(cmData map[string]string) {
 
 // CreateConfigMap creates a new configmap in the current namespace
 func (f *Framework) CreateConfigMap(name string, data map[string]string) {
-	_, err := f.KubeClientSet.CoreV1().ConfigMaps(f.Namespace).Create(&v1.ConfigMap{
+	_, err := f.KubeClientSet.CoreV1().ConfigMaps(f.Namespace).Create(context.TODO(), &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: f.Namespace,
 		},
 		Data: data,
-	})
+	}, metav1.CreateOptions{})
 	assert.Nil(ginkgo.GinkgoT(), err, "creating configMap")
 }
 
@@ -323,7 +324,7 @@ func (f *Framework) UpdateNginxConfigMapData(key string, value string) {
 	_, err = f.KubeClientSet.
 		CoreV1().
 		ConfigMaps(f.Namespace).
-		Update(config)
+		Update(context.TODO(), config, metav1.UpdateOptions{})
 	assert.Nil(ginkgo.GinkgoT(), err, "updating configuration configmap")
 
 	time.Sleep(5 * time.Second)
@@ -336,7 +337,7 @@ func (f *Framework) DeleteNGINXPod(grace int64) {
 	pod, err := getIngressNGINXPod(ns, f.KubeClientSet)
 	assert.Nil(ginkgo.GinkgoT(), err, "expected ingress nginx pod to be running")
 
-	err = f.KubeClientSet.CoreV1().Pods(ns).Delete(pod.GetName(), metav1.NewDeleteOptions(grace))
+	err = f.KubeClientSet.CoreV1().Pods(ns).Delete(context.TODO(), pod.GetName(), metav1.NewDeleteOptions(grace))
 	assert.Nil(ginkgo.GinkgoT(), err, "deleting ingress nginx pod")
 
 	err = wait.Poll(Poll, DefaultTimeout, func() (bool, error) {
@@ -420,7 +421,7 @@ func UpdateDeployment(kubeClientSet kubernetes.Interface, namespace string, name
 
 // UpdateIngress runs the given updateFunc on the ingress
 func UpdateIngress(kubeClientSet kubernetes.Interface, namespace string, name string, updateFunc func(d *networking.Ingress) error) error {
-	ingress, err := kubeClientSet.NetworkingV1beta1().Ingresses(namespace).Get(name, metav1.GetOptions{})
+	ingress, err := kubeClientSet.NetworkingV1().Ingresses(namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -437,7 +438,7 @@ func UpdateIngress(kubeClientSet kubernetes.Interface, namespace string, name st
 		return err
 	}
 
-	_, err = kubeClientSet.NetworkingV1beta1().Ingresses(namespace).Update(ingress)
+	_, err = kubeClientSet.NetworkingV1().Ingresses(namespace).Update(ingress)
 	if err != nil {
 		return err
 	}

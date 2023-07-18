@@ -17,6 +17,7 @@ limitations under the License.
 package framework
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -27,7 +28,7 @@ import (
 	api "k8s.io/api/core/v1"
 	core "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
-	networking "k8s.io/api/networking/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
@@ -41,7 +42,7 @@ func (f *Framework) EnsureSecret(secret *api.Secret) *api.Secret {
 	err := createSecretWithRetries(f.KubeClientSet, f.Namespace, secret)
 	assert.Nil(ginkgo.GinkgoT(), err, "creating secret")
 
-	s, err := f.KubeClientSet.CoreV1().Secrets(secret.Namespace).Get(secret.Name, metav1.GetOptions{})
+	s, err := f.KubeClientSet.CoreV1().Secrets(secret.Namespace).Get(context.TODO(), secret.Name, metav1.GetOptions{})
 	assert.Nil(ginkgo.GinkgoT(), err, "getting secret")
 	assert.NotNil(ginkgo.GinkgoT(), s, "getting secret")
 
@@ -50,10 +51,10 @@ func (f *Framework) EnsureSecret(secret *api.Secret) *api.Secret {
 
 // EnsureConfigMap creates a ConfigMap object or returns it if it already exists.
 func (f *Framework) EnsureConfigMap(configMap *api.ConfigMap) (*api.ConfigMap, error) {
-	cm, err := f.KubeClientSet.CoreV1().ConfigMaps(f.Namespace).Create(configMap)
+	cm, err := f.KubeClientSet.CoreV1().ConfigMaps(f.Namespace).Create(context.TODO(), configMap, metav1.CreateOptions{})
 	if err != nil {
 		if k8sErrors.IsAlreadyExists(err) {
-			return f.KubeClientSet.CoreV1().ConfigMaps(f.Namespace).Update(configMap)
+			return f.KubeClientSet.CoreV1().ConfigMaps(f.Namespace).Update(context.TODO(), configMap, metav1.UpdateOptions{})
 		}
 		return nil, err
 	}
@@ -66,7 +67,7 @@ func (f *Framework) EnsureIngress(ingress *networking.Ingress) *networking.Ingre
 	err := createIngressWithRetries(f.KubeClientSet, f.Namespace, ingress)
 	assert.Nil(ginkgo.GinkgoT(), err, "creating ingress")
 
-	ing, err := f.KubeClientSet.NetworkingV1beta1().Ingresses(f.Namespace).Get(ingress.Name, metav1.GetOptions{})
+	ing, err := f.KubeClientSet.NetworkingV1().Ingresses(f.Namespace).Get(ingress.Name, metav1.GetOptions{})
 	assert.Nil(ginkgo.GinkgoT(), err, "getting ingress")
 	assert.NotNil(ginkgo.GinkgoT(), ing, "expected an ingress but none returned")
 
@@ -85,7 +86,7 @@ func (f *Framework) UpdateIngress(ingress *networking.Ingress) *networking.Ingre
 	err := updateIngressWithRetries(f.KubeClientSet, f.Namespace, ingress)
 	assert.Nil(ginkgo.GinkgoT(), err, "updating ingress")
 
-	ing, err := f.KubeClientSet.NetworkingV1beta1().Ingresses(f.Namespace).Get(ingress.Name, metav1.GetOptions{})
+	ing, err := f.KubeClientSet.NetworkingV1().Ingresses(f.Namespace).Get(ingress.Name, metav1.GetOptions{})
 	assert.Nil(ginkgo.GinkgoT(), err, "getting ingress")
 	assert.NotNil(ginkgo.GinkgoT(), ing, "expected an ingress but none returned")
 
@@ -104,7 +105,7 @@ func (f *Framework) EnsureService(service *core.Service) *core.Service {
 	err := createServiceWithRetries(f.KubeClientSet, f.Namespace, service)
 	assert.Nil(ginkgo.GinkgoT(), err, "creating service")
 
-	s, err := f.KubeClientSet.CoreV1().Services(f.Namespace).Get(service.Name, metav1.GetOptions{})
+	s, err := f.KubeClientSet.CoreV1().Services(f.Namespace).Get(context.TODO(), service.Name, metav1.GetOptions{})
 	assert.Nil(ginkgo.GinkgoT(), err, "getting service")
 	assert.NotNil(ginkgo.GinkgoT(), s, "expected a service but none returned")
 
@@ -126,7 +127,7 @@ func (f *Framework) EnsureDeployment(deployment *appsv1.Deployment) *appsv1.Depl
 // WaitForPodsReady waits for a given amount of time until a group of Pods is running in the given namespace.
 func WaitForPodsReady(kubeClientSet kubernetes.Interface, timeout time.Duration, expectedReplicas int, namespace string, opts metav1.ListOptions) error {
 	return wait.Poll(Poll, timeout, func() (bool, error) {
-		pl, err := kubeClientSet.CoreV1().Pods(namespace).List(opts)
+		pl, err := kubeClientSet.CoreV1().Pods(namespace).List(context.TODO(), opts)
 		if err != nil {
 			return false, nil
 		}
@@ -149,7 +150,7 @@ func WaitForPodsReady(kubeClientSet kubernetes.Interface, timeout time.Duration,
 // WaitForPodsDeleted waits for a given amount of time until a group of Pods are deleted in the given namespace.
 func WaitForPodsDeleted(kubeClientSet kubernetes.Interface, timeout time.Duration, namespace string, opts metav1.ListOptions) error {
 	return wait.Poll(Poll, timeout, func() (bool, error) {
-		pl, err := kubeClientSet.CoreV1().Pods(namespace).List(opts)
+		pl, err := kubeClientSet.CoreV1().Pods(namespace).List(context.TODO(), opts)
 		if err != nil {
 			return false, nil
 		}
@@ -168,7 +169,7 @@ func WaitForEndpoints(kubeClientSet kubernetes.Interface, timeout time.Duration,
 	}
 
 	return wait.Poll(Poll, timeout, func() (bool, error) {
-		endpoint, err := kubeClientSet.CoreV1().Endpoints(ns).Get(name, metav1.GetOptions{})
+		endpoint, err := kubeClientSet.CoreV1().Endpoints(ns).Get(context.TODO(), name, metav1.GetOptions{})
 		if k8sErrors.IsNotFound(err) {
 			return false, nil
 		}
@@ -209,7 +210,7 @@ func podRunningReady(p *core.Pod) (bool, error) {
 }
 
 func getIngressNGINXPod(ns string, kubeClientSet kubernetes.Interface) (*core.Pod, error) {
-	l, err := kubeClientSet.CoreV1().Pods(ns).List(metav1.ListOptions{
+	l, err := kubeClientSet.CoreV1().Pods(ns).List(context.TODO(), metav1.ListOptions{
 		LabelSelector: "app.kubernetes.io/name=ingress-nginx",
 	})
 	if err != nil {
@@ -264,7 +265,7 @@ func createSecretWithRetries(c kubernetes.Interface, namespace string, obj *v1.S
 		return fmt.Errorf("Object provided to create is empty")
 	}
 	createFunc := func() (bool, error) {
-		_, err := c.CoreV1().Secrets(namespace).Create(obj)
+		_, err := c.CoreV1().Secrets(namespace).Create(context.TODO(), obj, metav1.CreateOptions{})
 		if err == nil {
 			return true, nil
 		}
@@ -284,7 +285,7 @@ func createServiceWithRetries(c kubernetes.Interface, namespace string, obj *v1.
 		return fmt.Errorf("Object provided to create is empty")
 	}
 	createFunc := func() (bool, error) {
-		_, err := c.CoreV1().Services(namespace).Create(obj)
+		_, err := c.CoreV1().Services(namespace).Create(context.TODO(), obj, metav1.CreateOptions{})
 		if err == nil {
 			return true, nil
 		}
@@ -305,7 +306,7 @@ func createIngressWithRetries(c kubernetes.Interface, namespace string, obj *net
 		return fmt.Errorf("Object provided to create is empty")
 	}
 	createFunc := func() (bool, error) {
-		_, err := c.NetworkingV1beta1().Ingresses(namespace).Create(obj)
+		_, err := c.NetworkingV1().Ingresses(namespace).Create(obj)
 		if err == nil {
 			return true, nil
 		}
@@ -326,7 +327,7 @@ func updateIngressWithRetries(c kubernetes.Interface, namespace string, obj *net
 		return fmt.Errorf("Object provided to create is empty")
 	}
 	updateFunc := func() (bool, error) {
-		_, err := c.NetworkingV1beta1().Ingresses(namespace).Update(obj)
+		_, err := c.NetworkingV1().Ingresses(namespace).Update(obj)
 		if err == nil {
 			return true, nil
 		}

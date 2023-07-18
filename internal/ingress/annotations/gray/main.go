@@ -17,7 +17,7 @@ limitations under the License.
 package gray
 
 import (
-	networking "k8s.io/api/networking/v1beta1"
+	networking "k8s.io/api/networking/v1"
 
 	"k8s.io/ingress-nginx/internal/ingress/annotations/parser"
 	"k8s.io/ingress-nginx/internal/ingress/resolver"
@@ -89,7 +89,6 @@ func NewParser(r resolver.Resolver) parser.IngressAnnotation {
 func (a gray) Parse(ing *networking.Ingress) (interface{}, error) {
 	var err error
 	config := &Config{}
-	parser.AnnotationsPrefix = "tengine.taobao.org"
 
 	config.IngGrayFlag, err = parser.GetBoolAnnotation(IngressGrayFlag, ing)
 	if err != nil {
@@ -114,8 +113,6 @@ func (a gray) Parse(ing *networking.Ingress) (interface{}, error) {
 		klog.Infof("Get annotation %s, err: %s", IngressGrayIndex, err)
 		config.IngGrayIndex = PodIndexEmpty
 	}
-
-	parser.AnnotationsPrefix = "nginx.ingress.kubernetes.io"
 
 	return config, nil
 }

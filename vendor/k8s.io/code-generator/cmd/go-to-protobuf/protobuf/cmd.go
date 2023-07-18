@@ -29,11 +29,7 @@ import (
 	"strings"
 
 	flag "github.com/spf13/pflag"
-	"gonum.org/v1/gonum/graph"
-	"gonum.org/v1/gonum/graph/simple"
-	"gonum.org/v1/gonum/graph/topo"
 
-	"k8s.io/code-generator/pkg/util"
 	"k8s.io/gengo/args"
 	"k8s.io/gengo/generator"
 	"k8s.io/gengo/namer"
@@ -54,13 +50,13 @@ type Generator struct {
 	KeepGogoproto        bool
 	SkipGeneratedRewrite bool
 	DropEmbeddedFields   string
+	TrimPathPrefix       string
 }
 
 func New() *Generator {
 	sourceTree := args.DefaultSourceTree()
 	common := args.GeneratorArgs{
-		OutputBase:       sourceTree,
-		GoHeaderFilePath: filepath.Join(sourceTree, util.BoilerplatePath()),
+		OutputBase: sourceTree,
 	}
 	defaultProtoImport := filepath.Join(sourceTree, "k8s.io", "kubernetes", "vendor", "github.com", "gogo", "protobuf", "protobuf")
 	cwd, err := os.Getwd()
@@ -100,6 +96,7 @@ func (g *Generator) BindFlags(flag *flag.FlagSet) {
 	flag.BoolVar(&g.KeepGogoproto, "keep-gogoproto", g.KeepGogoproto, "If true, the generated IDL will contain gogoprotobuf extensions which are normally removed")
 	flag.BoolVar(&g.SkipGeneratedRewrite, "skip-generated-rewrite", g.SkipGeneratedRewrite, "If true, skip fixing up the generated.pb.go file (debugging only).")
 	flag.StringVar(&g.DropEmbeddedFields, "drop-embedded-fields", g.DropEmbeddedFields, "Comma-delimited list of embedded Go types to omit from generated protobufs")
+	flag.StringVar(&g.TrimPathPrefix, "trim-path-prefix", g.TrimPathPrefix, "If set, trim the specified prefix from --output-package when generating files.")
 }
 
 func Run(g *Generator) {
@@ -205,6 +202,7 @@ func Run(g *Generator) {
 
 	c.Verify = g.Common.VerifyOnly
 	c.FileTypes["protoidl"] = NewProtoFile()
+	c.TrimPathPrefix = g.TrimPathPrefix
 
 	// order package by imports, importees first
 	deps := deps(c, protobufNames.packages)
@@ -275,14 +273,28 @@ func Run(g *Generator) {
 			outputPath = filepath.Join(g.VendorOutputBase, p.OutputPath())
 		}
 
+		// When working outside of GOPATH, we typically won't want to generate the
+		// full path for a package. For example, if our current project's root/base
+		// package is github.com/foo/bar, outDir=., p.Path()=github.com/foo/bar/generated,
+		// then we really want to be writing files to ./generated, not ./github.com/foo/bar/generated.
+		// The following will trim a path prefix (github.com/foo/bar) from p.Path() to arrive at
+		// a relative path that works with projects not in GOPATH.
+		if g.TrimPathPrefix != "" {
+			separator := string(filepath.Separator)
+			if !strings.HasSuffix(g.TrimPathPrefix, separator) {
+				g.TrimPathPrefix += separator
+			}
+
+			path = strings.TrimPrefix(path, g.TrimPathPrefix)
+			outputPath = strings.TrimPrefix(outputPath, g.TrimPathPrefix)
+		}
+
 		// generate the gogoprotobuf protoc
 		cmd := exec.Command("protoc", append(args, path)...)
 		out, err := cmd.CombinedOutput()
-		if len(out) > 0 {
-			log.Print(string(out))
-		}
 		if err != nil {
 			log.Println(strings.Join(cmd.Args, " "))
+			log.Println(string(out))
 			log.Fatalf("Unable to generate protoc on %s: %v", p.PackageName, err)
 		}
 
@@ -367,45 +379,85 @@ func Run(g *Generator) {
 func deps(c *generator.Context, pkgs []*protobufPackage) map[string][]string {
 	ret := map[string][]string{}
 	for _, p := range pkgs {
-		for _, d := range c.Universe[p.PackagePath].Imports {
+		pkg, ok := c.Universe[p.PackagePath]
+		if !ok {
+			log.Fatalf("Unrecognized package: %s", p.PackagePath)
+		}
+
+		for _, d := range pkg.Imports {
 			ret[p.PackagePath] = append(ret[p.PackagePath], d.Path)
 		}
 	}
 	return ret
 }
 
+// given a set of pkg->[]deps, return the order that ensures all deps are processed before the things that depend on them
 func importOrder(deps map[string][]string) ([]string, error) {
-	nodes := map[string]graph.Node{}
-	names := map[int64]string{}
-	g := simple.NewDirectedGraph()
-	for pkg, imports := range deps {
-		for _, imp := range imports {
-			if _, found := nodes[pkg]; !found {
-				n := g.NewNode()
-				g.AddNode(n)
-				nodes[pkg] = n
-				names[n.ID()] = pkg
-			}
-			if _, found := nodes[imp]; !found {
-				n := g.NewNode()
-				g.AddNode(n)
-				nodes[imp] = n
-				names[n.ID()] = imp
-			}
-			g.SetEdge(g.NewEdge(nodes[imp], nodes[pkg]))
+	// add all nodes and edges
+	var remainingNodes = map[string]struct{}{}
+	var graph = map[edge]struct{}{}
+	for to, froms := range deps {
+		remainingNodes[to] = struct{}{}
+		for _, from := range froms {
+			remainingNodes[from] = struct{}{}
+			graph[edge{from: from, to: to}] = struct{}{}
 		}
 	}
 
-	ret := []string{}
-	sorted, err := topo.Sort(g)
-	if err != nil {
-		return nil, err
+	// find initial nodes without any dependencies
+	sorted := findAndRemoveNodesWithoutDependencies(remainingNodes, graph)
+	for i := 0; i < len(sorted); i++ {
+		node := sorted[i]
+		removeEdgesFrom(node, graph)
+		sorted = append(sorted, findAndRemoveNodesWithoutDependencies(remainingNodes, graph)...)
 	}
-	for _, n := range sorted {
-		ret = append(ret, names[n.ID()])
-		fmt.Println("topological order", names[n.ID()])
+	if len(remainingNodes) > 0 {
+		return nil, fmt.Errorf("cycle: remaining nodes: %#v, remaining edges: %#v", remainingNodes, graph)
 	}
-	return ret, nil
+	//for _, n := range sorted {
+	//	fmt.Println("topological order", n)
+	//}
+	return sorted, nil
+}
+
+// edge describes a from->to relationship in a graph
+type edge struct {
+	from string
+	to   string
+}
+
+// findAndRemoveNodesWithoutDependencies finds nodes in the given set which are not pointed to by any edges in the graph,
+// removes them from the set of nodes, and returns them in sorted order
+func findAndRemoveNodesWithoutDependencies(nodes map[string]struct{}, graph map[edge]struct{}) []string {
+	roots := []string{}
+	// iterate over all nodes as potential "to" nodes
+	for node := range nodes {
+		incoming := false
+		// iterate over all remaining edges
+		for edge := range graph {
+			// if there's any edge to the node we care about, it's not a root
+			if edge.to == node {
+				incoming = true
+				break
+			}
+		}
+		// if there are no incoming edges, remove from the set of remaining nodes and add to our results
+		if !incoming {
+			delete(nodes, node)
+			roots = append(roots, node)
+		}
+	}
+	sort.Strings(roots)
+	return roots
+}
+
+// removeEdgesFrom removes any edges from the graph where edge.from == node
+func removeEdgesFrom(node string, graph map[edge]struct{}) {
+	for edge := range graph {
+		if edge.from == node {
+			delete(graph, edge)
+		}
+	}
 }
 
 type positionOrder struct {

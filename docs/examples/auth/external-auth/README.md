@@ -13,7 +13,7 @@ NAME            HOSTS                         ADDRESS       PORTS     AGE
 external-auth   external-auth-01.sample.com   172.17.4.99   80        13s
 
 $ kubectl get ing external-auth -o yaml
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:

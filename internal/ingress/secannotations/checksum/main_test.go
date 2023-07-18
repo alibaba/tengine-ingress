@@ -28,7 +28,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/ingress-nginx/internal/ingress/resolver"
 	"k8s.io/ingress-nginx/internal/ingress/secannotations/parser"
-	"k8s.io/ingress-tengine/test/e2e/framework"
 )
 
 func buildSecret(username, password, name, namespace string) *apiv1.Secret {

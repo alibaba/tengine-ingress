@@ -18,25 +18,26 @@ package controller
 
 import (
 	"io"
-	"io/ioutil"
 	"net/http"
 
-	"k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/serializer"
-	"k8s.io/apimachinery/pkg/util/json"
-	"k8s.io/klog"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
+	"k8s.io/klog/v2"
 )
 
 var (
 	scheme = runtime.NewScheme()
-	codecs = serializer.NewCodecFactory(scheme)
 )
+
+func init() {
+	admissionv1.AddToScheme(scheme)
+}
 
 // AdmissionController checks if an object
 // is allowed in the cluster
 type AdmissionController interface {
-	HandleAdmission(*v1beta1.AdmissionReview) error
+	HandleAdmission(runtime.Object) (runtime.Object, error)
 }
 
 // AdmissionControllerServer implements an HTTP server
@@ -44,7 +45,6 @@ type AdmissionController interface {
 // https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#validatingadmissionwebhook
 type AdmissionControllerServer struct {
 	AdmissionController AdmissionController
-	Decoder             runtime.Decoder
 }
 
 // NewAdmissionControllerServer instanciates an admission controller server with
@@ -52,38 +52,41 @@ type AdmissionControllerServer struct {
 func NewAdmissionControllerServer(ac AdmissionController) *AdmissionControllerServer {
 	return &AdmissionControllerServer{
 		AdmissionController: ac,
-		Decoder:             codecs.UniversalDeserializer(),
 	}
 }
 
 // ServeHTTP implements http.Server method
-func (acs *AdmissionControllerServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	klog.Infof("handling admission controller request %s", r.URL.String())
+func (acs *AdmissionControllerServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	defer req.Body.Close()
 
-	review, err := parseAdmissionReview(acs.Decoder, r.Body)
+	data, err := io.ReadAll(req.Body)
 	if err != nil {
-		klog.Error("Can't decode request", err)
+		klog.ErrorS(err, "Failed to read request body")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	acs.AdmissionController.HandleAdmission(review)
-	if err := writeAdmissionReview(w, review); err != nil {
-		klog.Error(err)
-	}
-}
+	codec := json.NewSerializerWithOptions(json.DefaultMetaFactory, scheme, scheme, json.SerializerOptions{
+		Pretty: true,
+	})
 
-func parseAdmissionReview(decoder runtime.Decoder, r io.Reader) (*v1beta1.AdmissionReview, error) {
-	review := &v1beta1.AdmissionReview{}
-	data, err := ioutil.ReadAll(r)
+	obj, _, err := codec.Decode(data, nil, nil)
 	if err != nil {
-		return nil, err
+		klog.ErrorS(err, "Failed to decode request body")
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
-	_, _, err = decoder.Decode(data, nil, review)
-	return review, err
-}
 
-func writeAdmissionReview(w io.Writer, ar *v1beta1.AdmissionReview) error {
-	e := json.NewEncoder(w)
-	return e.Encode(ar)
+	result, err := acs.AdmissionController.HandleAdmission(obj)
+	if err != nil {
+		klog.ErrorS(err, "failed to process webhook request")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := codec.Encode(result, w); err != nil {
+		klog.ErrorS(err, "failed to encode response body")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }

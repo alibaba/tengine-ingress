@@ -135,11 +135,11 @@ var _ = framework.IngressNginxDescribe("[Flag] ingress-class", func() {
 				Expect().
 				Status(http.StatusOK)
 
-			ing, err := f.KubeClientSet.NetworkingV1beta1().Ingresses(f.Namespace).Get(host, metav1.GetOptions{})
+			ing, err := f.KubeClientSet.NetworkingV1().Ingresses(f.Namespace).Get(host, metav1.GetOptions{})
 			assert.Nil(ginkgo.GinkgoT(), err)
 
 			delete(ing.Annotations, class.IngressKey)
-			_, err = f.KubeClientSet.NetworkingV1beta1().Ingresses(ing.Namespace).Update(ing)
+			_, err = f.KubeClientSet.NetworkingV1().Ingresses(ing.Namespace).Update(ing)
 			assert.Nil(ginkgo.GinkgoT(), err)
 
 			f.WaitForNginxConfiguration(func(cfg string) bool {
