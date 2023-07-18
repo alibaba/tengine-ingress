@@ -18,6 +18,7 @@ ARG BASE_IMAGE
 FROM ${BASE_IMAGE} as builder
 
 ARG VERSION
+ARG GOLANG_VERSION="1.13.8"
 
 LABEL org.opencontainers.image.title="Tengine Ingress Controller for Kubernetes"
 LABEL org.opencontainers.image.documentation="https://tengine.taobao.org/ingress/"
@@ -52,7 +53,7 @@ RUN set -eux; \
 #	esac; \
 #	\
 	#wget -O go.tgz "https://golang.org/dl/go$GOLANG_VERSION.src.tar.gz"; \
-        mv /tmp/tengine-ingress/rootfs/source/go1.13.8.src.tar.gz go.tgz; \
+        mv /tmp/tengine-ingress/rootfs/source/go${GOLANG_VERSION}.src.tar.gz go.tgz; \
 	tar -C /usr/local -xzf go.tgz; \
 	rm go.tgz; \
 	\
@@ -69,20 +70,12 @@ RUN set -eux; \
 	\
 	export PATH="/usr/local/go/bin:$PATH"; \
 	go version \
-  ; \
-  export GO111MODULE=on; \
-  export GONOPROXY=""; \
-  export GOPROXY="https://goproxy.io,direct"; \
-  export GOPRIVATE="gitlab.alibaba-inc.com,code.alibaba-inc.com" \
-  #go get github.com/go-delve/delve/cmd/dlv; \
-  #go get github.com/onsi/ginkgo/ginkgo; \
-  #go get golang.org/x/lint/golint \
   ;
 
 RUN yum erase -y golang-bin golang golang-src
 ENV PATH=/usr/local/go/bin:/root/go/bin:$PATH
 
-RUN cd /tmp/tengine-ingress/; sh build/build_ingress.sh
+RUN cd /tmp/tengine-ingress/; sh build/build_ingress.sh ${VERSION}
 
 FROM ${BASE_IMAGE}
 

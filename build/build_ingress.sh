@@ -22,6 +22,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+export GO111MODULE=on;
 export GOPROXY="https://goproxy.io,direct"
 
 export PKG=k8s.io/ingress-nginx
@@ -33,6 +34,11 @@ export GOBUILD_FLAGS="-v"
 
 export CGO_ENABLED=1
 export GOARCH=${ARCH}
+
+if [ $1 ]; then
+    TAG=$1;
+    echo "build ingress tag: ", $TAG
+fi
 
 #  -ldflags "-s -w \
 go build \
