@@ -95,6 +95,9 @@ get_src_local()
 }
 LINUX_RELEASE=$1
 
+mkdir -p /etc/nginx/
+echo ${LINUX_RELEASE} > /etc/nginx/linux_release
+
 # Add admin group and user
 id admin || groupadd -f admin && useradd -m -g admin admin || adduser -D -g admin admin
 
@@ -600,7 +603,7 @@ make install
 while IFS= read -r dir
 do
     mkdir -p ${dir};
-    chown -R ${TENGINE_USER}.${TENGINE_GROUP} ${dir};
+    chown -R ${TENGINE_USER}:${TENGINE_GROUP} ${dir};
 done <<- END
 /etc/nginx
 /usr/local/tengine
