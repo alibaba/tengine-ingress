@@ -62,6 +62,9 @@ export BUILD_PATH=/tmp/build
 export TENGINE_USER=admin
 export TENGINE_GROUP=admin
 
+WITH_XUDP="0"
+WITH_XUDP_MODULE=""
+
 ARCH=$(uname -m)
 
 get_src()
@@ -89,24 +92,32 @@ get_src_local()
   rm -rf "$f"
 }
 
-yum clean all && rpm --rebuilddb
+# add admin group and user
+groupadd -f admin
+id admin || useradd -m -g admin admin
 
-yum install -y -b current cmake
-yum install -y -b current gcc54
-export CC=/usr/local/gcc-$GCC_VERSION/bin/gcc
-export CXX=/usr/local/gcc-$GCC_VERSION/bin/g++
-export PATH=/usr/local/gcc-$GCC_VERSION/bin:/usr/local/bin:$PATH
-
-yum install -y curl-devel
-yum install -y pcre-devel
-#yum install -y openssl-devel
-yum install -y geoip-devel
-yum install -y libnl3-devel
-yum install -y elfutils-libelf-devel
-yum install -y clang
-yum install -y llvm
-yum install -y libcap-devel
-yum install -y -b current kernel-headers
+LINUX_RELEASE=$1
+if [[ $LINUX_RELEASE =~ "anolisos" ]]
+then
+    yum clean all
+    yum install -y cmake gcc curl-devel clang llvm kernel-headers autoconf automake libtool gcc-c++ pcre-devel git unzip epel-release
+    yum install -y GeoIP GeoIP-devel dumb-init
+    yum install -y libnl3-devel elfutils-libelf-devel libcap-devel
+    WITH_XUDP="1"
+elif [[ $LINUX_RELEASE =~ "alpine" ]]
+then
+    apk add bash gcc clang libc-dev make automake openssl-dev pcre-dev zlib-dev linux-headers libxslt-dev gd-dev geoip-dev perl-dev libedit-dev mercurial alpine-sdk findutils curl ca-certificates patch libaio-dev openssl cmake util-linux lmdb-tools wget curl-dev libprotobuf git g++ pkgconf flex bison doxygen yajl-dev lmdb-dev libtool autoconf libxml2 libxml2-dev python3 libmaxminddb-dev bc unzip dos2unix yaml-cpp coreutils
+elif [[ $LINUX_RELEASE =~ "ubuntu" ]]
+then
+    chmod a+x /tmp
+    apt-get clean
+    apt-get update
+    apt-get install -y bash gcc clang libc-dev make automake libpcre3-dev libxslt-dev libgd-dev libgeoip-dev libperl-dev libedit-dev mercurial findutils curl ca-certificates patch libaio-dev cmake util-linux wget libprotobuf-dev git g++ pkgconf flex bison doxygen libyajl-dev liblmdb-dev libtool autoconf libxml2 libxml2-dev python3 libmaxminddb-dev bc unzip dos2unix libyaml-cpp-dev coreutils
+    # apt-get linux-headers
+else
+    echo "unkown linux release:" $LINUX_RELEASE
+    exit 1
+fi
 
 mkdir -p /etc/nginx/owasp-modsecurity-crs/
 
@@ -263,7 +274,7 @@ cd "$BUILD_PATH/libmaxminddb-$LIBMAXMINDDB_VERSION"
 make
 make check
 make install
-ldconfig
+# ldconfig
 
 # build xquic with babassl
 get_src_local "/source/xquic-$XQUIC_VERSION.tar.gz"
@@ -281,24 +292,34 @@ SSL_LIB_PATH_STR="${PWD}/libssl.a;${PWD}/libcrypto.a"
 
 cd "$BUILD_PATH/xquic-$XQUIC_VERSION"
 mkdir -p build; cd build
+export CFLAGS="-Wno-dangling-pointer"
 cmake -DXQC_SUPPORT_SENDMMSG_BUILD=1 -DXQC_ENABLE_BBR2=1 -DXQC_DISABLE_RENO=0 -DSSL_TYPE=${SSL_TYPE_STR} -DSSL_PATH=${SSL_PATH_STR} -DSSL_INC_PATH=${SSL_INC_PATH_STR} -DSSL_LIB_PATH=${SSL_LIB_PATH_STR} ..
 make
 cp "$BUILD_PATH/xquic-$XQUIC_VERSION/build/libxquic.so" /usr/local/lib/
 
-# build xudp library
-get_src_local "/source/libxudp-v$XUDP_LIB_VERSION.tar.gz"
-cd "$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION"
-make
-cp "$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION/objs/libxudp.so.$XUDP_LIB_VERSION" /usr/local/lib/
-cd /usr/local/lib/
-ln -s libxudp.so.$XUDP_LIB_VERSION libxudp.so.1
-ln -s libxudp.so.$XUDP_LIB_VERSION libxudp.so
-
-# build xquic-xdp
 get_src_local "/source/tengine-$TENGINE_VERSION.tar.gz"
-cd "$BUILD_PATH/tengine-$TENGINE_VERSION/modules/mod_xudp/xquic-xdp"
-make config root="$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION"
-make
+
+if [[ ${WITH_XUDP} == "1" ]]; then
+    # build xudp library
+    get_src_local "/source/libxudp-v$XUDP_LIB_VERSION.tar.gz"
+    cd "$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION"
+    make
+    cp "$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION/objs/libxudp.so.$XUDP_LIB_VERSION" /usr/local/lib/
+    cd /usr/local/lib/
+    ln -s -f libxudp.so.$XUDP_LIB_VERSION libxudp.so.1
+    ln -s -f libxudp.so.$XUDP_LIB_VERSION libxudp.so
+
+    # build xquic-xdp
+    cd "$BUILD_PATH/tengine-$TENGINE_VERSION/modules/mod_xudp/xquic-xdp"
+    make config root="$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION"
+    make
+    mkdir -p /usr/local/lib64/xquic_xdp/
+    cp kern_xquic.o /usr/local/lib64/xquic_xdp/kern_xquic.o
+    WITH_XUDP_MODULE="--with-xudp-inc=$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION/objs \
+        --with-xudp-lib=$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION/objs \
+        --with-xquic_xdp-inc=$BUILD_PATH/tengine-$TENGINE_VERSION/modules/mod_xudp/xquic-xdp \
+        --add-module=modules/mod_xudp"
+fi
 
 # build modsecurity library
 cd "$BUILD_PATH"
@@ -422,11 +443,11 @@ CC_OPT="-g -Og -fstack-protector-strong \
 LD_OPT="-fPIC -Wl,-z,relro -Wl,-z,now,-rpath=/usr/local/lib/ -L/usr/local/lib/ -lm"
 
 if [[ ${ARCH} != "aarch64" ]]; then
-  WITH_FLAGS+=" --with-file-aio"
+  WITH_FLAGS="${WITH_FLAGS} --with-file-aio"
 fi
 
 if [[ ${ARCH} == "x86_64" ]]; then
-  CC_OPT+=' -m64 -mtune=native'
+  CC_OPT="${CC_OPT} -m64 -mtune=native"
 fi
 
 WITH_MODULES="--add-module=$BUILD_PATH/lua-nginx-module-$LUA_NGX_VERSION \
@@ -462,9 +483,6 @@ WITH_MODULES="--add-module=$BUILD_PATH/lua-nginx-module-$LUA_NGX_VERSION \
   --with-pcre-opt=-fPIC \
   --with-xquic-inc="$BUILD_PATH/xquic-$XQUIC_VERSION/include" \
   --with-xquic-lib="$BUILD_PATH/xquic-$XQUIC_VERSION/build" \
-  --with-xudp-inc="$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION/objs" \
-  --with-xudp-lib="$BUILD_PATH/libxudp-v$XUDP_LIB_VERSION/objs" \
-  --with-xquic_xdp-inc="$BUILD_PATH/tengine-$TENGINE_VERSION/modules/mod_xudp/xquic-xdp" \
   --without-select_module \
   --without-poll_module \
   --without-mail_pop3_module \
@@ -481,7 +499,7 @@ WITH_MODULES="--add-module=$BUILD_PATH/lua-nginx-module-$LUA_NGX_VERSION \
   --add-module=modules/mod_strategy \
   --add-module=modules/ngx_backtrace_module \
   --add-module=modules/ngx_http_xquic_module \
-  --add-module=modules/mod_xudp \
+  ${WITH_XUDP_MODULE}	\
   --add-module=modules/ngx_http_sysguard_module \
   --add-module=modules/ngx_http_footer_filter_module \
   --add-module=modules/ngx_http_trim_filter_module \

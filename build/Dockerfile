@@ -15,11 +15,10 @@
 
 ARG BASE_IMAGE
 
-FROM ${BASE_IMAGE}
+FROM ${BASE_IMAGE} as builder
 
 ARG VERSION
-ARG GOLANG_VERSION
-ARG GOLANG_SHA
+ARG GOLANG_VERSION="1.13.8"
 
 LABEL org.opencontainers.image.title="Tengine Ingress Controller for Kubernetes"
 LABEL org.opencontainers.image.documentation="https://tengine.taobao.org/ingress/"
@@ -28,15 +27,10 @@ LABEL org.opencontainers.image.vendor="The Alibaba Authors"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
 LABEL org.opencontainers.image.version="${VERSION}"
 
-WORKDIR  /etc/nginx
+RUN yum install -y golang-bin gcc git
 
-#RUN apk add -U --no-cache \
-#  diffutils \
-#  libcap
-
-COPY --chown=admin:admin . /
-
-RUN rpm --rebuilddb && yum install -y golang-bin
+RUN mkdir -p /tmp/tengine-ingress/
+COPY . /tmp/tengine-ingress/
 
 RUN set -eux; \
 	export \
@@ -59,8 +53,7 @@ RUN set -eux; \
 #	esac; \
 #	\
 	#wget -O go.tgz "https://golang.org/dl/go$GOLANG_VERSION.src.tar.gz"; \
-        mv /source/go1.13.8.src.tar.gz go.tgz; \
-	echo "$GOLANG_SHA *go.tgz" | sha256sum -c -; \
+        mv /tmp/tengine-ingress/rootfs/source/go${GOLANG_VERSION}.src.tar.gz go.tgz; \
 	tar -C /usr/local -xzf go.tgz; \
 	rm go.tgz; \
 	\
@@ -77,19 +70,19 @@ RUN set -eux; \
 	\
 	export PATH="/usr/local/go/bin:$PATH"; \
 	go version \
-  ; \
-  export GO111MODULE=on; \
-  export GONOPROXY=""; \
-  export GOPROXY="https://goproxy.io,direct"; \
-  export GOPRIVATE="gitlab.alibaba-inc.com,code.alibaba-inc.com" \
-  #go get github.com/go-delve/delve/cmd/dlv; \
-  #go get github.com/onsi/ginkgo/ginkgo; \
-  #go get golang.org/x/lint/golint \
   ;
 
 RUN yum erase -y golang-bin golang golang-src
-
 ENV PATH=/usr/local/go/bin:/root/go/bin:$PATH
+
+RUN cd /tmp/tengine-ingress/; sh build/build_ingress.sh ${VERSION}
+
+FROM ${BASE_IMAGE}
+
+WORKDIR  /etc/nginx
+
+COPY --chown=admin:admin rootfs /
+COPY --chown=admin:admin --from=builder /tmp/tengine-ingress/bin/* /
 
 # Fix permission during the build to avoid issues at runtime
 # with volumes (custom templates)
@@ -116,6 +109,5 @@ RUN chown admin:admin /home/admin/*.sh \
   && chown admin:admin /home/admin/nginxctl \
   && chmod 0755 /home/admin/nginxctl
 
-#ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 
 CMD ["/tengine-ingress-controller"]

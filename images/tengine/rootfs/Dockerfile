@@ -13,14 +13,19 @@
 # limitations under the License.
 
 
-FROM reg.docker.alibaba-inc.com/alibase/alios7u2:latest as builder
+ARG BASE_IMAGE="docker.io/openanolis/anolisos:latest"
+
+FROM ${BASE_IMAGE} as builder
 
 COPY . /
 
-RUN /build.sh
+ARG LINUX_RELEASE=anolisos
+
+RUN sh /build.sh ${LINUX_RELEASE}
 
 # Use a multi-stage build
-FROM reg.docker.alibaba-inc.com/alibase/alios7u2:latest
+
+FROM ${BASE_IMAGE}
 
 ENV PATH=$PATH:/usr/local/luajit/bin:/usr/local/tengine/sbin:/usr/local/tengine/bin
 
@@ -30,12 +35,13 @@ ENV LUA_CPATH="/usr/local/lib/lua/?/?.so;/usr/local/lib/lua/?.so;;"
 COPY --from=builder /usr/local /usr/local
 COPY --from=builder /opt /opt
 COPY --from=builder /etc/nginx /etc/nginx
+COPY --from=builder /usr/bin/dumb-init /usr/bin/
+
+RUN groupadd -f admin && id admin || useradd -m -g admin admin
 
 RUN rm -rf /usr/local/nginx/sbin/nginx && chmod 6755 /usr/local/tengine/sbin/tengine && chown root:admin /usr/local/tengine/sbin/tengine
 
-RUN rpm -rebuilddb && yum install -y GeoIP GeoIP-devel
-
-RUN rpm -rebuilddb && yum install -y -b current t-dumb-init && ln -s /usr/local/bin/dumb-init /usr/bin/dumb-init
+# RUN rpm -rebuilddb && yum install -y epel-release && yum install -y GeoIP GeoIP-devel dumb-init
 
 RUN test ! -d /home/coredump && mkdir /home/coredump && chmod 777 /home/coredump
 

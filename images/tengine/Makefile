@@ -37,6 +37,8 @@ container:
 		--no-cache \
 		--progress plain \
 		--platform $(subst $(SPACE),$(COMMA),$(PLATFORMS)) \
+		--build-arg BASE_IMAGE="docker.io/openanolis/anolisos:latest" \
+		--build-arg LINUX_RELEASE="anolisos" \
 		--tag $(IMAGE):$(TAG) rootfs
 
 	# https://github.com/docker/buildx/issues/59
@@ -45,6 +47,8 @@ container:
 		--load \
 		--progress plain \
 		--platform $(PLATFORM) \
+		--build-arg BASE_IMAGE="docker.io/openanolis/anolisos:latest" \
+		--build-arg LINUX_RELEASE="anolisos" \
 		--tag $(IMAGE)-$(PLATFORM):$(TAG) rootfs;)
 
 .PHONY: push
