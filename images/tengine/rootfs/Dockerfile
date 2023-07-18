@@ -41,7 +41,13 @@ RUN id admin || groupadd -f admin && useradd -m -g admin admin || adduser -D -g 
 
 RUN rm -rf /usr/local/nginx/sbin/nginx && chmod 6755 /usr/local/tengine/sbin/tengine && chown root:admin /usr/local/tengine/sbin/tengine
 
-# RUN rpm -rebuilddb && yum install -y epel-release && yum install -y GeoIP GeoIP-devel dumb-init
+RUN linux_release=`cat /etc/nginx/linux_release || echo "anolisos"`; \
+    if [[ $linux_release == "alpine" ]] ; then \
+        apk add geoip; \
+    else \
+        yum install -y epel-release && yum install -y GeoIP GeoIP-devel; \
+        yum clean all; \
+    fi
 
 RUN test ! -d /home/coredump && mkdir /home/coredump && chmod 777 /home/coredump
 
