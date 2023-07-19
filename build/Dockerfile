@@ -120,4 +120,7 @@ RUN chown admin:admin /home/admin/*.sh \
   && chmod 0755 /home/admin/nginxctl
 
 
-CMD ["/tengine-ingress-controller"]
+USER admin
+
+ENTRYPOINT ("/usr/bin/dumb-init")
+
