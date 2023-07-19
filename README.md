@@ -26,27 +26,29 @@ Tengine-Ingress is an Ingress controller for Kubernetes using [Tengine](https://
 
 ## Installation
 
-Use the docker image directly:
+### Docker images
+Supported operating systems:
+* [Anolis OS](https://hub.docker.com/r/openanolis/anolisos)
 
+Supported architectures:
+* AMD64, ARM64
 ```
 docker pull tengine-ingress-registry.cn-hangzhou.cr.aliyuncs.com/tengine/tengine-ingress:1.0.0
 ```
 
-This docker image is based the linux distribution [anolisos](https://hub.docker.com/r/openanolis/anolisos). Support arm64 and amd64 architectures.
-
-If recompilation is required, it can be done by the following docker build command. The ingress image is based on the tengine image. Currently only supports compilation based on the base image [anolisos](https://hub.docker.com/r/openanolis/anolisos).
-
+### Building from source
+The tengine-ingress image is based on the tengine image.
 ```
-# tengine image build command
+# First: build tengine image
 docker build --no-cache --build-arg BASE_IMAGE="docker.io/openanolis/anolisos:latest" --build-arg LINUX_RELEASE="anolisos" -t tengine:3.0.0 images/tengine/rootfs/
 
-# ingress controller image build command
+# Second: build tengine-ingress image
 docker build --no-cache --build-arg BASE_IMAGE="tengine:3.0.0" --build-arg VERSION="1.0.0" -f build/Dockerfile -t tengine-ingress:1.0.0 .
 ```
 
 ## Documentation
 
-The homepage of Tengine is at [http://tengine.taobao.org/](http://tengine.taobao.org/)
+The homepage of Tengine is at [https://tengine.taobao.org](https://tengine.taobao.org/)
 
 
 ## Contact
