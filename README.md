@@ -47,7 +47,7 @@ See [the list of releases](https://github.com/alibaba/tengine-ingress/releases) 
 For detailed changes for each release; please check the [Changelog.tengine.md](Changelog.tengine.md) file.
 
 ### Supported Versions table
-|    | Tengine-Ingress Version | Tengine Version | K8s Supported Version | Anolis Linux Version | Alpine Linux version | Helm Chart Version |
+|    | Tengine-Ingress Version | Tengine Version | K8s Supported Version | Anolis Linux Version | Alpine Linux Version | Helm Chart Version |
 |:--:|-------------------------|-----------------|-----------------------|----------------------|----------------------|--------------------|
 | 🔄 | **v1.0.0**              | v3.0.0          | 1.27,1.26,1.25,1.24<br>1.23,1.22,1.21,1.20   | 8.6                  | 3.18.2               |                    |
 | 🔄 |                         |                 |                       |                      |                      |                    |
