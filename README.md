@@ -29,6 +29,7 @@ Tengine-Ingress is an Ingress controller for Kubernetes using [Tengine](https://
 ### Docker images
 Supported operating systems:
 * [Anolis OS](https://hub.docker.com/r/openanolis/anolisos)
+
 Supported architectures:
 * AMD64, ARM64
 ```
