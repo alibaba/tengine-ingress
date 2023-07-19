@@ -63,7 +63,7 @@ For detailed changes for each release; please check the [Changelog.tengine.md](C
 
 ## Documentation
 
-The homepage of Tengine is at [https://tengine.taobao.org](https://tengine.taobao.org/)
+The homepage of Tengine-Ingress is at [https://tengine.taobao.org](https://tengine.taobao.org/).
 
 ## Contact
 
