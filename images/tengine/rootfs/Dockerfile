@@ -39,7 +39,7 @@ COPY --from=builder /usr/bin/dumb-init /usr/bin/
 
 RUN id admin || groupadd -f admin && useradd -m -g admin admin || adduser -D -g admin admin
 
-RUN rm -rf /usr/local/nginx/sbin/nginx && chmod 6755 /usr/local/tengine/sbin/tengine && chown root:admin /usr/local/tengine/sbin/tengine
+RUN rm -rf /usr/local/nginx/sbin/nginx && chown root:admin /usr/local/tengine/sbin/tengine && chmod 6755 /usr/local/tengine/sbin/tengine
 
 RUN linux_release=`cat /etc/nginx/linux_release || echo "anolisos"`; \
     if [[ $linux_release == "alpine" ]] ; then \

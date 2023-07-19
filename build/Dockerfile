@@ -124,3 +124,5 @@ USER admin
 
 ENTRYPOINT ("/usr/bin/dumb-init")
 
+USER root
+
