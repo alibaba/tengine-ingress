@@ -53,9 +53,10 @@ docker build --no-cache --build-arg BASE_IMAGE="tengine:3.0.0" --build-arg VERSI
 See [the list of releases](https://github.com/alibaba/tengine-ingress/releases) to find out about feature changes.
 For detailed changes for each release; please check the [Changelog.tengine.md](Changelog.tengine.md) file.
 
+### Supported Versions table
 |    | Tengine-Ingress Version | Tengine-Ingress Version | K8s Supported Version | Anolis Linux Version | Alpine Linux version | Helm Chart Version |
 |:--:|-------------------------|-------------------------|-----------------------|----------------------|----------------------|--------------------|
-|    | v1.0.0                  | v3.0.0                  |  1.27,1.26,1.25,1.24  | 8.6                  | 3.18.2               |                    |
+|    |       **v1.0.0**        |         v3.0.0          |  1.27,1.26,1.25,1.24  |         8.6          |        3.18.2        |                    |
 |    |                         |                         |  1.23,1.22,1.21,1.20  |                      |                      |                    |
 
 
