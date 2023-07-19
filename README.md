@@ -39,7 +39,7 @@ docker pull tengine-ingress-registry.cn-hangzhou.cr.aliyuncs.com/tengine/tengine
 ### Building from source
 The tengine-ingress image is based on the tengine image.
 Supported Linux distributions:
-* Anolis, Alpine
+* [Anolis](https://hub.docker.com/r/openanolis/anolisos), [Alpine](https://hub.docker.com/_/alpine)
 ```
 # First: build tengine image
 docker build --no-cache --build-arg BASE_IMAGE="docker.io/openanolis/anolisos:latest" --build-arg LINUX_RELEASE="anolisos" -t tengine:3.0.0 images/tengine/rootfs/
