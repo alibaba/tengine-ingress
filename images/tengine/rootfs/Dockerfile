@@ -43,7 +43,7 @@ RUN rm -rf /usr/local/nginx/sbin/nginx && chmod 6755 /usr/local/tengine/sbin/ten
 
 RUN linux_release=`cat /etc/nginx/linux_release || echo "anolisos"`; \
     if [[ $linux_release == "alpine" ]] ; then \
-        apk add geoip; \
+        apk add geoip libgcc; \
     else \
         yum install -y epel-release && yum install -y GeoIP GeoIP-devel; \
         yum clean all; \

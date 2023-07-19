@@ -102,7 +102,7 @@ COPY --chown=admin:admin --from=builder /tmp/tengine-ingress/bin/* /
 # Fix permission during the build to avoid issues at runtime
 # with volumes (custom templates)
 RUN sh -c ' \
-dirs="/etc/ingress-controller /etc/ingress-controller/ssl /etc/ingress-controller/auth /var/log /home/admin/tengine-ingress/logs /usr/local/tengine/logs"; \
+dirs="/etc/ingress-controller /etc/ingress-controller/ssl /etc/ingress-controller/auth /var/log /var/log/nginx /home/admin/tengine-ingress/logs /usr/local/tengine/logs"; \
 for dir in $dirs ; do \
   echo chown dir $dir; \
   mkdir -p ${dir}; \
