@@ -27,7 +27,16 @@ LABEL org.opencontainers.image.vendor="The Alibaba Authors"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
 LABEL org.opencontainers.image.version="${VERSION}"
 
-RUN yum install -y golang-bin gcc git
+# Test linux release
+# RUN sh -c "echo alpine > /etc/nginx/linux_release"
+
+RUN linux_release=`cat /etc/nginx/linux_release || echo "anolisos"`; \
+    if [[ $linux_release == "alpine" ]] ; then \
+        sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories; \
+        apk add go gcc git bash libc-dev; \
+    else \
+        yum install -y golang-bin gcc git; \
+    fi
 
 RUN mkdir -p /tmp/tengine-ingress/
 COPY . /tmp/tengine-ingress/
@@ -72,7 +81,13 @@ RUN set -eux; \
 	go version \
   ;
 
-RUN yum erase -y golang-bin golang golang-src
+RUN linux_release=`cat /etc/nginx/linux_release || echo "anolisos"`; \
+    if [[ $linux_release == "alpine" ]] ; then \
+        apk del go; \
+    else \
+        yum erase -y golang-bin golang golang-src; \
+    fi
+
 ENV PATH=/usr/local/go/bin:/root/go/bin:$PATH
 
 RUN cd /tmp/tengine-ingress/; sh build/build_ingress.sh ${VERSION}
@@ -86,19 +101,14 @@ COPY --chown=admin:admin --from=builder /tmp/tengine-ingress/bin/* /
 
 # Fix permission during the build to avoid issues at runtime
 # with volumes (custom templates)
-RUN bash -xeu -c ' \
-  writeDirs=( \
-    /etc/ingress-controller \
-    /etc/ingress-controller/ssl \
-    /etc/ingress-controller/auth \
-    /var/log \
-    /home/admin/tengine-ingress/logs \
-    /usr/local/tengine/logs \
-  ); \
-  for dir in "${writeDirs[@]}"; do \
-    mkdir -p ${dir}; \
-    chown -R admin.admin ${dir}; \
-  done'
+RUN sh -c ' \
+dirs="/etc/ingress-controller /etc/ingress-controller/ssl /etc/ingress-controller/auth /var/log /var/log/nginx /home/admin/tengine-ingress/logs /usr/local/tengine/logs"; \
+for dir in $dirs ; do \
+  echo chown dir $dir; \
+  mkdir -p ${dir}; \
+  chown -R admin:admin ${dir}; \
+done \
+'
 
 # Create symlinks to redirect tengine logs to stdout and stderr docker log collector
 RUN  ln -sf /dev/stdout /home/admin/tengine-ingress/logs/access.log \
@@ -110,4 +120,7 @@ RUN chown admin:admin /home/admin/*.sh \
   && chmod 0755 /home/admin/nginxctl
 
 
-CMD ["/tengine-ingress-controller"]
+USER admin
+
+ENTRYPOINT ("/usr/bin/dumb-init")
+
