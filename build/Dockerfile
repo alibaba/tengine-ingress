@@ -117,10 +117,9 @@ RUN  ln -sf /dev/stdout /home/admin/tengine-ingress/logs/access.log \
 RUN chown admin:admin /home/admin/*.sh \
   && chmod 0775 /home/admin/*.sh \
   && chown admin:admin /home/admin/nginxctl \
-  && chmod 0755 /home/admin/nginxctl
-
-
-USER admin
+  && chmod 0755 /home/admin/nginxctl \
+  && chown admin:admin /tengine-ingress-controller \
+  && chmod 6755 /tengine-ingress-controller
 
 ENTRYPOINT ("/usr/bin/dumb-init")
 
