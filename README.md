@@ -38,7 +38,6 @@ docker pull tengine-ingress-registry.cn-hangzhou.cr.aliyuncs.com/tengine/tengine
 
 ### Building from source
 The tengine-ingress image is based on the tengine image.
-
 Supported Linux distributions:
 * Anolis, Alpine
 ```
