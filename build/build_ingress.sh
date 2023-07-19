@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2018 The Kubernetes Authors.
+# Copyright 2023 The Alibaba Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,12 @@
 # limitations under the License.
 
 if [ -n "$DEBUG" ]; then
-	set -x
+    set -x
+fi
+
+ver=$1
+if [ -z "$ver" ]; then
+    ver="1.0.0"
 fi
 
 set -o errexit
@@ -27,18 +32,13 @@ export GOPROXY="https://goproxy.io,direct"
 
 export PKG=k8s.io/ingress-nginx
 export ARCH=$(go env GOARCH)
-export TAG="1.0.0"
+export TAG=${ver}
 export GIT_COMMIT=git-$(git rev-parse --short HEAD)
 export REPO_INFO=$(git config --get remote.origin.url)
 export GOBUILD_FLAGS="-v"
 
 export CGO_ENABLED=1
 export GOARCH=${ARCH}
-
-if [ $1 ]; then
-    TAG=$1;
-    echo "build ingress tag: ", $TAG
-fi
 
 #  -ldflags "-s -w \
 go build \
