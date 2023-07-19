@@ -48,6 +48,8 @@ docker build --no-cache --build-arg BASE_IMAGE="docker.io/openanolis/anolisos:la
 # Second: build tengine-ingress image
 docker build --no-cache --build-arg BASE_IMAGE="tengine:3.0.0" --build-arg VERSION="1.0.0" -f build/Dockerfile -t tengine-ingress:1.0.0 .
 ```
+
+
 ## Changelog
 
 See [the list of releases](https://github.com/alibaba/tengine-ingress/releases) to find out about feature changes.
@@ -58,11 +60,12 @@ For detailed changes for each release; please check the [Changelog.tengine.md](C
 |:--:|-------------------------|-----------------|-----------------------|----------------------|----------------------|--------------------|
 | 🔄 | **v1.0.0**              | v3.0.0          | 1.27,1.26,1.25,1.24<br>1.23,1.22,1.21,1.20   | 8.6                  | 3.18.2               |                    |
 | 🔄 |                         |                 |                       |                      |                      |                    |
-| 🔄 |                         |                 |                       |                      |                      |                    |
+
 
 ## Documentation
 
 The homepage of Tengine-Ingress is at [https://tengine.taobao.org](https://tengine.taobao.org/).
+
 
 ## Contact
 
