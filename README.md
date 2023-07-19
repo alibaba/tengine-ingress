@@ -28,11 +28,10 @@ Tengine-Ingress is an Ingress controller for Kubernetes using [Tengine](https://
 
 ### Docker images
 Supported operating systems:
-* [Anolis OS](https://hub.docker.com/r/openanolis/anolisos)
+* [Anolis](https://hub.docker.com/r/openanolis/anolisos)
 
 Supported architectures:
 * AMD64, ARM64
-
 ```
 docker pull tengine-ingress-registry.cn-hangzhou.cr.aliyuncs.com/tengine/tengine-ingress:1.0.0
 ```
@@ -40,19 +39,29 @@ docker pull tengine-ingress-registry.cn-hangzhou.cr.aliyuncs.com/tengine/tengine
 ### Building from source
 The tengine-ingress image is based on the tengine image.
 
+Supported Linux distribution:
+* Anolis, Alpine
 ```
 # First: build tengine image
-# LINUX_RELEASE support [anolisos alpine]
 docker build --no-cache --build-arg BASE_IMAGE="docker.io/openanolis/anolisos:latest" --build-arg LINUX_RELEASE="anolisos" -t tengine:3.0.0 images/tengine/rootfs/
 
 # Second: build tengine-ingress image
 docker build --no-cache --build-arg BASE_IMAGE="tengine:3.0.0" --build-arg VERSION="1.0.0" -f build/Dockerfile -t tengine-ingress:1.0.0 .
 ```
+## Changelog
+
+See [the list of releases](https://github.com/alibaba/tengine-ingress/releases) to find out about feature changes.
+For detailed changes for each release; please check the [Changelog.tengine.md](Changelog.tengine.md) file.
+
+|    | Tengine-Ingress Version | Tengine-Ingress Version | K8s Supported Version | Anolis Linux Version | Alpine Linux version | Helm Chart Version |
+|:--:|-------------------------|-------------------------|-----------------------|----------------------|----------------------|--------------------|
+|    | v1.0.0                  | v3.0.0                  |  1.27,1.26,1.25,1.24  | 8.6                  | 3.18.2               |                    |
+|    |                         |                         |  1.23,1.22,1.21,1.20  |                      |                      |                    |
+
 
 ## Documentation
 
 The homepage of Tengine is at [https://tengine.taobao.org](https://tengine.taobao.org/)
-
 
 ## Contact
 
