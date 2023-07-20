@@ -24,8 +24,8 @@ Supported linux distributions:
 * [Alpine](https://hub.docker.com/_/alpine)
 
 Supported tags:
-* `1.0.0` : based on images [Anolis](https://hub.docker.com/r/openanolis/anolisos)
-* `1.0.0-alpine` : based on images [Alpine](https://hub.docker.com/_/alpine)
+* `1.0.0` : based on image [Anolis](https://hub.docker.com/r/openanolis/anolisos)
+* `1.0.0-alpine` : based on image [Alpine](https://hub.docker.com/_/alpine)
 
 Supported architectures:
 * AMD64, ARM64
