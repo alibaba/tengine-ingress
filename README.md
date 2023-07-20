@@ -23,14 +23,14 @@ Supported linux distributions:
 * [Anolis](https://hub.docker.com/r/openanolis/anolisos)
 * [Alpine](https://hub.docker.com/_/alpine)
 
-Supported tags
+Supported tags:
 * `1.0.0` : based on images [Anolis](https://hub.docker.com/r/openanolis/anolisos)
 * `1.0.0-alpine` : based on images [Alpine](https://hub.docker.com/_/alpine)
 
 Supported architectures:
 * AMD64, ARM64
 
-Pull image command
+Pull image command:
 ```
 docker pull tengine-ingress-registry.cn-hangzhou.cr.aliyuncs.com/tengine/tengine-ingress:1.0.0
 ```
@@ -39,10 +39,10 @@ docker pull tengine-ingress-registry.cn-hangzhou.cr.aliyuncs.com/tengine/tengine
 The tengine-ingress image is based on the tengine image.
 
 Supported Linux distributions:
-* [Anolis](https://hub.docker.com/r/openanolis/anolisos)
-* [Alpine](https://hub.docker.com/_/alpine)
+* [Anolis](https://hub.docker.com/r/openanolis/anolisos) : build arg `BASE_IMAGE="docker.io/openanolis/anolisos:latest"`, `LINUX_RELEASE="anolisos"`
+* [Alpine](https://hub.docker.com/_/alpine) : build arg `BASE_IMAGE="alpine:latest"`, `LINUX_RELEASE="alpine"`
 
-Build image command
+Build image command:
 ```
 # First: build tengine image
 docker build --no-cache --build-arg BASE_IMAGE="docker.io/openanolis/anolisos:latest" --build-arg LINUX_RELEASE="anolisos" -t tengine:3.0.0 images/tengine/rootfs/
