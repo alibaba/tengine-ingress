@@ -8,6 +8,7 @@ examples and guides.</p>
 <div align="center">
 
 [![GitHub license](https://img.shields.io/github/license/alibaba/tengine-ingress.svg)](https://github.com/alibaba/tengine-ingress/blob/main/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/alibaba/tengine-ingress.svg)](https://github.com/alibaba/tengine-ingress/stargazers)
 [![GitHub stars](https://img.shields.io/badge/contributions-welcome-orange.svg)](https://github.com/alibaba/tengine-ingress/blob/main/CONTRIBUTING.md)
 
 </div>
