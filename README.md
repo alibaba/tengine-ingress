@@ -1,5 +1,5 @@
 <h1 align="center" style="border-bottom: none">
-    <a href="https://tengine.taobao.org" target="_blank"></a><br>Tengine-Ingress
+    <br>Tengine-Ingress
 </h1>
 
 <p align="center">Visit <a href="https://tengine.taobao.org" target="_blank">tengine.taobao.org</a> for the full documentation,
@@ -77,5 +77,5 @@ Dingtalk user group: 23394285
 [Apache License 2.0](https://github.com/alibaba/tengine-ingress/blob/main/LICENSE)
 
 <h1 align="center" style="border-bottom: none">
-    <a href="https://tengine.taobao.org" target="_blank"><img alt="Tengine-Ingress" src="/documentation/images/prometheus-logo.svg"></a>
+    <a href="https://tengine.taobao.org" target="_blank"><img alt="Tengine-Ingress" src="/docs/images/tengine-logo.png"></a>
 </h1>
