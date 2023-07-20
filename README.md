@@ -1,6 +1,16 @@
-# Tengine-Ingress
+<h1 align="center" style="border-bottom: none">
+    <br>Tengine-Ingress
+</h1>
+
+<p align="center">Visit <a href="https://tengine.taobao.org" target="_blank">tengine.taobao.org</a> for the full documentation,
+examples and guides.</p>
+
+<div align="center">
+
 [![GitHub license](https://img.shields.io/github/license/alibaba/tengine-ingress.svg)](https://github.com/alibaba/tengine-ingress/blob/main/LICENSE)
 [![GitHub stars](https://img.shields.io/badge/contributions-welcome-orange.svg)](https://github.com/alibaba/tengine-ingress/blob/main/CONTRIBUTING.md)
+
+</div>
 
 ## Overview
 Tengine-Ingress is an Ingress controller for Kubernetes using [Tengine](https://github.com/alibaba/tengine) as a reverse proxy and load balancer.
@@ -75,3 +85,7 @@ Dingtalk user group: 23394285
 ## License
 
 [Apache License 2.0](https://github.com/alibaba/tengine-ingress/blob/main/LICENSE)
+
+<h1 align="center" style="border-bottom: none">
+    <a href="https://tengine.taobao.org" target="_blank"><img alt="Tengine-Ingress" src="/docs/images/tengine-logo.png"></a>
+</h1>
