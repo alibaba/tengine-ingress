@@ -38,12 +38,12 @@ local function fetch_request_body()
 end
 
 local function get_pem_cert(hostname)
-  local uids = certificate_servers:get(hostname)
-  if not next(uids) then
+  local uid = certificate_servers:get(hostname)
+  if not uid then
     return nil
   end
 
-  return certificate_data:get(uids[1])
+  return certificate_data:get(uid)
 end
 
 local function handle_servers()
