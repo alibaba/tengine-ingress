@@ -883,7 +883,7 @@ func NewDefault() Configuration {
 		HTTP3xQUICDefaultCert:        "",
 		HTTP3xQUICDefaultKey:         "",
 		HTTP3xQUICDefaultPort:        443,
-		User:                         "admin",
+		User:                         "root",
 	}
 
 	if klog.V(5) {
