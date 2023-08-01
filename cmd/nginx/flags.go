@@ -157,7 +157,7 @@ Requires the update-status parameter.`)
 
 		httpPort  = flags.Int("http-port", 80, `Port to use for servicing HTTP traffic.`)
 		httpsPort = flags.Int("https-port", 443, `Port to use for servicing HTTPS traffic.`)
-		quicPort  = flags.Int("quic-port", 2443, `Port to use for servicing HTTP/3+QUIC traffic.`)
+		quicPort  = flags.Int("quic-port", 443, `Port to use for servicing HTTP/3+QUIC traffic.`)
 
 		sslProxyPort  = flags.Int("ssl-passthrough-proxy-port", 442, `Port to use internally for SSL Passthrough.`)
 		defServerPort = flags.Int("default-server-port", 8181, `Port to use for exposing the default server (catch-all).`)
