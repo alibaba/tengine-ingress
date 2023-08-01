@@ -716,6 +716,9 @@ type Configuration struct {
 
 	// Default HTTP3/XQUIC port for clients
 	HTTP3xQUICDefaultPort int `json:"http3-xquic-default-port"`
+
+	// Set user of Tengine worker processes
+	User string `json:"user"`
 }
 
 // NewDefault returns the default nginx configuration
@@ -880,6 +883,7 @@ func NewDefault() Configuration {
 		HTTP3xQUICDefaultCert:        "",
 		HTTP3xQUICDefaultKey:         "",
 		HTTP3xQUICDefaultPort:        2443,
+		User:                         "admin",
 	}
 
 	if klog.V(5) {
