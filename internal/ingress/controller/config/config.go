@@ -882,7 +882,7 @@ func NewDefault() Configuration {
 		UseXQUICxUDP:                 false,
 		HTTP3xQUICDefaultCert:        "",
 		HTTP3xQUICDefaultKey:         "",
-		HTTP3xQUICDefaultPort:        2443,
+		HTTP3xQUICDefaultPort:        443,
 		User:                         "admin",
 	}
 
