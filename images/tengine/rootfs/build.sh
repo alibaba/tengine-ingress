@@ -6,7 +6,7 @@ set -o pipefail
 
 export DEBIAN_FRONTEND=noninteractive
 
-export TENGINE_VERSION=3.0.0
+export TENGINE_VERSION=3.0.0-1
 export XQUIC_VERSION=1.6.0
 export XUDP_LIB_VERSION=1.0.2
 export BABASSL_VERSION=8.3.2
