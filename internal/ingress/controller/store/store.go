@@ -351,6 +351,14 @@ func New(
 		Component: "tengine-ingress-controller",
 	})
 
+	ns, name, _ := k8s.ParseNameNS(configmap)
+	cm, err := client.CoreV1().ConfigMaps(ns).Get(context.TODO(), name, metav1.GetOptions{})
+	if err != nil {
+		klog.Warningf("Unexpected error reading configuration configmap: %v", err)
+	}
+
+	store.setConfig(cm)
+
 	// k8sStore fulfills resolver.Resolver interface
 	store.annotations = annotations.NewAnnotationExtractor(store)
 
@@ -811,14 +819,6 @@ func New(
 	store.informers.Service.AddEventHandler(cache.ResourceEventHandlerFuncs{})
 	store.informers.Pod.AddEventHandler(podEventHandler)
 
-	// do not wait for informers to read the configmap configuration
-	ns, name, _ := k8s.ParseNameNS(configmap)
-	cm, err := client.CoreV1().ConfigMaps(ns).Get(context.TODO(), name, metav1.GetOptions{})
-	if err != nil {
-		klog.Warningf("Unexpected error reading configuration configmap: %v", err)
-	}
-
-	store.setConfig(cm)
 	useIngCheckSum = store.GetBackendConfiguration().UseIngCheckSum
 	useSecretCheckSum = store.GetBackendConfiguration().UseSecretCheckSum
 	return store
