@@ -247,7 +247,7 @@ get_src_local "/source/modsecurity-nginx-v$MODSECURITY_VERSION.tar.gz"
 get_src_local "/source/ngx_http_geoip2_module-$GEOIP2_VERSION.tar.gz"
 
 # get lua-nginx-module
-get_src_local "/source/lua-nginx-module-$LUA_NGX_VERSION.tar.gz"
+# get_src_local "/source/lua-nginx-module-$LUA_NGX_VERSION.tar.gz"
 
 # get stream-lua-nginx-module
 get_src_local "/source/stream-lua-nginx-module-$LUA_STREAM_NGX_VERSION.tar.gz"
@@ -459,7 +459,7 @@ if [[ ${ARCH} == "x86_64" ]]; then
   CC_OPT="${CC_OPT} -m64 -mtune=native"
 fi
 
-WITH_MODULES="--add-module=$BUILD_PATH/lua-nginx-module-$LUA_NGX_VERSION \
+WITH_MODULES="--add-module=modules/ngx_http_lua_module \
   --add-module=$BUILD_PATH/stream-lua-nginx-module-$LUA_STREAM_NGX_VERSION \
   --add-module=$BUILD_PATH/lua-upstream-nginx-module-$LUA_UPSTREAM_VERSION \
   --add-module=$BUILD_PATH/ngx_devel_kit-$NDK_VERSION \

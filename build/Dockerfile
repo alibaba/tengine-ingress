@@ -121,5 +121,5 @@ RUN chown admin:admin /home/admin/*.sh \
   && chown admin:admin /tengine-ingress-controller \
   && chmod 6755 /tengine-ingress-controller
 
-ENTRYPOINT ("/usr/bin/dumb-init")
+CMD ("/usr/bin/dumb-init")
 
