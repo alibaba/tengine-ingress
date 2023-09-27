@@ -1,5 +1,5 @@
 /*
-Copyright 2022 The Alibaba Authors.
+Copyright 2022-2023 The Alibaba Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -232,7 +232,7 @@ func createHotCfg(cfg ngx_config.Configuration, ingressCfg ingress.Configuration
 			if upsService == nil {
 				continue
 			}
-			service := createVirtualService(loc.Backend, loc, pathServiceName)
+			service := createVirtualService(cfg, loc.Backend, loc, pathServiceName, server)
 			path := &route.PathRouter{
 				Path:        loc.Path,
 				ServiceName: pathServiceName,
@@ -251,7 +251,7 @@ func createHotCfg(cfg ngx_config.Configuration, ingressCfg ingress.Configuration
 					tagRouter := &route.TagRouter{}
 					policy := canary.TrafficShapingPolicy
 					if len(policy.Header) > 0 {
-						canaryService, tagRouter = createHeaderCanary(i, server, loc, canary)
+						canaryService, tagRouter = createHeaderCanary(cfg, i, server, loc, canary)
 						tags = append(tags, tagRouter)
 						services = append(services, canaryService)
 					} else if policy.Weight > 0 {
@@ -289,7 +289,7 @@ func createHotCfg(cfg ngx_config.Configuration, ingressCfg ingress.Configuration
 	}
 }
 
-func createVirtualService(target string, loc *ingress.Location, serviceName string) *route.VirtualService {
+func createVirtualService(cfg ngx_config.Configuration, target string, loc *ingress.Location, serviceName string, server *ingress.Server) *route.VirtualService {
 	upstream := &route.Upstream{
 		Target: target,
 		Weight: DefaultTotalWeightTraffic,
@@ -306,7 +306,7 @@ func createVirtualService(target string, loc *ingress.Location, serviceName stri
 		},
 		TimeoutMs:  timeout,
 		ForceHttps: loc.Rewrite.SSLRedirect,
-		Metadata:   createMetaData(loc),
+		Metadata:   createMetaData(server, loc),
 	}
 
 	return service
@@ -380,7 +380,7 @@ func createMetaData(server *ingress.Server, loc *ingress.Location) []*route.Meta
 	}
 }
 
-func createHeaderCanary(seq int, server *ingress.Server, loc *ingress.Location, canary *ingress.Canary) (*route.VirtualService, *route.TagRouter) {
+func createHeaderCanary(cfg ngx_config.Configuration, seq int, server *ingress.Server, loc *ingress.Location, canary *ingress.Canary) (*route.VirtualService, *route.TagRouter) {
 	canaryService := &route.VirtualService{}
 	tagRouter := &route.TagRouter{}
 	policy := canary.TrafficShapingPolicy
