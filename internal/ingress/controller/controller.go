@@ -159,11 +159,13 @@ func (n *NGINXController) syncIngress(interface{}) error {
 	klog.Infof("Configuration changes detected.")
 
 	n.metricCollector.SetHosts(hosts)
+
 	hash, _ := hashstructure.Hash(pcfg, &hashstructure.HashOptions{
 		TagName: "json",
 	})
 
 	pcfg.ConfigurationChecksum = fmt.Sprintf("%v", hash)
+
 	err := n.OnUpdate(*pcfg)
 	if err != nil {
 		n.metricCollector.IncReloadErrorCount()
@@ -477,7 +479,7 @@ func (n *NGINXController) getDefaultUpstream() *ingress.Backend {
 }
 
 // getConfiguration returns the configuration matching the standard kubernetes ingress
-func (n *NGINXController) getConfiguration(ingresses []*ingress.Ingress) (sets.String, []*ingress.Server, *ingress.Configuration) {
+func (n *NGINXController) getConfiguration(ingresses []*ingress.Ingress) (sets.Set[string], []*ingress.Server, *ingress.Configuration) {
 
 	upstreams, servers := n.getBackendServers(ingresses)
 	var passUpstreams []*ingress.SSLPassthroughBackend
