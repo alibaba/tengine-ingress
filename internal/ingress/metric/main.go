@@ -60,7 +60,7 @@ type Collector interface {
 	SetSSLExpireTime([]*ingress.Server)
 
 	// SetHosts sets the hostnames that are being served by the ingress controller
-	SetHosts(sets.String)
+	SetHosts(set sets.Set[string])
 
 	Start()
 	Stop()
@@ -176,7 +176,7 @@ func (c *collector) SetSSLExpireTime(servers []*ingress.Server) {
 	c.ingressController.SetSSLExpireTime(servers)
 }
 
-func (c *collector) SetHosts(hosts sets.String) {
+func (c *collector) SetHosts(hosts sets.Set[string]) {
 	c.socket.SetHosts(hosts)
 }
 

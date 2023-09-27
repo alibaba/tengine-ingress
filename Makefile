@@ -1,4 +1,5 @@
 # Copyright 2017 The Kubernetes Authors.
+# Copyright 2022-2023 The Alibaba Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -111,8 +112,8 @@ container: clean-container .container-$(ARCH) ## Build image for a particular ar
 		--platform linux/$(ARCH) \
 		--build-arg BASE_IMAGE="$(BASE_IMAGE)-$(ARCH):$(BASE_TAG)" \
 		--build-arg VERSION="$(TAG)" \
-		--build-arg GOLANG_VERSION=1.13.8 \
-		--build-arg GOLANG_SHA=b13bf04633d4d8cf53226ebeaace8d4d2fd07ae6fa676d0844a688339debec34 \
+		--build-arg GOLANG_VERSION=1.20.6 \
+		--build-arg GOLANG_SHA=ac9a0ff0ad5f801b8fba10a1f91ffc04d502bba9ae07b9e150526256cd2fcf20 \
 		-t $(REGISTRY)/tengine-ingress-controller-${ARCH}:$(TAG) $(TEMP_DIR)/rootfs
 
 .PHONY: clean-container

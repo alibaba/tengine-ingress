@@ -17,7 +17,6 @@ limitations under the License.
 package watch
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -35,7 +34,7 @@ func prepareTimeout() chan bool {
 }
 
 func TestFileWatcher(t *testing.T) {
-	f, err := ioutil.TempFile("", "fw")
+	f, err := os.CreateTemp("", "fw")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -60,7 +59,7 @@ func TestFileWatcher(t *testing.T) {
 		t.Fatalf("expected no events before writing a file")
 	case <-timeoutChan:
 	}
-	ioutil.WriteFile(f.Name(), []byte{}, file.ReadWriteByUser)
+	os.WriteFile(f.Name(), []byte{}, file.ReadWriteByUser)
 	select {
 	case <-events:
 	case <-timeoutChan:

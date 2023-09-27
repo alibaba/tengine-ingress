@@ -19,7 +19,6 @@ package controller
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -182,7 +181,7 @@ func TestConfigureDynamically(t *testing.T) {
 					t.Errorf("expected a 'POST' request, got '%s'", r.Method)
 				}
 
-				b, err := ioutil.ReadAll(r.Body)
+				b, err := io.ReadAll(r.Body)
 				if err != nil && err != io.EOF {
 					t.Fatal(err)
 				}
@@ -359,7 +358,7 @@ func TestConfigureCertificates(t *testing.T) {
 					t.Errorf("expected a 'POST' request, got '%s'", r.Method)
 				}
 
-				b, err := ioutil.ReadAll(r.Body)
+				b, err := io.ReadAll(r.Body)
 				if err != nil && err != io.EOF {
 					t.Fatal(err)
 				}
@@ -502,7 +501,7 @@ func TestCleanTempNginxCfg(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	tmpfile, err := ioutil.TempFile("", tempNginxPattern)
+	tmpfile, err := os.CreateTemp("", tempNginxPattern)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -519,7 +518,7 @@ func TestCleanTempNginxCfg(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	tmpfile, err = ioutil.TempFile("", tempNginxPattern)
+	tmpfile, err = os.CreateTemp("", tempNginxPattern)
 	if err != nil {
 		t.Fatal(err)
 	}
