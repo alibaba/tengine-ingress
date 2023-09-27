@@ -126,6 +126,7 @@ type Ingress struct {
 	DisableRobots      bool
 	CheckSum           checksum.Config
 	Referrer           referrer.Config
+	SSLProtocols       string
 }
 
 // Extractor defines the annotation parsers to be used in the extraction of annotations
@@ -181,6 +182,7 @@ func NewAnnotationExtractor(cfg resolver.Resolver) Extractor {
 			"DisableRobots":        robots.NewParser(cfg),
 			"CheckSum":             checksum.NewParser(cfg),
 			"Referrer":             referrer.NewParser(cfg),
+			"SSLProtocols":         sslprotocols.NewParser(cfg),
 		},
 	}
 }

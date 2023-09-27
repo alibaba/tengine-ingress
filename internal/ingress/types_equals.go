@@ -1,6 +1,6 @@
 /*
 Copyright 2017 The Kubernetes Authors.
-Copyright 2022 The Alibaba Authors.
+Copyright 2022-2023 The Alibaba Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -190,7 +190,7 @@ func (csa1 *CookieSessionAffinity) Equal(csa2 *CookieSessionAffinity) bool {
 	return true
 }
 
-//Equal checks the equality between UpstreamByConfig types
+// Equal checks the equality between UpstreamByConfig types
 func (u1 *UpstreamHashByConfig) Equal(u2 *UpstreamHashByConfig) bool {
 	if u1 == u2 {
 		return true
@@ -331,6 +331,9 @@ func (s1 *Server) Equal(s2 *Server) bool {
 	}
 
 	if s1.DefaultCertPort != s2.DefaultCertPort {
+		return false
+	}
+	if s1.SSLProtocols != s2.SSLProtocols {
 		return false
 	}
 
