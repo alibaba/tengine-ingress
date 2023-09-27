@@ -190,7 +190,7 @@ func (csa1 *CookieSessionAffinity) Equal(csa2 *CookieSessionAffinity) bool {
 	return true
 }
 
-//Equal checks the equality between UpstreamByConfig types
+// Equal checks the equality between UpstreamByConfig types
 func (u1 *UpstreamHashByConfig) Equal(u2 *UpstreamHashByConfig) bool {
 	if u1 == u2 {
 		return true
@@ -253,6 +253,39 @@ func (tsp1 TrafficShapingPolicy) Equal(tsp2 TrafficShapingPolicy) bool {
 		return false
 	}
 	if tsp1.Cookie != tsp2.Cookie {
+		return false
+	}
+	if tsp1.CookieValue != tsp2.CookieValue {
+		return false
+	}
+	if tsp1.Query != tsp2.Query {
+		return false
+	}
+	if tsp1.QueryValue != tsp2.QueryValue {
+		return false
+	}
+	if tsp1.ModDivisor != tsp2.ModDivisor {
+		return false
+	}
+	if tsp1.ModRelationalOpr != tsp2.ModRelationalOpr {
+		return false
+	}
+	if tsp1.ModRemainder != tsp2.ModRemainder {
+		return false
+	}
+	if tsp1.ReqAddHeader != tsp2.ReqAddHeader {
+		return false
+	}
+	if tsp1.ReqAppendHeader != tsp2.ReqAppendHeader {
+		return false
+	}
+	if tsp1.ReqAddQuery != tsp2.ReqAddQuery {
+		return false
+	}
+	if tsp1.RespAddHeader != tsp2.RespAddHeader {
+		return false
+	}
+	if tsp1.RespAppendHeader != tsp2.RespAppendHeader {
 		return false
 	}
 
@@ -445,15 +478,14 @@ func (l1 *Location) Equal(l2 *Location) bool {
 		return false
 	}
 
+	if l1.WeightTotal != l2.WeightTotal {
+		return false
+	}
 	if l1.DisableRobots != l2.DisableRobots {
 		return false
 	}
 
-	if len(l1.Canaries) != len(l2.Canaries) {
-		return false
-	}
-
-	match := compareCanary(l1.Canaries, l2.Canaries)
+	match := compareCanaries(l1.Canaries, l2.Canaries)
 	if !match {
 		return false
 	}
@@ -484,24 +516,6 @@ func (l1 *Location) Equal(l2 *Location) bool {
 	}
 
 	if !l1.Mirror.Equal(&l2.Mirror) {
-		return false
-	}
-
-	return true
-}
-
-// Equal tests for equality between two Canary types
-func (c1 *Canary) Equal(c2 *Canary) bool {
-	if c1 == c2 {
-		return true
-	}
-	if c1 == nil || c2 == nil {
-		return false
-	}
-	if c1.Target != c2.Target {
-		return false
-	}
-	if !c1.TrafficShapingPolicy.Equal(c2.TrafficShapingPolicy) {
 		return false
 	}
 
@@ -682,20 +696,40 @@ func compareL4Service(a, b []L4Service) bool {
 	return sets.Compare(a, b, compareL4ServiceFunc)
 }
 
-var compareCanaryFunc = func(e1, e2 interface{}) bool {
-	b1, ok := e1.(Canary)
-	if !ok {
+func (c1 *Canary) Equal(c2 *Canary) bool {
+	if c1 == c2 {
+		return true
+	}
+
+	if c1 == nil || c2 == nil {
 		return false
 	}
 
-	b2, ok := e2.(Canary)
-	if !ok {
+	if c1.BackendTarget != c2.BackendTarget {
 		return false
 	}
 
-	return (&b1).Equal(&b2)
+	if !c1.TrafficShapingPolicy.Equal(c2.TrafficShapingPolicy) {
+		return false
+	}
+
+	return true
 }
 
-func compareCanary(a, b []*Canary) bool {
-	return sets.Compare(a, b, compareCanaryFunc)
+var compareCanariesFunc = func(e1, e2 interface{}) bool {
+	b1, ok := e1.(*Canary)
+	if !ok {
+		return false
+	}
+
+	b2, ok := e2.(*Canary)
+	if !ok {
+		return false
+	}
+
+	return b1.Equal(b2)
+}
+
+func compareCanaries(a, b []*Canary) bool {
+	return sets.Compare(a, b, compareCanariesFunc)
 }

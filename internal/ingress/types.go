@@ -116,9 +116,12 @@ type Backend struct {
 // alternative backend
 // +k8s:deepcopy-gen=true
 type TrafficShapingPolicy struct {
-	// Weight (0-100) of traffic to redirect to the backend.
-	// e.g. Weight 20 means 20% of traffic will be redirected to the backend and 80% will remain
-	// with the other backend. 0 weight will not send any traffic to this backend
+	// Weight (0-<WeightTotal>) of traffic to redirect to the backend.
+	// e.g. <WeightTotal> defaults to 100, weight 20 means 20% of traffic will be
+	// redirected to the backend and 80% will remain with the other backend. If
+	// <WeightTotal> is set to 1000, weight 2 means 0.2% of traffic will be
+	// redirected to the backend and 99.8% will remain with the other backend.
+	// 0 weight will not send any traffic to this backend
 	Weight int `json:"weight"`
 	// Header on which to redirect requests to this backend
 	Header string `json:"header"`
@@ -126,6 +129,29 @@ type TrafficShapingPolicy struct {
 	HeaderValue string `json:"headerValue"`
 	// Cookie on which to redirect requests to this backend
 	Cookie string `json:"cookie"`
+	// CookieValue on which to redirect requests to this backend
+	CookieValue string `json:"cookieValue"`
+	// Query on on which to redirect requests to this backend
+	Query string `json:"query"`
+	// QueryValue on which to redirect requests to this backend
+	QueryValue string `json:"queryValue"`
+	// Mod divisor
+	ModDivisor uint64 `json:"modDivisor"`
+	// Mod relational operator
+	ModRelationalOpr string `json:"modRelationalOpr"`
+	// Mod remainder
+	ModRemainder uint64 `json:"modRemainder"`
+	// Add header to request based on canary ingress
+	ReqAddHeader string `json:"reqAddHeader"`
+	// Append header value to request header based on canary ingress
+	ReqAppendHeader string `json:"reqAppendHeader"`
+	// Add query to request based on canary ingress
+	ReqAddQuery string `json:"reqAddQuery"`
+	// Add header to response based on canary ingress
+	RespAddHeader string `json:"respAddHeader"`
+	// Append header value to response header based on canary ingress
+	RespAppendHeader string `json:"respAppendHeader"`
+	// Tengine
 }
 
 // HashInclude defines if a field should be used or not to calculate the hash
@@ -360,6 +386,9 @@ type Location struct {
 	DisableRobots bool `json:"disable-robots"`
 	// Canaries describes the canary rules that will be used on the location
 	Canaries []*Canary `json:"canaries"`
+	// The total weight of traffic. If unspecified, it defaults to 100.
+	// Default range: [100, 10000]
+	WeightTotal int `json:"weightTotal"`
 	// FastCGI allows the ingress to act as a FastCGI client for a given location.
 	// +optional
 	FastCGI fastcgi.Config `json:"fastcgi,omitempty"`
@@ -440,7 +469,7 @@ type GeneralConfig struct {
 
 // Canary describes upstream and rule of the canary ingress
 type Canary struct {
-	// Target indicates the upstream associated with a service.
+	// BackendTarget indicates which target key relation backend service for this location on backend-target mode
 	// By default this is nil
 	Target string `json:"backend-target"`
 	// Policies to describe the characteristics of an alternative backend.

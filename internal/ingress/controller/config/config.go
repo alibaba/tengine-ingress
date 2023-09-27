@@ -673,9 +673,6 @@ type Configuration struct {
 	// File path of status tengine
 	StatusTengineFilePath string `json:"filepath-status-tengine"`
 
-	// Max canary ingress number
-	MaxCanaryIngNum int `json:"max-canary-ing-num"`
-
 	// Canary referrer: this is a multi-valued field, separated by ','
 	CanaryReferrer string `json:"canary-referrer"`
 
@@ -716,6 +713,45 @@ type Configuration struct {
 
 	// Default HTTP3/XQUIC port for clients
 	HTTP3xQUICDefaultPort int `json:"http3-xquic-default-port"`
+
+	// Max number of path for the same host
+	MaxHostPathNum int `json:"max-host-path-num"`
+
+	// Max canary ingress number
+	MaxCanaryIngNum int `json:"max-canary-ing-num"`
+
+	// Max number of action for canary ingress with header and query
+	MaxCanaryActionNum int `json:"max-canary-action-num"`
+
+	// The default total weight of traffic
+	DefaultCanaryWeightTotal uint32 `json:"default-canary-weight-total"`
+
+	// The max total weight of traffic
+	MaxCanaryWeightTotal uint32 `json:"max-canary-weight-total"`
+
+	// Max number of header value for canary annotation 'canary-by-header-value'
+	MaxCanaryHeaderValNum int `json:"max-canary-header-val-num"`
+
+	// Max number of cookie value for canary annotation 'canary-by-cookie-value'
+	MaxCanaryCookieValNum int `json:"max-canary-cookie-val-num"`
+
+	// Max number of query value for canary annotation 'canary-by-query-value'
+	MaxCanaryQueryValNum int `json:"max-canary-query-val-num"`
+
+	// Max number of adding fields to the request header for canary annotation 'canary-request-add-header'
+	MaxReqAddHeaderNum int `json:"max-canary-req-add-header-num"`
+
+	// Max number of appending fields to the request header for canary annotation 'canary-request-append-header'
+	MaxReqAppendHeaderNum int `json:"max-canary-req-append-header-num"`
+
+	// Max number of adding fields to the request query for canary annotation 'canary-request-add-query'
+	MaxReqAddQueryNum int `json:"max-canary-req-add-query-num"`
+
+	// Max number of adding fields to the response header for canary annotation 'canary-response-add-header'
+	MaxRespAddHeaderNum int `json:"max-canary-resp-add-header-num"`
+
+	// Max number of appending fields to the response header for canary annotation 'canary-response-append-header'
+	MaxRespAppendHeaderNum int `json:"max-canary-resp-append-header-num"`
 
 	// Set user of Tengine worker processes
 	User string `json:"user"`
@@ -869,7 +905,6 @@ func NewDefault() Configuration {
 		TengineStaticServiceCfg:      false,
 		ShmServiceCfgFileLock:        "/etc/nginx/shm_service_cfg.lock",
 		StatusTengineFilePath:        "/etc/nginx/htdocs/status.tengine",
-		MaxCanaryIngNum:              200,
 		CanaryReferrer:               "",
 		IngressReferrer:              "",
 		UseCustomDefBackend:          true,
@@ -883,6 +918,19 @@ func NewDefault() Configuration {
 		HTTP3xQUICDefaultCert:        "",
 		HTTP3xQUICDefaultKey:         "",
 		HTTP3xQUICDefaultPort:        443,
+		MaxHostPathNum:               20,
+		MaxCanaryIngNum:              20,
+		MaxCanaryActionNum:           10,
+		DefaultCanaryWeightTotal:     100,
+		MaxCanaryWeightTotal:         10000,
+		MaxCanaryHeaderValNum:        20,
+		MaxCanaryCookieValNum:        20,
+		MaxCanaryQueryValNum:         20,
+		MaxReqAddHeaderNum:           2,
+		MaxReqAppendHeaderNum:        2,
+		MaxReqAddQueryNum:            2,
+		MaxRespAddHeaderNum:          2,
+		MaxRespAppendHeaderNum:       2,
 		User:                         "root",
 	}
 

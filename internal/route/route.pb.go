@@ -25,27 +25,85 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
+type OperatorType int32
+
+const (
+	OperatorUnDefined    OperatorType = 0
+	OperatorEqual        OperatorType = 1
+	OperatorGreater      OperatorType = 2
+	OperatorLess         OperatorType = 3
+	OperatorGreaterEqual OperatorType = 4
+	OperatorLessEqual    OperatorType = 5
+)
+
+var OperatorType_name = map[int32]string{
+	0: "OperatorUnDefined",
+	1: "OperatorEqual",
+	2: "OperatorGreater",
+	3: "OperatorLess",
+	4: "OperatorGreaterEqual",
+	5: "OperatorLessEqual",
+}
+
+var OperatorType_value = map[string]int32{
+	"OperatorUnDefined":    0,
+	"OperatorEqual":        1,
+	"OperatorGreater":      2,
+	"OperatorLess":         3,
+	"OperatorGreaterEqual": 4,
+	"OperatorLessEqual":    5,
+}
+
+func (x OperatorType) Enum() *OperatorType {
+	p := new(OperatorType)
+	*p = x
+	return p
+}
+
+func (x OperatorType) MarshalJSON() ([]byte, error) {
+	return proto.MarshalJSONEnum(OperatorType_name, int32(x))
+}
+
+func (x *OperatorType) UnmarshalJSON(data []byte) error {
+	value, err := proto.UnmarshalJSONEnum(OperatorType_value, data, "OperatorType")
+	if err != nil {
+		return err
+	}
+	*x = OperatorType(value)
+	return nil
+}
+
+func (OperatorType) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_0984d49a362b6b9f, []int{0}
+}
+
 type LocationType int32
 
 const (
-	LocHttpHeader LocationType = 0
-	LocHttpQuery  LocationType = 1
-	LocNginxVar   LocationType = 2
-	LocXBizInfo   LocationType = 3
+	LocUnDefined  LocationType = 0
+	LocHttpHeader LocationType = 1
+	LocHttpQuery  LocationType = 2
+	LocNginxVar   LocationType = 3
+	LocXBizInfo   LocationType = 4
+	LocHttpCookie LocationType = 5
 )
 
 var LocationType_name = map[int32]string{
-	0: "LocHttpHeader",
-	1: "LocHttpQuery",
-	2: "LocNginxVar",
-	3: "LocXBizInfo",
+	0: "LocUnDefined",
+	1: "LocHttpHeader",
+	2: "LocHttpQuery",
+	3: "LocNginxVar",
+	4: "LocXBizInfo",
+	5: "LocHttpCookie",
 }
 
 var LocationType_value = map[string]int32{
-	"LocHttpHeader": 0,
-	"LocHttpQuery":  1,
-	"LocNginxVar":   2,
-	"LocXBizInfo":   3,
+	"LocUnDefined":  0,
+	"LocHttpHeader": 1,
+	"LocHttpQuery":  2,
+	"LocNginxVar":   3,
+	"LocXBizInfo":   4,
+	"LocHttpCookie": 5,
 }
 
 func (x LocationType) Enum() *LocationType {
@@ -68,30 +126,30 @@ func (x *LocationType) UnmarshalJSON(data []byte) error {
 }
 
 func (LocationType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_0984d49a362b6b9f, []int{0}
+	return fileDescriptor_0984d49a362b6b9f, []int{1}
 }
 
 type MatchType int32
 
 const (
-	WholeMatch  MatchType = 0
-	PrefixMatch MatchType = 1
-	SuffixMatch MatchType = 2
-	RegMatch    MatchType = 3
+	MatchUnDefined MatchType = 0
+	WholeMatch     MatchType = 1
+	StrListInMatch MatchType = 2
+	ModCompare     MatchType = 3
 )
 
 var MatchType_name = map[int32]string{
-	0: "WholeMatch",
-	1: "PrefixMatch",
-	2: "SuffixMatch",
-	3: "RegMatch",
+	0: "MatchUnDefined",
+	1: "WholeMatch",
+	2: "StrListInMatch",
+	3: "ModCompare",
 }
 
 var MatchType_value = map[string]int32{
-	"WholeMatch":  0,
-	"PrefixMatch": 1,
-	"SuffixMatch": 2,
-	"RegMatch":    3,
+	"MatchUnDefined": 0,
+	"WholeMatch":     1,
+	"StrListInMatch": 2,
+	"ModCompare":     3,
 }
 
 func (x MatchType) Enum() *MatchType {
@@ -114,20 +172,233 @@ func (x *MatchType) UnmarshalJSON(data []byte) error {
 }
 
 func (MatchType) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_0984d49a362b6b9f, []int{2}
+}
+
+type ActionType int32
+
+const (
+	ActionUnDefined        ActionType = 0
+	ActionAddReqHeader     ActionType = 1
+	ActionAppendReqHeader  ActionType = 2
+	ActionAddRespHeader    ActionType = 3
+	ActionAppendRespHeader ActionType = 4
+	ActionAddParam         ActionType = 5
+)
+
+var ActionType_name = map[int32]string{
+	0: "ActionUnDefined",
+	1: "ActionAddReqHeader",
+	2: "ActionAppendReqHeader",
+	3: "ActionAddRespHeader",
+	4: "ActionAppendRespHeader",
+	5: "ActionAddParam",
+}
+
+var ActionType_value = map[string]int32{
+	"ActionUnDefined":        0,
+	"ActionAddReqHeader":     1,
+	"ActionAppendReqHeader":  2,
+	"ActionAddRespHeader":    3,
+	"ActionAppendRespHeader": 4,
+	"ActionAddParam":         5,
+}
+
+func (x ActionType) Enum() *ActionType {
+	p := new(ActionType)
+	*p = x
+	return p
+}
+
+func (x ActionType) MarshalJSON() ([]byte, error) {
+	return proto.MarshalJSONEnum(ActionType_name, int32(x))
+}
+
+func (x *ActionType) UnmarshalJSON(data []byte) error {
+	value, err := proto.UnmarshalJSONEnum(ActionType_value, data, "ActionType")
+	if err != nil {
+		return err
+	}
+	*x = ActionType(value)
+	return nil
+}
+
+func (ActionType) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_0984d49a362b6b9f, []int{3}
+}
+
+type ActionValueType int32
+
+const (
+	ActionValueUnDefined ActionValueType = 0
+	ActionStaticValue    ActionValueType = 1
+	ActionDynamicValue   ActionValueType = 2
+)
+
+var ActionValueType_name = map[int32]string{
+	0: "ActionValueUnDefined",
+	1: "ActionStaticValue",
+	2: "ActionDynamicValue",
+}
+
+var ActionValueType_value = map[string]int32{
+	"ActionValueUnDefined": 0,
+	"ActionStaticValue":    1,
+	"ActionDynamicValue":   2,
+}
+
+func (x ActionValueType) Enum() *ActionValueType {
+	p := new(ActionValueType)
+	*p = x
+	return p
+}
+
+func (x ActionValueType) MarshalJSON() ([]byte, error) {
+	return proto.MarshalJSONEnum(ActionValueType_name, int32(x))
+}
+
+func (x *ActionValueType) UnmarshalJSON(data []byte) error {
+	value, err := proto.UnmarshalJSONEnum(ActionValueType_value, data, "ActionValueType")
+	if err != nil {
+		return err
+	}
+	*x = ActionValueType(value)
+	return nil
+}
+
+func (ActionValueType) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_0984d49a362b6b9f, []int{4}
+}
+
+type TagValueStrList struct {
+	Value []string `protobuf:"bytes,1,rep,name=value" json:"value,omitempty"`
+}
+
+func (m *TagValueStrList) Reset()      { *m = TagValueStrList{} }
+func (*TagValueStrList) ProtoMessage() {}
+func (*TagValueStrList) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0984d49a362b6b9f, []int{0}
+}
+func (m *TagValueStrList) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *TagValueStrList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_TagValueStrList.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalTo(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *TagValueStrList) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TagValueStrList.Merge(m, src)
+}
+func (m *TagValueStrList) XXX_Size() int {
+	return m.Size()
+}
+func (m *TagValueStrList) XXX_DiscardUnknown() {
+	xxx_messageInfo_TagValueStrList.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TagValueStrList proto.InternalMessageInfo
+
+func (m *TagValueStrList) GetValue() []string {
+	if m != nil {
+		return m.Value
+	}
+	return nil
+}
+
+type TagItemCondition struct {
+	ValueStr  string           `protobuf:"bytes,1,opt,name=value_str" json:"value_str"`
+	ValueList *TagValueStrList `protobuf:"bytes,2,opt,name=value_list" json:"value_list,omitempty"`
+	Divisor   uint64           `protobuf:"varint,3,opt,name=divisor" json:"divisor"`
+	Remainder uint64           `protobuf:"varint,4,opt,name=remainder" json:"remainder"`
+	Operator  OperatorType     `protobuf:"varint,5,opt,name=operator,enum=route.OperatorType" json:"operator"`
+}
+
+func (m *TagItemCondition) Reset()      { *m = TagItemCondition{} }
+func (*TagItemCondition) ProtoMessage() {}
+func (*TagItemCondition) Descriptor() ([]byte, []int) {
 	return fileDescriptor_0984d49a362b6b9f, []int{1}
+}
+func (m *TagItemCondition) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *TagItemCondition) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_TagItemCondition.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalTo(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *TagItemCondition) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TagItemCondition.Merge(m, src)
+}
+func (m *TagItemCondition) XXX_Size() int {
+	return m.Size()
+}
+func (m *TagItemCondition) XXX_DiscardUnknown() {
+	xxx_messageInfo_TagItemCondition.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TagItemCondition proto.InternalMessageInfo
+
+func (m *TagItemCondition) GetValueStr() string {
+	if m != nil {
+		return m.ValueStr
+	}
+	return ""
+}
+
+func (m *TagItemCondition) GetValueList() *TagValueStrList {
+	if m != nil {
+		return m.ValueList
+	}
+	return nil
+}
+
+func (m *TagItemCondition) GetDivisor() uint64 {
+	if m != nil {
+		return m.Divisor
+	}
+	return 0
+}
+
+func (m *TagItemCondition) GetRemainder() uint64 {
+	if m != nil {
+		return m.Remainder
+	}
+	return 0
+}
+
+func (m *TagItemCondition) GetOperator() OperatorType {
+	if m != nil {
+		return m.Operator
+	}
+	return OperatorUnDefined
 }
 
 type TagItem struct {
-	Location  LocationType `protobuf:"varint,1,opt,name=location,enum=route.LocationType" json:"location"`
-	Key       string       `protobuf:"bytes,2,opt,name=key" json:"key"`
-	Value     string       `protobuf:"bytes,3,opt,name=value" json:"value"`
-	MatchType MatchType    `protobuf:"varint,4,opt,name=match_type,enum=route.MatchType" json:"match_type"`
+	Location  LocationType      `protobuf:"varint,1,opt,name=location,enum=route.LocationType" json:"location"`
+	Key       string            `protobuf:"bytes,2,opt,name=key" json:"key"`
+	Condition *TagItemCondition `protobuf:"bytes,3,opt,name=condition" json:"condition,omitempty"`
+	MatchType MatchType         `protobuf:"varint,4,opt,name=match_type,enum=route.MatchType" json:"match_type"`
 }
 
 func (m *TagItem) Reset()      { *m = TagItem{} }
 func (*TagItem) ProtoMessage() {}
 func (*TagItem) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0984d49a362b6b9f, []int{0}
+	return fileDescriptor_0984d49a362b6b9f, []int{2}
 }
 func (m *TagItem) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -160,7 +431,7 @@ func (m *TagItem) GetLocation() LocationType {
 	if m != nil {
 		return m.Location
 	}
-	return LocHttpHeader
+	return LocUnDefined
 }
 
 func (m *TagItem) GetKey() string {
@@ -170,18 +441,18 @@ func (m *TagItem) GetKey() string {
 	return ""
 }
 
-func (m *TagItem) GetValue() string {
+func (m *TagItem) GetCondition() *TagItemCondition {
 	if m != nil {
-		return m.Value
+		return m.Condition
 	}
-	return ""
+	return nil
 }
 
 func (m *TagItem) GetMatchType() MatchType {
 	if m != nil {
 		return m.MatchType
 	}
-	return WholeMatch
+	return MatchUnDefined
 }
 
 type TagRule struct {
@@ -191,7 +462,7 @@ type TagRule struct {
 func (m *TagRule) Reset()      { *m = TagRule{} }
 func (*TagRule) ProtoMessage() {}
 func (*TagRule) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0984d49a362b6b9f, []int{1}
+	return fileDescriptor_0984d49a362b6b9f, []int{3}
 }
 func (m *TagRule) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -235,7 +506,7 @@ type TagRouter struct {
 func (m *TagRouter) Reset()      { *m = TagRouter{} }
 func (*TagRouter) ProtoMessage() {}
 func (*TagRouter) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0984d49a362b6b9f, []int{2}
+	return fileDescriptor_0984d49a362b6b9f, []int{4}
 }
 func (m *TagRouter) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -278,6 +549,360 @@ func (m *TagRouter) GetRules() []*TagRule {
 	return nil
 }
 
+type PathRouter struct {
+	Prefix      string       `protobuf:"bytes,1,opt,name=prefix" json:"prefix"`
+	ServiceName string       `protobuf:"bytes,2,opt,name=service_name" json:"service_name"`
+	Tags        []*TagRouter `protobuf:"bytes,3,rep,name=tags" json:"tags,omitempty"`
+}
+
+func (m *PathRouter) Reset()      { *m = PathRouter{} }
+func (*PathRouter) ProtoMessage() {}
+func (*PathRouter) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0984d49a362b6b9f, []int{5}
+}
+func (m *PathRouter) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *PathRouter) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_PathRouter.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalTo(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *PathRouter) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PathRouter.Merge(m, src)
+}
+func (m *PathRouter) XXX_Size() int {
+	return m.Size()
+}
+func (m *PathRouter) XXX_DiscardUnknown() {
+	xxx_messageInfo_PathRouter.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PathRouter proto.InternalMessageInfo
+
+func (m *PathRouter) GetPrefix() string {
+	if m != nil {
+		return m.Prefix
+	}
+	return ""
+}
+
+func (m *PathRouter) GetServiceName() string {
+	if m != nil {
+		return m.ServiceName
+	}
+	return ""
+}
+
+func (m *PathRouter) GetTags() []*TagRouter {
+	if m != nil {
+		return m.Tags
+	}
+	return nil
+}
+
+type HostRouter struct {
+	Host        string        `protobuf:"bytes,1,opt,name=host" json:"host"`
+	ServiceName string        `protobuf:"bytes,2,opt,name=service_name" json:"service_name"`
+	Paths       []*PathRouter `protobuf:"bytes,3,rep,name=paths" json:"paths,omitempty"`
+	Tags        []*TagRouter  `protobuf:"bytes,4,rep,name=tags" json:"tags,omitempty"`
+}
+
+func (m *HostRouter) Reset()      { *m = HostRouter{} }
+func (*HostRouter) ProtoMessage() {}
+func (*HostRouter) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0984d49a362b6b9f, []int{6}
+}
+func (m *HostRouter) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *HostRouter) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_HostRouter.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalTo(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *HostRouter) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HostRouter.Merge(m, src)
+}
+func (m *HostRouter) XXX_Size() int {
+	return m.Size()
+}
+func (m *HostRouter) XXX_DiscardUnknown() {
+	xxx_messageInfo_HostRouter.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_HostRouter proto.InternalMessageInfo
+
+func (m *HostRouter) GetHost() string {
+	if m != nil {
+		return m.Host
+	}
+	return ""
+}
+
+func (m *HostRouter) GetServiceName() string {
+	if m != nil {
+		return m.ServiceName
+	}
+	return ""
+}
+
+func (m *HostRouter) GetPaths() []*PathRouter {
+	if m != nil {
+		return m.Paths
+	}
+	return nil
+}
+
+func (m *HostRouter) GetTags() []*TagRouter {
+	if m != nil {
+		return m.Tags
+	}
+	return nil
+}
+
+type AppnameRouter struct {
+	Appname     string       `protobuf:"bytes,1,opt,name=appname" json:"appname"`
+	ServiceName string       `protobuf:"bytes,2,opt,name=service_name" json:"service_name"`
+	Tags        []*TagRouter `protobuf:"bytes,3,rep,name=tags" json:"tags,omitempty"`
+}
+
+func (m *AppnameRouter) Reset()      { *m = AppnameRouter{} }
+func (*AppnameRouter) ProtoMessage() {}
+func (*AppnameRouter) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0984d49a362b6b9f, []int{7}
+}
+func (m *AppnameRouter) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *AppnameRouter) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_AppnameRouter.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalTo(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *AppnameRouter) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AppnameRouter.Merge(m, src)
+}
+func (m *AppnameRouter) XXX_Size() int {
+	return m.Size()
+}
+func (m *AppnameRouter) XXX_DiscardUnknown() {
+	xxx_messageInfo_AppnameRouter.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_AppnameRouter proto.InternalMessageInfo
+
+func (m *AppnameRouter) GetAppname() string {
+	if m != nil {
+		return m.Appname
+	}
+	return ""
+}
+
+func (m *AppnameRouter) GetServiceName() string {
+	if m != nil {
+		return m.ServiceName
+	}
+	return ""
+}
+
+func (m *AppnameRouter) GetTags() []*TagRouter {
+	if m != nil {
+		return m.Tags
+	}
+	return nil
+}
+
+type APIRouter struct {
+	ServiceName string       `protobuf:"bytes,1,opt,name=service_name" json:"service_name"`
+	Api         string       `protobuf:"bytes,2,opt,name=api" json:"api"`
+	Tags        []*TagRouter `protobuf:"bytes,3,rep,name=tags" json:"tags,omitempty"`
+}
+
+func (m *APIRouter) Reset()      { *m = APIRouter{} }
+func (*APIRouter) ProtoMessage() {}
+func (*APIRouter) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0984d49a362b6b9f, []int{8}
+}
+func (m *APIRouter) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *APIRouter) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_APIRouter.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalTo(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *APIRouter) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_APIRouter.Merge(m, src)
+}
+func (m *APIRouter) XXX_Size() int {
+	return m.Size()
+}
+func (m *APIRouter) XXX_DiscardUnknown() {
+	xxx_messageInfo_APIRouter.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_APIRouter proto.InternalMessageInfo
+
+func (m *APIRouter) GetServiceName() string {
+	if m != nil {
+		return m.ServiceName
+	}
+	return ""
+}
+
+func (m *APIRouter) GetApi() string {
+	if m != nil {
+		return m.Api
+	}
+	return ""
+}
+
+func (m *APIRouter) GetTags() []*TagRouter {
+	if m != nil {
+		return m.Tags
+	}
+	return nil
+}
+
+type Router struct {
+	HostRouter    *HostRouter    `protobuf:"bytes,1,opt,name=host_router" json:"host_router,omitempty"`
+	AppnameRouter *AppnameRouter `protobuf:"bytes,2,opt,name=appname_router" json:"appname_router,omitempty"`
+	ApiRouter     *APIRouter     `protobuf:"bytes,3,opt,name=api_router" json:"api_router,omitempty"`
+}
+
+func (m *Router) Reset()      { *m = Router{} }
+func (*Router) ProtoMessage() {}
+func (*Router) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0984d49a362b6b9f, []int{9}
+}
+func (m *Router) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *Router) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_Router.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalTo(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *Router) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Router.Merge(m, src)
+}
+func (m *Router) XXX_Size() int {
+	return m.Size()
+}
+func (m *Router) XXX_DiscardUnknown() {
+	xxx_messageInfo_Router.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Router proto.InternalMessageInfo
+
+func (m *Router) GetHostRouter() *HostRouter {
+	if m != nil {
+		return m.HostRouter
+	}
+	return nil
+}
+
+func (m *Router) GetAppnameRouter() *AppnameRouter {
+	if m != nil {
+		return m.AppnameRouter
+	}
+	return nil
+}
+
+func (m *Router) GetApiRouter() *APIRouter {
+	if m != nil {
+		return m.ApiRouter
+	}
+	return nil
+}
+
+type Upstream struct {
+	Target string `protobuf:"bytes,1,opt,name=target" json:"target"`
+	Weight uint32 `protobuf:"varint,2,opt,name=weight" json:"weight"`
+}
+
+func (m *Upstream) Reset()      { *m = Upstream{} }
+func (*Upstream) ProtoMessage() {}
+func (*Upstream) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0984d49a362b6b9f, []int{10}
+}
+func (m *Upstream) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *Upstream) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_Upstream.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalTo(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *Upstream) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Upstream.Merge(m, src)
+}
+func (m *Upstream) XXX_Size() int {
+	return m.Size()
+}
+func (m *Upstream) XXX_DiscardUnknown() {
+	xxx_messageInfo_Upstream.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Upstream proto.InternalMessageInfo
+
+func (m *Upstream) GetTarget() string {
+	if m != nil {
+		return m.Target
+	}
+	return ""
+}
+
+func (m *Upstream) GetWeight() uint32 {
+	if m != nil {
+		return m.Weight
+	}
+	return 0
+}
+
 type Timeout struct {
 	ConnectTimeout uint32 `protobuf:"varint,1,opt,name=connect_timeout" json:"connect_timeout"`
 	ReadTimeout    uint32 `protobuf:"varint,2,opt,name=read_timeout" json:"read_timeout"`
@@ -287,7 +912,7 @@ type Timeout struct {
 func (m *Timeout) Reset()      { *m = Timeout{} }
 func (*Timeout) ProtoMessage() {}
 func (*Timeout) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0984d49a362b6b9f, []int{3}
+	return fileDescriptor_0984d49a362b6b9f, []int{11}
 }
 func (m *Timeout) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -337,57 +962,6 @@ func (m *Timeout) GetWriteTimeout() uint32 {
 	return 0
 }
 
-type Upstream struct {
-	Target string `protobuf:"bytes,1,opt,name=target" json:"target"`
-	Weight uint32 `protobuf:"varint,2,opt,name=weight" json:"weight"`
-}
-
-func (m *Upstream) Reset()      { *m = Upstream{} }
-func (*Upstream) ProtoMessage() {}
-func (*Upstream) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0984d49a362b6b9f, []int{4}
-}
-func (m *Upstream) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *Upstream) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_Upstream.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *Upstream) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Upstream.Merge(m, src)
-}
-func (m *Upstream) XXX_Size() int {
-	return m.Size()
-}
-func (m *Upstream) XXX_DiscardUnknown() {
-	xxx_messageInfo_Upstream.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Upstream proto.InternalMessageInfo
-
-func (m *Upstream) GetTarget() string {
-	if m != nil {
-		return m.Target
-	}
-	return ""
-}
-
-func (m *Upstream) GetWeight() uint32 {
-	if m != nil {
-		return m.Weight
-	}
-	return 0
-}
-
 type Metadata struct {
 	Key   string `protobuf:"bytes,1,opt,name=key" json:"key"`
 	Value string `protobuf:"bytes,2,opt,name=value" json:"value"`
@@ -396,7 +970,7 @@ type Metadata struct {
 func (m *Metadata) Reset()      { *m = Metadata{} }
 func (*Metadata) ProtoMessage() {}
 func (*Metadata) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0984d49a362b6b9f, []int{5}
+	return fileDescriptor_0984d49a362b6b9f, []int{12}
 }
 func (m *Metadata) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -439,18 +1013,86 @@ func (m *Metadata) GetValue() string {
 	return ""
 }
 
+type Action struct {
+	ActionType ActionType      `protobuf:"varint,1,opt,name=action_type,enum=route.ActionType" json:"action_type"`
+	ValueType  ActionValueType `protobuf:"varint,2,opt,name=value_type,enum=route.ActionValueType" json:"value_type"`
+	Key        string          `protobuf:"bytes,3,opt,name=key" json:"key"`
+	Value      string          `protobuf:"bytes,4,opt,name=value" json:"value"`
+}
+
+func (m *Action) Reset()      { *m = Action{} }
+func (*Action) ProtoMessage() {}
+func (*Action) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0984d49a362b6b9f, []int{13}
+}
+func (m *Action) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *Action) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_Action.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalTo(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *Action) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Action.Merge(m, src)
+}
+func (m *Action) XXX_Size() int {
+	return m.Size()
+}
+func (m *Action) XXX_DiscardUnknown() {
+	xxx_messageInfo_Action.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Action proto.InternalMessageInfo
+
+func (m *Action) GetActionType() ActionType {
+	if m != nil {
+		return m.ActionType
+	}
+	return ActionUnDefined
+}
+
+func (m *Action) GetValueType() ActionValueType {
+	if m != nil {
+		return m.ValueType
+	}
+	return ActionValueUnDefined
+}
+
+func (m *Action) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+func (m *Action) GetValue() string {
+	if m != nil {
+		return m.Value
+	}
+	return ""
+}
+
 type VirtualService struct {
 	ServiceName string      `protobuf:"bytes,1,req,name=service_name" json:"service_name"`
 	Upstreams   []*Upstream `protobuf:"bytes,2,rep,name=upstreams" json:"upstreams,omitempty"`
 	TimeoutMs   *Timeout    `protobuf:"bytes,3,opt,name=timeout_ms" json:"timeout_ms,omitempty"`
 	ForceHttps  bool        `protobuf:"varint,4,opt,name=force_https" json:"force_https"`
 	Metadata    []*Metadata `protobuf:"bytes,5,rep,name=metadata" json:"metadata,omitempty"`
+	Action      []*Action   `protobuf:"bytes,6,rep,name=action" json:"action,omitempty"`
 }
 
 func (m *VirtualService) Reset()      { *m = VirtualService{} }
 func (*VirtualService) ProtoMessage() {}
 func (*VirtualService) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0984d49a362b6b9f, []int{6}
+	return fileDescriptor_0984d49a362b6b9f, []int{14}
 }
 func (m *VirtualService) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -514,171 +1156,9 @@ func (m *VirtualService) GetMetadata() []*Metadata {
 	return nil
 }
 
-type PathRouter struct {
-	Path        string       `protobuf:"bytes,1,opt,name=path" json:"path"`
-	ServiceName string       `protobuf:"bytes,2,opt,name=service_name" json:"service_name"`
-	Tags        []*TagRouter `protobuf:"bytes,3,rep,name=tags" json:"tags,omitempty"`
-}
-
-func (m *PathRouter) Reset()      { *m = PathRouter{} }
-func (*PathRouter) ProtoMessage() {}
-func (*PathRouter) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0984d49a362b6b9f, []int{7}
-}
-func (m *PathRouter) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *PathRouter) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_PathRouter.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *PathRouter) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PathRouter.Merge(m, src)
-}
-func (m *PathRouter) XXX_Size() int {
-	return m.Size()
-}
-func (m *PathRouter) XXX_DiscardUnknown() {
-	xxx_messageInfo_PathRouter.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_PathRouter proto.InternalMessageInfo
-
-func (m *PathRouter) GetPath() string {
+func (m *VirtualService) GetAction() []*Action {
 	if m != nil {
-		return m.Path
-	}
-	return ""
-}
-
-func (m *PathRouter) GetServiceName() string {
-	if m != nil {
-		return m.ServiceName
-	}
-	return ""
-}
-
-func (m *PathRouter) GetTags() []*TagRouter {
-	if m != nil {
-		return m.Tags
-	}
-	return nil
-}
-
-type HostRouter struct {
-	Host        string        `protobuf:"bytes,1,opt,name=host" json:"host"`
-	ServiceName string        `protobuf:"bytes,2,opt,name=service_name" json:"service_name"`
-	Paths       []*PathRouter `protobuf:"bytes,3,rep,name=paths" json:"paths,omitempty"`
-	Tags        []*TagRouter  `protobuf:"bytes,4,rep,name=tags" json:"tags,omitempty"`
-}
-
-func (m *HostRouter) Reset()      { *m = HostRouter{} }
-func (*HostRouter) ProtoMessage() {}
-func (*HostRouter) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0984d49a362b6b9f, []int{8}
-}
-func (m *HostRouter) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *HostRouter) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_HostRouter.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *HostRouter) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_HostRouter.Merge(m, src)
-}
-func (m *HostRouter) XXX_Size() int {
-	return m.Size()
-}
-func (m *HostRouter) XXX_DiscardUnknown() {
-	xxx_messageInfo_HostRouter.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_HostRouter proto.InternalMessageInfo
-
-func (m *HostRouter) GetHost() string {
-	if m != nil {
-		return m.Host
-	}
-	return ""
-}
-
-func (m *HostRouter) GetServiceName() string {
-	if m != nil {
-		return m.ServiceName
-	}
-	return ""
-}
-
-func (m *HostRouter) GetPaths() []*PathRouter {
-	if m != nil {
-		return m.Paths
-	}
-	return nil
-}
-
-func (m *HostRouter) GetTags() []*TagRouter {
-	if m != nil {
-		return m.Tags
-	}
-	return nil
-}
-
-type Router struct {
-	HostRouter *HostRouter `protobuf:"bytes,1,opt,name=host_router" json:"host_router,omitempty"`
-}
-
-func (m *Router) Reset()      { *m = Router{} }
-func (*Router) ProtoMessage() {}
-func (*Router) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0984d49a362b6b9f, []int{9}
-}
-func (m *Router) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *Router) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_Router.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *Router) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Router.Merge(m, src)
-}
-func (m *Router) XXX_Size() int {
-	return m.Size()
-}
-func (m *Router) XXX_DiscardUnknown() {
-	xxx_messageInfo_Router.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Router proto.InternalMessageInfo
-
-func (m *Router) GetHostRouter() *HostRouter {
-	if m != nil {
-		return m.HostRouter
+		return m.Action
 	}
 	return nil
 }
@@ -691,7 +1171,7 @@ type Config struct {
 func (m *Config) Reset()      { *m = Config{} }
 func (*Config) ProtoMessage() {}
 func (*Config) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0984d49a362b6b9f, []int{10}
+	return fileDescriptor_0984d49a362b6b9f, []int{15}
 }
 func (m *Config) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -735,69 +1215,109 @@ func (m *Config) GetServices() []*VirtualService {
 }
 
 func init() {
+	proto.RegisterEnum("route.OperatorType", OperatorType_name, OperatorType_value)
 	proto.RegisterEnum("route.LocationType", LocationType_name, LocationType_value)
 	proto.RegisterEnum("route.MatchType", MatchType_name, MatchType_value)
+	proto.RegisterEnum("route.ActionType", ActionType_name, ActionType_value)
+	proto.RegisterEnum("route.ActionValueType", ActionValueType_name, ActionValueType_value)
+	proto.RegisterType((*TagValueStrList)(nil), "route.TagValueStrList")
+	proto.RegisterType((*TagItemCondition)(nil), "route.TagItemCondition")
 	proto.RegisterType((*TagItem)(nil), "route.TagItem")
 	proto.RegisterType((*TagRule)(nil), "route.TagRule")
 	proto.RegisterType((*TagRouter)(nil), "route.TagRouter")
-	proto.RegisterType((*Timeout)(nil), "route.Timeout")
-	proto.RegisterType((*Upstream)(nil), "route.Upstream")
-	proto.RegisterType((*Metadata)(nil), "route.Metadata")
-	proto.RegisterType((*VirtualService)(nil), "route.VirtualService")
 	proto.RegisterType((*PathRouter)(nil), "route.PathRouter")
 	proto.RegisterType((*HostRouter)(nil), "route.HostRouter")
+	proto.RegisterType((*AppnameRouter)(nil), "route.AppnameRouter")
+	proto.RegisterType((*APIRouter)(nil), "route.APIRouter")
 	proto.RegisterType((*Router)(nil), "route.Router")
+	proto.RegisterType((*Upstream)(nil), "route.Upstream")
+	proto.RegisterType((*Timeout)(nil), "route.Timeout")
+	proto.RegisterType((*Metadata)(nil), "route.Metadata")
+	proto.RegisterType((*Action)(nil), "route.Action")
+	proto.RegisterType((*VirtualService)(nil), "route.VirtualService")
 	proto.RegisterType((*Config)(nil), "route.Config")
 }
 
 func init() { proto.RegisterFile("route.proto", fileDescriptor_0984d49a362b6b9f) }
 
 var fileDescriptor_0984d49a362b6b9f = []byte{
-	// 663 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x93, 0xbd, 0x6e, 0xd4, 0x4a,
-	0x14, 0xc7, 0x3d, 0xfb, 0x15, 0xef, 0xd9, 0x8f, 0x38, 0x93, 0x5c, 0x69, 0x6f, 0xae, 0x32, 0x77,
-	0xaf, 0x8b, 0xcb, 0x2a, 0x48, 0x01, 0xa5, 0xa0, 0x41, 0xa2, 0x08, 0x12, 0x4a, 0x44, 0x82, 0xf2,
-	0x0d, 0x42, 0x48, 0xab, 0x91, 0x33, 0x6b, 0x5b, 0xac, 0x3d, 0xd6, 0x78, 0x9c, 0x64, 0x29, 0x10,
-	0x35, 0x15, 0x8f, 0x41, 0xcd, 0x53, 0xa4, 0x4c, 0x99, 0x0a, 0x11, 0xa7, 0xa1, 0xcc, 0x23, 0x20,
-	0xcf, 0x8e, 0x77, 0xbd, 0x51, 0x90, 0x28, 0xe7, 0x7f, 0xce, 0xfc, 0xce, 0xff, 0x9c, 0x33, 0x03,
-	0x0d, 0xc1, 0x13, 0xc9, 0xd6, 0x22, 0xc1, 0x25, 0xc7, 0x55, 0x75, 0xb0, 0x3f, 0x23, 0x98, 0x3b,
-	0xa4, 0xee, 0x96, 0x64, 0x01, 0x7e, 0x08, 0xe6, 0x90, 0x3b, 0x54, 0xfa, 0x3c, 0xec, 0xa0, 0x2e,
-	0xea, 0xb5, 0xd7, 0x17, 0xd7, 0xc6, 0x57, 0xb6, 0xb5, 0x7c, 0x38, 0x8a, 0xd8, 0x46, 0xe5, 0xe2,
-	0xfb, 0xbf, 0x06, 0x5e, 0x80, 0xf2, 0x7b, 0x36, 0xea, 0x94, 0xba, 0xa8, 0x57, 0xd7, 0xd2, 0x22,
-	0x54, 0x4f, 0xe9, 0x30, 0x61, 0x9d, 0x72, 0x41, 0x5c, 0x05, 0x08, 0xa8, 0x74, 0xbc, 0xbe, 0x1c,
-	0x45, 0xac, 0x53, 0x51, 0x58, 0x4b, 0x63, 0x77, 0xb2, 0xc0, 0x94, 0x69, 0xf7, 0x94, 0x97, 0xfd,
-	0x64, 0xc8, 0xf0, 0x0a, 0x54, 0x7d, 0xc9, 0x82, 0xb8, 0x83, 0xba, 0xe5, 0x5e, 0x63, 0xbd, 0xad,
-	0x6f, 0x68, 0xab, 0xf6, 0x0b, 0xa8, 0x67, 0x99, 0x99, 0x26, 0xf0, 0x32, 0x34, 0x63, 0x26, 0x4e,
-	0x7d, 0x87, 0xf5, 0x43, 0x1a, 0x30, 0xe5, 0x3d, 0x2f, 0xbf, 0x02, 0x55, 0x91, 0x0c, 0x59, 0xdc,
-	0x29, 0xdd, 0xe5, 0x64, 0x65, 0x6c, 0x0a, 0x73, 0x87, 0x7e, 0xc0, 0x78, 0x22, 0xf1, 0x0a, 0xcc,
-	0x3b, 0x3c, 0x0c, 0x99, 0x23, 0xfb, 0x72, 0x2c, 0x29, 0x50, 0x4b, 0x83, 0x96, 0xa1, 0x29, 0x18,
-	0x3d, 0x99, 0xc4, 0x4a, 0x85, 0xd8, 0x3f, 0xd0, 0x3a, 0x13, 0xbe, 0x64, 0x93, 0x60, 0x79, 0x1a,
-	0xb4, 0x9f, 0x80, 0x79, 0x14, 0xc5, 0x52, 0x30, 0x1a, 0xe0, 0x25, 0xa8, 0x49, 0x2a, 0x5c, 0x26,
-	0x67, 0x3c, 0x2e, 0x41, 0xed, 0x8c, 0xf9, 0xae, 0x37, 0x03, 0xb5, 0xd7, 0xc1, 0xdc, 0x61, 0x92,
-	0x9e, 0x50, 0x49, 0xf3, 0x61, 0xa3, 0xfb, 0x86, 0x5d, 0xd8, 0x80, 0xfd, 0x0d, 0x41, 0xfb, 0xd8,
-	0x17, 0x32, 0xa1, 0xc3, 0x83, 0xf1, 0x44, 0xee, 0x19, 0x4e, 0x69, 0xc2, 0xb0, 0xa1, 0x9e, 0x68,
-	0x6b, 0xf9, 0x80, 0xe6, 0xf5, 0x80, 0x26, 0x96, 0x6d, 0x00, 0xdd, 0x55, 0x3f, 0x88, 0x55, 0x63,
-	0x85, 0x29, 0xea, 0xd1, 0xfd, 0x0d, 0x8d, 0x01, 0x17, 0x0e, 0xeb, 0x7b, 0x52, 0x46, 0xb1, 0x5a,
-	0xb2, 0xa9, 0x4b, 0xfc, 0x07, 0x66, 0xa0, 0xbb, 0xe8, 0x54, 0x67, 0x2a, 0xe4, 0xcd, 0xd9, 0xef,
-	0x00, 0x76, 0xa9, 0xf4, 0xf4, 0x32, 0x31, 0x54, 0x22, 0x2a, 0xbd, 0x99, 0x5e, 0xef, 0xf6, 0x50,
-	0x7c, 0x74, 0x04, 0x2a, 0x92, 0xba, 0x99, 0xb3, 0x0c, 0x6e, 0x15, 0xf6, 0xab, 0x78, 0xf6, 0x47,
-	0x80, 0x4d, 0x1e, 0xcb, 0x29, 0xdd, 0xe3, 0xb1, 0xfc, 0x63, 0x7a, 0x17, 0xaa, 0x99, 0x9b, 0x1c,
-	0xbf, 0xa0, 0xf1, 0x05, 0xbf, 0x79, 0xfd, 0xca, 0x6f, 0xea, 0x3f, 0x86, 0x9a, 0xce, 0xfc, 0x1f,
-	0x1a, 0x59, 0xed, 0xbe, 0xca, 0x10, 0xca, 0xc2, 0x94, 0x38, 0xf5, 0x68, 0xef, 0x41, 0xed, 0x39,
-	0x0f, 0x07, 0xbe, 0x8b, 0x09, 0xcc, 0x8d, 0x93, 0xf3, 0x6f, 0xd0, 0xd2, 0xd9, 0x9a, 0xf8, 0x00,
-	0x4c, 0xed, 0x3c, 0x5f, 0xdf, 0x5f, 0x3a, 0x61, 0xf6, 0x11, 0xac, 0x1e, 0x41, 0xb3, 0xf8, 0x85,
-	0xf1, 0x02, 0xb4, 0xb6, 0xb9, 0xb3, 0x29, 0x65, 0xb4, 0xc9, 0xe8, 0x09, 0x13, 0x96, 0x81, 0x2d,
-	0x95, 0x92, 0x49, 0x7b, 0x09, 0x13, 0x23, 0x0b, 0xe1, 0x79, 0x68, 0x6c, 0x73, 0xe7, 0x95, 0xeb,
-	0x87, 0xe7, 0xc7, 0x54, 0x58, 0x25, 0x2d, 0xbc, 0xd9, 0xf0, 0x3f, 0x6c, 0x85, 0x03, 0x6e, 0x95,
-	0x57, 0x5f, 0x42, 0x7d, 0xf2, 0x85, 0x71, 0x1b, 0xe0, 0xb5, 0xc7, 0x87, 0x4c, 0x29, 0x96, 0x91,
-	0x65, 0xef, 0x0a, 0x36, 0xf0, 0xcf, 0xc7, 0x82, 0xe2, 0x1d, 0x24, 0x83, 0x89, 0x50, 0xc2, 0x4d,
-	0x30, 0xf7, 0x99, 0x3b, 0x3e, 0x95, 0x37, 0x9e, 0x5d, 0x5e, 0x13, 0xe3, 0xea, 0x9a, 0x18, 0xb7,
-	0xd7, 0x04, 0x7d, 0x4a, 0x09, 0xfa, 0x9a, 0x12, 0x74, 0x91, 0x12, 0x74, 0x99, 0x12, 0xf4, 0x23,
-	0x25, 0xe8, 0x67, 0x4a, 0x8c, 0xdb, 0x94, 0xa0, 0x2f, 0x37, 0xc4, 0xb8, 0xbc, 0x21, 0xc6, 0xd5,
-	0x0d, 0x31, 0xde, 0x9a, 0x6b, 0x8f, 0x9e, 0xaa, 0x96, 0x7f, 0x05, 0x00, 0x00, 0xff, 0xff, 0x76,
-	0x98, 0x1f, 0xfe, 0xde, 0x04, 0x00, 0x00,
+	// 1067 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x55, 0x41, 0x6f, 0x1b, 0x45,
+	0x14, 0xf6, 0x78, 0x6d, 0xc7, 0x7e, 0x8e, 0x9d, 0xcd, 0x26, 0x4e, 0xb6, 0x45, 0x59, 0xcc, 0x0a,
+	0x81, 0x65, 0xaa, 0x80, 0x7c, 0xe0, 0x82, 0x84, 0x94, 0xa4, 0x40, 0x22, 0x39, 0x90, 0x36, 0x69,
+	0x40, 0x39, 0x60, 0x0d, 0xeb, 0x89, 0x3d, 0xaa, 0x77, 0x67, 0x3b, 0x3b, 0x4e, 0x9b, 0x1e, 0x10,
+	0x07, 0x7e, 0x40, 0xfe, 0x00, 0x07, 0x6e, 0xfc, 0x00, 0x7e, 0x44, 0x8f, 0xe1, 0xd6, 0x13, 0x22,
+	0xce, 0x85, 0x63, 0x7f, 0x02, 0xda, 0xd9, 0xd9, 0xf5, 0xac, 0x29, 0x52, 0x91, 0x7a, 0xf3, 0xbe,
+	0xf7, 0xcd, 0xf7, 0xbe, 0xf7, 0xcd, 0x7b, 0x63, 0xa8, 0x73, 0x36, 0x15, 0x64, 0x3b, 0xe4, 0x4c,
+	0x30, 0xab, 0x2c, 0x3f, 0xdc, 0x36, 0xac, 0x9c, 0xe0, 0xd1, 0x29, 0x9e, 0x4c, 0xc9, 0xb1, 0xe0,
+	0x7d, 0x1a, 0x09, 0xab, 0x01, 0xe5, 0x8b, 0xf8, 0xdb, 0x46, 0x6d, 0xa3, 0x53, 0x73, 0x7f, 0x47,
+	0x60, 0x9e, 0xe0, 0xd1, 0x81, 0x20, 0xfe, 0x1e, 0x0b, 0x86, 0x54, 0x50, 0x16, 0x58, 0x9b, 0x50,
+	0x93, 0x98, 0x41, 0x24, 0xb8, 0x8d, 0xda, 0xa8, 0x53, 0xdb, 0x2d, 0xbd, 0xf8, 0xf3, 0xdd, 0x82,
+	0xd5, 0x05, 0x48, 0x12, 0x13, 0x1a, 0x09, 0xbb, 0xd8, 0x46, 0x9d, 0x7a, 0x6f, 0x63, 0x3b, 0x29,
+	0xbc, 0x58, 0xa8, 0x05, 0x4b, 0x43, 0x7a, 0x41, 0x23, 0xc6, 0x6d, 0xa3, 0x8d, 0x3a, 0x25, 0x45,
+	0xb1, 0x09, 0x35, 0x4e, 0x7c, 0x4c, 0x83, 0x21, 0xe1, 0x76, 0x49, 0x4b, 0x7c, 0x04, 0x55, 0x16,
+	0x12, 0x8e, 0x05, 0xe3, 0x76, 0xb9, 0x8d, 0x3a, 0xcd, 0xde, 0x9a, 0x62, 0xfe, 0x46, 0x85, 0x4f,
+	0x2e, 0x43, 0x92, 0x80, 0xdd, 0x5f, 0x11, 0x2c, 0x29, 0xd9, 0xf1, 0xc1, 0x09, 0xf3, 0x70, 0xac,
+	0x5c, 0x8a, 0x9d, 0x1f, 0xec, 0xab, 0xf0, 0xfc, 0xa0, 0xb5, 0x0a, 0xc6, 0x63, 0x72, 0x29, 0xa5,
+	0xcf, 0x9b, 0xaa, 0x79, 0x69, 0xeb, 0x52, 0x6a, 0xbd, 0xb7, 0x39, 0xef, 0x29, 0xef, 0x4c, 0x17,
+	0xc0, 0xc7, 0xc2, 0x1b, 0x0f, 0xc4, 0x65, 0x48, 0xa4, 0xfc, 0x66, 0xcf, 0x54, 0xe0, 0xc3, 0x38,
+	0xa1, 0x69, 0xec, 0x48, 0x89, 0x0f, 0xa7, 0x13, 0x62, 0x6d, 0x41, 0x99, 0x0a, 0xe2, 0x47, 0xd2,
+	0xf4, 0x7a, 0xaf, 0x99, 0xa7, 0x77, 0xbf, 0x84, 0x5a, 0x8c, 0x8c, 0x63, 0xdc, 0xba, 0x0b, 0xcb,
+	0x11, 0xe1, 0x17, 0xd4, 0x23, 0x83, 0x00, 0xfb, 0x24, 0xe7, 0xff, 0x16, 0x94, 0xf9, 0x74, 0x42,
+	0x22, 0xbb, 0xb8, 0xc8, 0x13, 0x97, 0x71, 0xbf, 0x07, 0x38, 0xc2, 0x62, 0xac, 0x88, 0xd6, 0xa1,
+	0x12, 0x72, 0x72, 0x4e, 0x9f, 0xe5, 0x28, 0x16, 0xe9, 0x75, 0x27, 0x1c, 0x28, 0x09, 0x3c, 0x8a,
+	0x6c, 0x43, 0xb2, 0x9b, 0x1a, 0xbb, 0x64, 0x74, 0x7f, 0x04, 0xd8, 0x67, 0x91, 0x50, 0xfc, 0x16,
+	0x94, 0xc6, 0x2c, 0x12, 0x6f, 0xcc, 0xde, 0x86, 0x72, 0x88, 0xc5, 0x38, 0xa5, 0x5f, 0x55, 0xf4,
+	0x9a, 0xe2, 0xb4, 0x7e, 0xe9, 0x3f, 0xea, 0xff, 0x00, 0x8d, 0x9d, 0x30, 0x8c, 0x89, 0xd5, 0x81,
+	0x16, 0x2c, 0xe1, 0x24, 0xf0, 0xd6, 0x7a, 0x3c, 0x83, 0xda, 0xce, 0xd1, 0xc1, 0x1b, 0xdc, 0xc5,
+	0x2a, 0x18, 0x38, 0xa4, 0xff, 0x8b, 0xfb, 0x67, 0x04, 0x15, 0xc5, 0xfc, 0x01, 0xd4, 0x63, 0xf3,
+	0x06, 0x12, 0x92, 0x2c, 0xd9, 0xdc, 0x12, 0xcd, 0xe4, 0x7b, 0xd0, 0x54, 0x1d, 0xa6, 0xd0, 0x64,
+	0xeb, 0xd6, 0x15, 0x34, 0xef, 0xc7, 0xfb, 0x00, 0x38, 0xa4, 0x29, 0x32, 0x99, 0xe5, 0x54, 0x46,
+	0xd6, 0x95, 0xfb, 0x29, 0x54, 0x1f, 0x85, 0x91, 0xe0, 0x04, 0xfb, 0xf1, 0x90, 0x08, 0xcc, 0x47,
+	0x24, 0x7f, 0x8d, 0xeb, 0x50, 0x79, 0x4a, 0xe8, 0x68, 0x9c, 0xec, 0x78, 0x43, 0x0d, 0x34, 0x86,
+	0xa5, 0x13, 0xea, 0x13, 0x36, 0x15, 0xd6, 0x16, 0xac, 0x78, 0x2c, 0x08, 0x88, 0x27, 0x06, 0x22,
+	0x09, 0xc9, 0xf3, 0x8d, 0xf9, 0x05, 0x70, 0x82, 0x87, 0x59, 0x4e, 0x63, 0xb1, 0xde, 0x81, 0xc6,
+	0x53, 0x4e, 0x05, 0xc9, 0x92, 0x86, 0x56, 0xa2, 0x07, 0xd5, 0x43, 0x22, 0xf0, 0x10, 0x0b, 0x9c,
+	0xae, 0xaa, 0xae, 0x6b, 0x2d, 0x7d, 0xbc, 0x34, 0xd7, 0xdd, 0x2b, 0x04, 0x95, 0x1d, 0x4f, 0xae,
+	0xe7, 0x3d, 0xa8, 0x63, 0xf9, 0x2b, 0xd9, 0xcf, 0xe4, 0x35, 0x48, 0x5d, 0x4d, 0x30, 0xda, 0x5b,
+	0xf0, 0x49, 0xfa, 0x9a, 0x49, 0x70, 0x51, 0x82, 0x37, 0x72, 0x60, 0xf9, 0xa0, 0xfd, 0xfb, 0xf5,
+	0x30, 0x5e, 0x27, 0xa9, 0xa4, 0x49, 0xfa, 0x03, 0x41, 0xf3, 0x94, 0x72, 0x31, 0xc5, 0x93, 0xe3,
+	0x64, 0x7e, 0x5e, 0x33, 0x4a, 0xc5, 0x8c, 0xc3, 0x85, 0xda, 0x54, 0x5d, 0x48, 0xba, 0xda, 0x2b,
+	0x4a, 0x47, 0x76, 0x51, 0x2e, 0x80, 0x32, 0x6c, 0xe0, 0x47, 0xea, 0x6a, 0xb3, 0xfd, 0x57, 0xb7,
+	0x72, 0x07, 0xea, 0xe7, 0x8c, 0x7b, 0x64, 0x30, 0x16, 0x22, 0x8c, 0xa4, 0xa2, 0xaa, 0x2a, 0xf1,
+	0x1e, 0x54, 0x7d, 0x65, 0xac, 0x5d, 0xce, 0x55, 0xc8, 0xfc, 0xde, 0x82, 0x4a, 0x62, 0x9e, 0x5d,
+	0x91, 0x80, 0x46, 0xce, 0x0a, 0xf7, 0x01, 0x54, 0xf6, 0x58, 0x70, 0x4e, 0x47, 0x96, 0x03, 0x4b,
+	0xc9, 0x84, 0xa5, 0xef, 0x59, 0x8a, 0x54, 0x53, 0xf8, 0x21, 0x54, 0x55, 0xab, 0x69, 0x37, 0x2d,
+	0x05, 0xc8, 0x7b, 0xd2, 0xbd, 0x42, 0xb0, 0xac, 0x3f, 0xee, 0x56, 0x0b, 0x56, 0xd3, 0xef, 0x47,
+	0xc1, 0x7d, 0x72, 0x4e, 0x03, 0x32, 0x34, 0x63, 0xdb, 0x1b, 0x69, 0xf8, 0x8b, 0x27, 0x53, 0x3c,
+	0x31, 0x91, 0xb5, 0x06, 0x2b, 0x69, 0xe8, 0x2b, 0x4e, 0xb0, 0x20, 0xdc, 0x2c, 0x5a, 0xe6, 0x9c,
+	0xae, 0x4f, 0xa2, 0xc8, 0x34, 0x2c, 0x1b, 0xd6, 0x17, 0x60, 0x09, 0x41, 0x49, 0x2f, 0x15, 0x63,
+	0x93, 0x70, 0xb9, 0xfb, 0x1c, 0x96, 0xf5, 0x7f, 0x8d, 0x98, 0xb2, 0xcf, 0xbc, 0x05, 0x31, 0x7d,
+	0xe6, 0xed, 0x0b, 0x11, 0xee, 0x13, 0x3c, 0x24, 0xdc, 0x44, 0x0a, 0x14, 0x87, 0x1e, 0x4c, 0x09,
+	0xbf, 0x34, 0x8b, 0xd6, 0x0a, 0xd4, 0xfb, 0xcc, 0xfb, 0x7a, 0x44, 0x83, 0x67, 0xa7, 0x98, 0x9b,
+	0x86, 0x0a, 0x7c, 0xb7, 0x4b, 0x9f, 0x1f, 0x04, 0xe7, 0xcc, 0x2c, 0x69, 0x34, 0x7b, 0x8c, 0x3d,
+	0xa6, 0xc4, 0x2c, 0x77, 0x8f, 0xa1, 0x96, 0xfd, 0x87, 0x58, 0x16, 0x34, 0xe5, 0x87, 0x5e, 0xba,
+	0x09, 0xf0, 0xed, 0x98, 0x4d, 0x88, 0x4c, 0x98, 0x28, 0xc6, 0xa8, 0x7f, 0xdb, 0x83, 0x20, 0x89,
+	0x15, 0x63, 0xcc, 0x21, 0x1b, 0xee, 0x31, 0x3f, 0xc4, 0x9c, 0x98, 0x46, 0xf7, 0x17, 0x04, 0x30,
+	0x9f, 0xfc, 0xd8, 0xb7, 0xe4, 0x4b, 0xe7, 0xdd, 0x00, 0x2b, 0x09, 0xee, 0x0c, 0x87, 0x0f, 0xc9,
+	0x93, 0xac, 0xaf, 0x3b, 0xd0, 0x52, 0xf1, 0x30, 0x24, 0x81, 0x96, 0x2a, 0x5a, 0x9b, 0xb0, 0xa6,
+	0x1d, 0x89, 0x52, 0x2f, 0x0c, 0xeb, 0x2e, 0x6c, 0xe4, 0xcf, 0x64, 0xb9, 0x52, 0xac, 0x37, 0x3b,
+	0x74, 0x84, 0x39, 0xf6, 0xcd, 0x72, 0xf7, 0x2c, 0x15, 0x94, 0xed, 0x5a, 0x7c, 0x69, 0x5a, 0x48,
+	0x17, 0xda, 0x82, 0xd5, 0x24, 0x73, 0x2c, 0xb0, 0xa0, 0x9e, 0xcc, 0x9b, 0x68, 0xae, 0xff, 0xfe,
+	0x65, 0x80, 0xfd, 0x34, 0x5e, 0xdc, 0xfd, 0xfc, 0xfa, 0xc6, 0x29, 0xbc, 0xbc, 0x71, 0x0a, 0xaf,
+	0x6e, 0x1c, 0xf4, 0xd3, 0xcc, 0x41, 0xbf, 0xcd, 0x1c, 0xf4, 0x62, 0xe6, 0xa0, 0xeb, 0x99, 0x83,
+	0xfe, 0x9a, 0x39, 0xe8, 0xef, 0x99, 0x53, 0x78, 0x35, 0x73, 0xd0, 0xd5, 0xad, 0x53, 0xb8, 0xbe,
+	0x75, 0x0a, 0x2f, 0x6f, 0x9d, 0xc2, 0x59, 0x75, 0xfb, 0xe3, 0xcf, 0xe4, 0xb8, 0xfe, 0x13, 0x00,
+	0x00, 0xff, 0xff, 0xfa, 0x48, 0x6b, 0x7f, 0x53, 0x09, 0x00, 0x00,
 }
 
+func (x OperatorType) String() string {
+	s, ok := OperatorType_name[int32(x)]
+	if ok {
+		return s
+	}
+	return strconv.Itoa(int(x))
+}
 func (x LocationType) String() string {
 	s, ok := LocationType_name[int32(x)]
 	if ok {
@@ -811,6 +1331,85 @@ func (x MatchType) String() string {
 		return s
 	}
 	return strconv.Itoa(int(x))
+}
+func (x ActionType) String() string {
+	s, ok := ActionType_name[int32(x)]
+	if ok {
+		return s
+	}
+	return strconv.Itoa(int(x))
+}
+func (x ActionValueType) String() string {
+	s, ok := ActionValueType_name[int32(x)]
+	if ok {
+		return s
+	}
+	return strconv.Itoa(int(x))
+}
+func (this *TagValueStrList) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TagValueStrList)
+	if !ok {
+		that2, ok := that.(TagValueStrList)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.Value) != len(that1.Value) {
+		return false
+	}
+	for i := range this.Value {
+		if this.Value[i] != that1.Value[i] {
+			return false
+		}
+	}
+	return true
+}
+func (this *TagItemCondition) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TagItemCondition)
+	if !ok {
+		that2, ok := that.(TagItemCondition)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.ValueStr != that1.ValueStr {
+		return false
+	}
+	if !this.ValueList.Equal(that1.ValueList) {
+		return false
+	}
+	if this.Divisor != that1.Divisor {
+		return false
+	}
+	if this.Remainder != that1.Remainder {
+		return false
+	}
+	if this.Operator != that1.Operator {
+		return false
+	}
+	return true
 }
 func (this *TagItem) Equal(that interface{}) bool {
 	if that == nil {
@@ -837,7 +1436,7 @@ func (this *TagItem) Equal(that interface{}) bool {
 	if this.Key != that1.Key {
 		return false
 	}
-	if this.Value != that1.Value {
+	if !this.Condition.Equal(that1.Condition) {
 		return false
 	}
 	if this.MatchType != that1.MatchType {
@@ -906,136 +1505,6 @@ func (this *TagRouter) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *Timeout) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*Timeout)
-	if !ok {
-		that2, ok := that.(Timeout)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.ConnectTimeout != that1.ConnectTimeout {
-		return false
-	}
-	if this.ReadTimeout != that1.ReadTimeout {
-		return false
-	}
-	if this.WriteTimeout != that1.WriteTimeout {
-		return false
-	}
-	return true
-}
-func (this *Upstream) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*Upstream)
-	if !ok {
-		that2, ok := that.(Upstream)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Target != that1.Target {
-		return false
-	}
-	if this.Weight != that1.Weight {
-		return false
-	}
-	return true
-}
-func (this *Metadata) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*Metadata)
-	if !ok {
-		that2, ok := that.(Metadata)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Key != that1.Key {
-		return false
-	}
-	if this.Value != that1.Value {
-		return false
-	}
-	return true
-}
-func (this *VirtualService) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*VirtualService)
-	if !ok {
-		that2, ok := that.(VirtualService)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.ServiceName != that1.ServiceName {
-		return false
-	}
-	if len(this.Upstreams) != len(that1.Upstreams) {
-		return false
-	}
-	for i := range this.Upstreams {
-		if !this.Upstreams[i].Equal(that1.Upstreams[i]) {
-			return false
-		}
-	}
-	if !this.TimeoutMs.Equal(that1.TimeoutMs) {
-		return false
-	}
-	if this.ForceHttps != that1.ForceHttps {
-		return false
-	}
-	if len(this.Metadata) != len(that1.Metadata) {
-		return false
-	}
-	for i := range this.Metadata {
-		if !this.Metadata[i].Equal(that1.Metadata[i]) {
-			return false
-		}
-	}
-	return true
-}
 func (this *PathRouter) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
@@ -1055,7 +1524,7 @@ func (this *PathRouter) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if this.Path != that1.Path {
+	if this.Prefix != that1.Prefix {
 		return false
 	}
 	if this.ServiceName != that1.ServiceName {
@@ -1114,6 +1583,76 @@ func (this *HostRouter) Equal(that interface{}) bool {
 	}
 	return true
 }
+func (this *AppnameRouter) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*AppnameRouter)
+	if !ok {
+		that2, ok := that.(AppnameRouter)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Appname != that1.Appname {
+		return false
+	}
+	if this.ServiceName != that1.ServiceName {
+		return false
+	}
+	if len(this.Tags) != len(that1.Tags) {
+		return false
+	}
+	for i := range this.Tags {
+		if !this.Tags[i].Equal(that1.Tags[i]) {
+			return false
+		}
+	}
+	return true
+}
+func (this *APIRouter) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*APIRouter)
+	if !ok {
+		that2, ok := that.(APIRouter)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.ServiceName != that1.ServiceName {
+		return false
+	}
+	if this.Api != that1.Api {
+		return false
+	}
+	if len(this.Tags) != len(that1.Tags) {
+		return false
+	}
+	for i := range this.Tags {
+		if !this.Tags[i].Equal(that1.Tags[i]) {
+			return false
+		}
+	}
+	return true
+}
 func (this *Router) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
@@ -1135,6 +1674,183 @@ func (this *Router) Equal(that interface{}) bool {
 	}
 	if !this.HostRouter.Equal(that1.HostRouter) {
 		return false
+	}
+	if !this.AppnameRouter.Equal(that1.AppnameRouter) {
+		return false
+	}
+	if !this.ApiRouter.Equal(that1.ApiRouter) {
+		return false
+	}
+	return true
+}
+func (this *Upstream) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Upstream)
+	if !ok {
+		that2, ok := that.(Upstream)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Target != that1.Target {
+		return false
+	}
+	if this.Weight != that1.Weight {
+		return false
+	}
+	return true
+}
+func (this *Timeout) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Timeout)
+	if !ok {
+		that2, ok := that.(Timeout)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.ConnectTimeout != that1.ConnectTimeout {
+		return false
+	}
+	if this.ReadTimeout != that1.ReadTimeout {
+		return false
+	}
+	if this.WriteTimeout != that1.WriteTimeout {
+		return false
+	}
+	return true
+}
+func (this *Metadata) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Metadata)
+	if !ok {
+		that2, ok := that.(Metadata)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Key != that1.Key {
+		return false
+	}
+	if this.Value != that1.Value {
+		return false
+	}
+	return true
+}
+func (this *Action) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Action)
+	if !ok {
+		that2, ok := that.(Action)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.ActionType != that1.ActionType {
+		return false
+	}
+	if this.ValueType != that1.ValueType {
+		return false
+	}
+	if this.Key != that1.Key {
+		return false
+	}
+	if this.Value != that1.Value {
+		return false
+	}
+	return true
+}
+func (this *VirtualService) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*VirtualService)
+	if !ok {
+		that2, ok := that.(VirtualService)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.ServiceName != that1.ServiceName {
+		return false
+	}
+	if len(this.Upstreams) != len(that1.Upstreams) {
+		return false
+	}
+	for i := range this.Upstreams {
+		if !this.Upstreams[i].Equal(that1.Upstreams[i]) {
+			return false
+		}
+	}
+	if !this.TimeoutMs.Equal(that1.TimeoutMs) {
+		return false
+	}
+	if this.ForceHttps != that1.ForceHttps {
+		return false
+	}
+	if len(this.Metadata) != len(that1.Metadata) {
+		return false
+	}
+	for i := range this.Metadata {
+		if !this.Metadata[i].Equal(that1.Metadata[i]) {
+			return false
+		}
+	}
+	if len(this.Action) != len(that1.Action) {
+		return false
+	}
+	for i := range this.Action {
+		if !this.Action[i].Equal(that1.Action[i]) {
+			return false
+		}
 	}
 	return true
 }
@@ -1175,6 +1891,34 @@ func (this *Config) Equal(that interface{}) bool {
 	}
 	return true
 }
+func (this *TagValueStrList) GoString() string {
+	if this == nil {
+		return "nil"
+	}
+	s := make([]string, 0, 5)
+	s = append(s, "&route.TagValueStrList{")
+	if this.Value != nil {
+		s = append(s, "Value: "+fmt.Sprintf("%#v", this.Value)+",\n")
+	}
+	s = append(s, "}")
+	return strings.Join(s, "")
+}
+func (this *TagItemCondition) GoString() string {
+	if this == nil {
+		return "nil"
+	}
+	s := make([]string, 0, 9)
+	s = append(s, "&route.TagItemCondition{")
+	s = append(s, "ValueStr: "+fmt.Sprintf("%#v", this.ValueStr)+",\n")
+	if this.ValueList != nil {
+		s = append(s, "ValueList: "+fmt.Sprintf("%#v", this.ValueList)+",\n")
+	}
+	s = append(s, "Divisor: "+fmt.Sprintf("%#v", this.Divisor)+",\n")
+	s = append(s, "Remainder: "+fmt.Sprintf("%#v", this.Remainder)+",\n")
+	s = append(s, "Operator: "+fmt.Sprintf("%#v", this.Operator)+",\n")
+	s = append(s, "}")
+	return strings.Join(s, "")
+}
 func (this *TagItem) GoString() string {
 	if this == nil {
 		return "nil"
@@ -1183,7 +1927,9 @@ func (this *TagItem) GoString() string {
 	s = append(s, "&route.TagItem{")
 	s = append(s, "Location: "+fmt.Sprintf("%#v", this.Location)+",\n")
 	s = append(s, "Key: "+fmt.Sprintf("%#v", this.Key)+",\n")
-	s = append(s, "Value: "+fmt.Sprintf("%#v", this.Value)+",\n")
+	if this.Condition != nil {
+		s = append(s, "Condition: "+fmt.Sprintf("%#v", this.Condition)+",\n")
+	}
 	s = append(s, "MatchType: "+fmt.Sprintf("%#v", this.MatchType)+",\n")
 	s = append(s, "}")
 	return strings.Join(s, "")
@@ -1213,67 +1959,13 @@ func (this *TagRouter) GoString() string {
 	s = append(s, "}")
 	return strings.Join(s, "")
 }
-func (this *Timeout) GoString() string {
-	if this == nil {
-		return "nil"
-	}
-	s := make([]string, 0, 7)
-	s = append(s, "&route.Timeout{")
-	s = append(s, "ConnectTimeout: "+fmt.Sprintf("%#v", this.ConnectTimeout)+",\n")
-	s = append(s, "ReadTimeout: "+fmt.Sprintf("%#v", this.ReadTimeout)+",\n")
-	s = append(s, "WriteTimeout: "+fmt.Sprintf("%#v", this.WriteTimeout)+",\n")
-	s = append(s, "}")
-	return strings.Join(s, "")
-}
-func (this *Upstream) GoString() string {
-	if this == nil {
-		return "nil"
-	}
-	s := make([]string, 0, 6)
-	s = append(s, "&route.Upstream{")
-	s = append(s, "Target: "+fmt.Sprintf("%#v", this.Target)+",\n")
-	s = append(s, "Weight: "+fmt.Sprintf("%#v", this.Weight)+",\n")
-	s = append(s, "}")
-	return strings.Join(s, "")
-}
-func (this *Metadata) GoString() string {
-	if this == nil {
-		return "nil"
-	}
-	s := make([]string, 0, 6)
-	s = append(s, "&route.Metadata{")
-	s = append(s, "Key: "+fmt.Sprintf("%#v", this.Key)+",\n")
-	s = append(s, "Value: "+fmt.Sprintf("%#v", this.Value)+",\n")
-	s = append(s, "}")
-	return strings.Join(s, "")
-}
-func (this *VirtualService) GoString() string {
-	if this == nil {
-		return "nil"
-	}
-	s := make([]string, 0, 9)
-	s = append(s, "&route.VirtualService{")
-	s = append(s, "ServiceName: "+fmt.Sprintf("%#v", this.ServiceName)+",\n")
-	if this.Upstreams != nil {
-		s = append(s, "Upstreams: "+fmt.Sprintf("%#v", this.Upstreams)+",\n")
-	}
-	if this.TimeoutMs != nil {
-		s = append(s, "TimeoutMs: "+fmt.Sprintf("%#v", this.TimeoutMs)+",\n")
-	}
-	s = append(s, "ForceHttps: "+fmt.Sprintf("%#v", this.ForceHttps)+",\n")
-	if this.Metadata != nil {
-		s = append(s, "Metadata: "+fmt.Sprintf("%#v", this.Metadata)+",\n")
-	}
-	s = append(s, "}")
-	return strings.Join(s, "")
-}
 func (this *PathRouter) GoString() string {
 	if this == nil {
 		return "nil"
 	}
 	s := make([]string, 0, 7)
 	s = append(s, "&route.PathRouter{")
-	s = append(s, "Path: "+fmt.Sprintf("%#v", this.Path)+",\n")
+	s = append(s, "Prefix: "+fmt.Sprintf("%#v", this.Prefix)+",\n")
 	s = append(s, "ServiceName: "+fmt.Sprintf("%#v", this.ServiceName)+",\n")
 	if this.Tags != nil {
 		s = append(s, "Tags: "+fmt.Sprintf("%#v", this.Tags)+",\n")
@@ -1298,14 +1990,118 @@ func (this *HostRouter) GoString() string {
 	s = append(s, "}")
 	return strings.Join(s, "")
 }
+func (this *AppnameRouter) GoString() string {
+	if this == nil {
+		return "nil"
+	}
+	s := make([]string, 0, 7)
+	s = append(s, "&route.AppnameRouter{")
+	s = append(s, "Appname: "+fmt.Sprintf("%#v", this.Appname)+",\n")
+	s = append(s, "ServiceName: "+fmt.Sprintf("%#v", this.ServiceName)+",\n")
+	if this.Tags != nil {
+		s = append(s, "Tags: "+fmt.Sprintf("%#v", this.Tags)+",\n")
+	}
+	s = append(s, "}")
+	return strings.Join(s, "")
+}
+func (this *APIRouter) GoString() string {
+	if this == nil {
+		return "nil"
+	}
+	s := make([]string, 0, 7)
+	s = append(s, "&route.APIRouter{")
+	s = append(s, "ServiceName: "+fmt.Sprintf("%#v", this.ServiceName)+",\n")
+	s = append(s, "Api: "+fmt.Sprintf("%#v", this.Api)+",\n")
+	if this.Tags != nil {
+		s = append(s, "Tags: "+fmt.Sprintf("%#v", this.Tags)+",\n")
+	}
+	s = append(s, "}")
+	return strings.Join(s, "")
+}
 func (this *Router) GoString() string {
 	if this == nil {
 		return "nil"
 	}
-	s := make([]string, 0, 5)
+	s := make([]string, 0, 7)
 	s = append(s, "&route.Router{")
 	if this.HostRouter != nil {
 		s = append(s, "HostRouter: "+fmt.Sprintf("%#v", this.HostRouter)+",\n")
+	}
+	if this.AppnameRouter != nil {
+		s = append(s, "AppnameRouter: "+fmt.Sprintf("%#v", this.AppnameRouter)+",\n")
+	}
+	if this.ApiRouter != nil {
+		s = append(s, "ApiRouter: "+fmt.Sprintf("%#v", this.ApiRouter)+",\n")
+	}
+	s = append(s, "}")
+	return strings.Join(s, "")
+}
+func (this *Upstream) GoString() string {
+	if this == nil {
+		return "nil"
+	}
+	s := make([]string, 0, 6)
+	s = append(s, "&route.Upstream{")
+	s = append(s, "Target: "+fmt.Sprintf("%#v", this.Target)+",\n")
+	s = append(s, "Weight: "+fmt.Sprintf("%#v", this.Weight)+",\n")
+	s = append(s, "}")
+	return strings.Join(s, "")
+}
+func (this *Timeout) GoString() string {
+	if this == nil {
+		return "nil"
+	}
+	s := make([]string, 0, 7)
+	s = append(s, "&route.Timeout{")
+	s = append(s, "ConnectTimeout: "+fmt.Sprintf("%#v", this.ConnectTimeout)+",\n")
+	s = append(s, "ReadTimeout: "+fmt.Sprintf("%#v", this.ReadTimeout)+",\n")
+	s = append(s, "WriteTimeout: "+fmt.Sprintf("%#v", this.WriteTimeout)+",\n")
+	s = append(s, "}")
+	return strings.Join(s, "")
+}
+func (this *Metadata) GoString() string {
+	if this == nil {
+		return "nil"
+	}
+	s := make([]string, 0, 6)
+	s = append(s, "&route.Metadata{")
+	s = append(s, "Key: "+fmt.Sprintf("%#v", this.Key)+",\n")
+	s = append(s, "Value: "+fmt.Sprintf("%#v", this.Value)+",\n")
+	s = append(s, "}")
+	return strings.Join(s, "")
+}
+func (this *Action) GoString() string {
+	if this == nil {
+		return "nil"
+	}
+	s := make([]string, 0, 8)
+	s = append(s, "&route.Action{")
+	s = append(s, "ActionType: "+fmt.Sprintf("%#v", this.ActionType)+",\n")
+	s = append(s, "ValueType: "+fmt.Sprintf("%#v", this.ValueType)+",\n")
+	s = append(s, "Key: "+fmt.Sprintf("%#v", this.Key)+",\n")
+	s = append(s, "Value: "+fmt.Sprintf("%#v", this.Value)+",\n")
+	s = append(s, "}")
+	return strings.Join(s, "")
+}
+func (this *VirtualService) GoString() string {
+	if this == nil {
+		return "nil"
+	}
+	s := make([]string, 0, 10)
+	s = append(s, "&route.VirtualService{")
+	s = append(s, "ServiceName: "+fmt.Sprintf("%#v", this.ServiceName)+",\n")
+	if this.Upstreams != nil {
+		s = append(s, "Upstreams: "+fmt.Sprintf("%#v", this.Upstreams)+",\n")
+	}
+	if this.TimeoutMs != nil {
+		s = append(s, "TimeoutMs: "+fmt.Sprintf("%#v", this.TimeoutMs)+",\n")
+	}
+	s = append(s, "ForceHttps: "+fmt.Sprintf("%#v", this.ForceHttps)+",\n")
+	if this.Metadata != nil {
+		s = append(s, "Metadata: "+fmt.Sprintf("%#v", this.Metadata)+",\n")
+	}
+	if this.Action != nil {
+		s = append(s, "Action: "+fmt.Sprintf("%#v", this.Action)+",\n")
 	}
 	s = append(s, "}")
 	return strings.Join(s, "")
@@ -1333,6 +2129,80 @@ func valueToGoStringRoute(v interface{}, typ string) string {
 	pv := reflect.Indirect(rv).Interface()
 	return fmt.Sprintf("func(v %v) *%v { return &v } ( %#v )", typ, typ, pv)
 }
+func (m *TagValueStrList) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *TagValueStrList) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	if len(m.Value) > 0 {
+		for _, s := range m.Value {
+			dAtA[i] = 0xa
+			i++
+			l = len(s)
+			for l >= 1<<7 {
+				dAtA[i] = uint8(uint64(l)&0x7f | 0x80)
+				l >>= 7
+				i++
+			}
+			dAtA[i] = uint8(l)
+			i++
+			i += copy(dAtA[i:], s)
+		}
+	}
+	return i, nil
+}
+
+func (m *TagItemCondition) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *TagItemCondition) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	dAtA[i] = 0xa
+	i++
+	i = encodeVarintRoute(dAtA, i, uint64(len(m.ValueStr)))
+	i += copy(dAtA[i:], m.ValueStr)
+	if m.ValueList != nil {
+		dAtA[i] = 0x12
+		i++
+		i = encodeVarintRoute(dAtA, i, uint64(m.ValueList.Size()))
+		n1, err := m.ValueList.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n1
+	}
+	dAtA[i] = 0x18
+	i++
+	i = encodeVarintRoute(dAtA, i, uint64(m.Divisor))
+	dAtA[i] = 0x20
+	i++
+	i = encodeVarintRoute(dAtA, i, uint64(m.Remainder))
+	dAtA[i] = 0x28
+	i++
+	i = encodeVarintRoute(dAtA, i, uint64(m.Operator))
+	return i, nil
+}
+
 func (m *TagItem) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -1355,10 +2225,16 @@ func (m *TagItem) MarshalTo(dAtA []byte) (int, error) {
 	i++
 	i = encodeVarintRoute(dAtA, i, uint64(len(m.Key)))
 	i += copy(dAtA[i:], m.Key)
-	dAtA[i] = 0x1a
-	i++
-	i = encodeVarintRoute(dAtA, i, uint64(len(m.Value)))
-	i += copy(dAtA[i:], m.Value)
+	if m.Condition != nil {
+		dAtA[i] = 0x1a
+		i++
+		i = encodeVarintRoute(dAtA, i, uint64(m.Condition.Size()))
+		n2, err := m.Condition.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n2
+	}
 	dAtA[i] = 0x20
 	i++
 	i = encodeVarintRoute(dAtA, i, uint64(m.MatchType))
@@ -1429,148 +2305,6 @@ func (m *TagRouter) MarshalTo(dAtA []byte) (int, error) {
 	return i, nil
 }
 
-func (m *Timeout) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *Timeout) MarshalTo(dAtA []byte) (int, error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	dAtA[i] = 0x8
-	i++
-	i = encodeVarintRoute(dAtA, i, uint64(m.ConnectTimeout))
-	dAtA[i] = 0x10
-	i++
-	i = encodeVarintRoute(dAtA, i, uint64(m.ReadTimeout))
-	dAtA[i] = 0x18
-	i++
-	i = encodeVarintRoute(dAtA, i, uint64(m.WriteTimeout))
-	return i, nil
-}
-
-func (m *Upstream) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *Upstream) MarshalTo(dAtA []byte) (int, error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	dAtA[i] = 0xa
-	i++
-	i = encodeVarintRoute(dAtA, i, uint64(len(m.Target)))
-	i += copy(dAtA[i:], m.Target)
-	dAtA[i] = 0x10
-	i++
-	i = encodeVarintRoute(dAtA, i, uint64(m.Weight))
-	return i, nil
-}
-
-func (m *Metadata) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *Metadata) MarshalTo(dAtA []byte) (int, error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	dAtA[i] = 0xa
-	i++
-	i = encodeVarintRoute(dAtA, i, uint64(len(m.Key)))
-	i += copy(dAtA[i:], m.Key)
-	dAtA[i] = 0x12
-	i++
-	i = encodeVarintRoute(dAtA, i, uint64(len(m.Value)))
-	i += copy(dAtA[i:], m.Value)
-	return i, nil
-}
-
-func (m *VirtualService) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *VirtualService) MarshalTo(dAtA []byte) (int, error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	dAtA[i] = 0xa
-	i++
-	i = encodeVarintRoute(dAtA, i, uint64(len(m.ServiceName)))
-	i += copy(dAtA[i:], m.ServiceName)
-	if len(m.Upstreams) > 0 {
-		for _, msg := range m.Upstreams {
-			dAtA[i] = 0x12
-			i++
-			i = encodeVarintRoute(dAtA, i, uint64(msg.Size()))
-			n, err := msg.MarshalTo(dAtA[i:])
-			if err != nil {
-				return 0, err
-			}
-			i += n
-		}
-	}
-	if m.TimeoutMs != nil {
-		dAtA[i] = 0x1a
-		i++
-		i = encodeVarintRoute(dAtA, i, uint64(m.TimeoutMs.Size()))
-		n1, err := m.TimeoutMs.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n1
-	}
-	dAtA[i] = 0x20
-	i++
-	if m.ForceHttps {
-		dAtA[i] = 1
-	} else {
-		dAtA[i] = 0
-	}
-	i++
-	if len(m.Metadata) > 0 {
-		for _, msg := range m.Metadata {
-			dAtA[i] = 0x2a
-			i++
-			i = encodeVarintRoute(dAtA, i, uint64(msg.Size()))
-			n, err := msg.MarshalTo(dAtA[i:])
-			if err != nil {
-				return 0, err
-			}
-			i += n
-		}
-	}
-	return i, nil
-}
-
 func (m *PathRouter) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -1588,8 +2322,8 @@ func (m *PathRouter) MarshalTo(dAtA []byte) (int, error) {
 	_ = l
 	dAtA[i] = 0xa
 	i++
-	i = encodeVarintRoute(dAtA, i, uint64(len(m.Path)))
-	i += copy(dAtA[i:], m.Path)
+	i = encodeVarintRoute(dAtA, i, uint64(len(m.Prefix)))
+	i += copy(dAtA[i:], m.Prefix)
 	dAtA[i] = 0x12
 	i++
 	i = encodeVarintRoute(dAtA, i, uint64(len(m.ServiceName)))
@@ -1659,6 +2393,82 @@ func (m *HostRouter) MarshalTo(dAtA []byte) (int, error) {
 	return i, nil
 }
 
+func (m *AppnameRouter) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *AppnameRouter) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	dAtA[i] = 0xa
+	i++
+	i = encodeVarintRoute(dAtA, i, uint64(len(m.Appname)))
+	i += copy(dAtA[i:], m.Appname)
+	dAtA[i] = 0x12
+	i++
+	i = encodeVarintRoute(dAtA, i, uint64(len(m.ServiceName)))
+	i += copy(dAtA[i:], m.ServiceName)
+	if len(m.Tags) > 0 {
+		for _, msg := range m.Tags {
+			dAtA[i] = 0x1a
+			i++
+			i = encodeVarintRoute(dAtA, i, uint64(msg.Size()))
+			n, err := msg.MarshalTo(dAtA[i:])
+			if err != nil {
+				return 0, err
+			}
+			i += n
+		}
+	}
+	return i, nil
+}
+
+func (m *APIRouter) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *APIRouter) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	dAtA[i] = 0xa
+	i++
+	i = encodeVarintRoute(dAtA, i, uint64(len(m.ServiceName)))
+	i += copy(dAtA[i:], m.ServiceName)
+	dAtA[i] = 0x12
+	i++
+	i = encodeVarintRoute(dAtA, i, uint64(len(m.Api)))
+	i += copy(dAtA[i:], m.Api)
+	if len(m.Tags) > 0 {
+		for _, msg := range m.Tags {
+			dAtA[i] = 0x1a
+			i++
+			i = encodeVarintRoute(dAtA, i, uint64(msg.Size()))
+			n, err := msg.MarshalTo(dAtA[i:])
+			if err != nil {
+				return 0, err
+			}
+			i += n
+		}
+	}
+	return i, nil
+}
+
 func (m *Router) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -1678,11 +2488,217 @@ func (m *Router) MarshalTo(dAtA []byte) (int, error) {
 		dAtA[i] = 0xa
 		i++
 		i = encodeVarintRoute(dAtA, i, uint64(m.HostRouter.Size()))
-		n2, err := m.HostRouter.MarshalTo(dAtA[i:])
+		n3, err := m.HostRouter.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
-		i += n2
+		i += n3
+	}
+	if m.AppnameRouter != nil {
+		dAtA[i] = 0x12
+		i++
+		i = encodeVarintRoute(dAtA, i, uint64(m.AppnameRouter.Size()))
+		n4, err := m.AppnameRouter.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n4
+	}
+	if m.ApiRouter != nil {
+		dAtA[i] = 0x1a
+		i++
+		i = encodeVarintRoute(dAtA, i, uint64(m.ApiRouter.Size()))
+		n5, err := m.ApiRouter.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n5
+	}
+	return i, nil
+}
+
+func (m *Upstream) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Upstream) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	dAtA[i] = 0xa
+	i++
+	i = encodeVarintRoute(dAtA, i, uint64(len(m.Target)))
+	i += copy(dAtA[i:], m.Target)
+	dAtA[i] = 0x10
+	i++
+	i = encodeVarintRoute(dAtA, i, uint64(m.Weight))
+	return i, nil
+}
+
+func (m *Timeout) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Timeout) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	dAtA[i] = 0x8
+	i++
+	i = encodeVarintRoute(dAtA, i, uint64(m.ConnectTimeout))
+	dAtA[i] = 0x10
+	i++
+	i = encodeVarintRoute(dAtA, i, uint64(m.ReadTimeout))
+	dAtA[i] = 0x18
+	i++
+	i = encodeVarintRoute(dAtA, i, uint64(m.WriteTimeout))
+	return i, nil
+}
+
+func (m *Metadata) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Metadata) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	dAtA[i] = 0xa
+	i++
+	i = encodeVarintRoute(dAtA, i, uint64(len(m.Key)))
+	i += copy(dAtA[i:], m.Key)
+	dAtA[i] = 0x12
+	i++
+	i = encodeVarintRoute(dAtA, i, uint64(len(m.Value)))
+	i += copy(dAtA[i:], m.Value)
+	return i, nil
+}
+
+func (m *Action) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Action) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	dAtA[i] = 0x8
+	i++
+	i = encodeVarintRoute(dAtA, i, uint64(m.ActionType))
+	dAtA[i] = 0x10
+	i++
+	i = encodeVarintRoute(dAtA, i, uint64(m.ValueType))
+	dAtA[i] = 0x1a
+	i++
+	i = encodeVarintRoute(dAtA, i, uint64(len(m.Key)))
+	i += copy(dAtA[i:], m.Key)
+	dAtA[i] = 0x22
+	i++
+	i = encodeVarintRoute(dAtA, i, uint64(len(m.Value)))
+	i += copy(dAtA[i:], m.Value)
+	return i, nil
+}
+
+func (m *VirtualService) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *VirtualService) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	dAtA[i] = 0xa
+	i++
+	i = encodeVarintRoute(dAtA, i, uint64(len(m.ServiceName)))
+	i += copy(dAtA[i:], m.ServiceName)
+	if len(m.Upstreams) > 0 {
+		for _, msg := range m.Upstreams {
+			dAtA[i] = 0x12
+			i++
+			i = encodeVarintRoute(dAtA, i, uint64(msg.Size()))
+			n, err := msg.MarshalTo(dAtA[i:])
+			if err != nil {
+				return 0, err
+			}
+			i += n
+		}
+	}
+	if m.TimeoutMs != nil {
+		dAtA[i] = 0x1a
+		i++
+		i = encodeVarintRoute(dAtA, i, uint64(m.TimeoutMs.Size()))
+		n6, err := m.TimeoutMs.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n6
+	}
+	dAtA[i] = 0x20
+	i++
+	if m.ForceHttps {
+		dAtA[i] = 1
+	} else {
+		dAtA[i] = 0
+	}
+	i++
+	if len(m.Metadata) > 0 {
+		for _, msg := range m.Metadata {
+			dAtA[i] = 0x2a
+			i++
+			i = encodeVarintRoute(dAtA, i, uint64(msg.Size()))
+			n, err := msg.MarshalTo(dAtA[i:])
+			if err != nil {
+				return 0, err
+			}
+			i += n
+		}
+	}
+	if len(m.Action) > 0 {
+		for _, msg := range m.Action {
+			dAtA[i] = 0x32
+			i++
+			i = encodeVarintRoute(dAtA, i, uint64(msg.Size()))
+			n, err := msg.MarshalTo(dAtA[i:])
+			if err != nil {
+				return 0, err
+			}
+			i += n
+		}
 	}
 	return i, nil
 }
@@ -1738,6 +2754,39 @@ func encodeVarintRoute(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return offset + 1
 }
+func (m *TagValueStrList) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Value) > 0 {
+		for _, s := range m.Value {
+			l = len(s)
+			n += 1 + l + sovRoute(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *TagItemCondition) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.ValueStr)
+	n += 1 + l + sovRoute(uint64(l))
+	if m.ValueList != nil {
+		l = m.ValueList.Size()
+		n += 1 + l + sovRoute(uint64(l))
+	}
+	n += 1 + sovRoute(uint64(m.Divisor))
+	n += 1 + sovRoute(uint64(m.Remainder))
+	n += 1 + sovRoute(uint64(m.Operator))
+	return n
+}
+
 func (m *TagItem) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1747,8 +2796,10 @@ func (m *TagItem) Size() (n int) {
 	n += 1 + sovRoute(uint64(m.Location))
 	l = len(m.Key)
 	n += 1 + l + sovRoute(uint64(l))
-	l = len(m.Value)
-	n += 1 + l + sovRoute(uint64(l))
+	if m.Condition != nil {
+		l = m.Condition.Size()
+		n += 1 + l + sovRoute(uint64(l))
+	}
 	n += 1 + sovRoute(uint64(m.MatchType))
 	return n
 }
@@ -1785,78 +2836,13 @@ func (m *TagRouter) Size() (n int) {
 	return n
 }
 
-func (m *Timeout) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	n += 1 + sovRoute(uint64(m.ConnectTimeout))
-	n += 1 + sovRoute(uint64(m.ReadTimeout))
-	n += 1 + sovRoute(uint64(m.WriteTimeout))
-	return n
-}
-
-func (m *Upstream) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Target)
-	n += 1 + l + sovRoute(uint64(l))
-	n += 1 + sovRoute(uint64(m.Weight))
-	return n
-}
-
-func (m *Metadata) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Key)
-	n += 1 + l + sovRoute(uint64(l))
-	l = len(m.Value)
-	n += 1 + l + sovRoute(uint64(l))
-	return n
-}
-
-func (m *VirtualService) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.ServiceName)
-	n += 1 + l + sovRoute(uint64(l))
-	if len(m.Upstreams) > 0 {
-		for _, e := range m.Upstreams {
-			l = e.Size()
-			n += 1 + l + sovRoute(uint64(l))
-		}
-	}
-	if m.TimeoutMs != nil {
-		l = m.TimeoutMs.Size()
-		n += 1 + l + sovRoute(uint64(l))
-	}
-	n += 2
-	if len(m.Metadata) > 0 {
-		for _, e := range m.Metadata {
-			l = e.Size()
-			n += 1 + l + sovRoute(uint64(l))
-		}
-	}
-	return n
-}
-
 func (m *PathRouter) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.Path)
+	l = len(m.Prefix)
 	n += 1 + l + sovRoute(uint64(l))
 	l = len(m.ServiceName)
 	n += 1 + l + sovRoute(uint64(l))
@@ -1894,6 +2880,44 @@ func (m *HostRouter) Size() (n int) {
 	return n
 }
 
+func (m *AppnameRouter) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Appname)
+	n += 1 + l + sovRoute(uint64(l))
+	l = len(m.ServiceName)
+	n += 1 + l + sovRoute(uint64(l))
+	if len(m.Tags) > 0 {
+		for _, e := range m.Tags {
+			l = e.Size()
+			n += 1 + l + sovRoute(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *APIRouter) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.ServiceName)
+	n += 1 + l + sovRoute(uint64(l))
+	l = len(m.Api)
+	n += 1 + l + sovRoute(uint64(l))
+	if len(m.Tags) > 0 {
+		for _, e := range m.Tags {
+			l = e.Size()
+			n += 1 + l + sovRoute(uint64(l))
+		}
+	}
+	return n
+}
+
 func (m *Router) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1903,6 +2927,100 @@ func (m *Router) Size() (n int) {
 	if m.HostRouter != nil {
 		l = m.HostRouter.Size()
 		n += 1 + l + sovRoute(uint64(l))
+	}
+	if m.AppnameRouter != nil {
+		l = m.AppnameRouter.Size()
+		n += 1 + l + sovRoute(uint64(l))
+	}
+	if m.ApiRouter != nil {
+		l = m.ApiRouter.Size()
+		n += 1 + l + sovRoute(uint64(l))
+	}
+	return n
+}
+
+func (m *Upstream) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Target)
+	n += 1 + l + sovRoute(uint64(l))
+	n += 1 + sovRoute(uint64(m.Weight))
+	return n
+}
+
+func (m *Timeout) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	n += 1 + sovRoute(uint64(m.ConnectTimeout))
+	n += 1 + sovRoute(uint64(m.ReadTimeout))
+	n += 1 + sovRoute(uint64(m.WriteTimeout))
+	return n
+}
+
+func (m *Metadata) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Key)
+	n += 1 + l + sovRoute(uint64(l))
+	l = len(m.Value)
+	n += 1 + l + sovRoute(uint64(l))
+	return n
+}
+
+func (m *Action) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	n += 1 + sovRoute(uint64(m.ActionType))
+	n += 1 + sovRoute(uint64(m.ValueType))
+	l = len(m.Key)
+	n += 1 + l + sovRoute(uint64(l))
+	l = len(m.Value)
+	n += 1 + l + sovRoute(uint64(l))
+	return n
+}
+
+func (m *VirtualService) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.ServiceName)
+	n += 1 + l + sovRoute(uint64(l))
+	if len(m.Upstreams) > 0 {
+		for _, e := range m.Upstreams {
+			l = e.Size()
+			n += 1 + l + sovRoute(uint64(l))
+		}
+	}
+	if m.TimeoutMs != nil {
+		l = m.TimeoutMs.Size()
+		n += 1 + l + sovRoute(uint64(l))
+	}
+	n += 2
+	if len(m.Metadata) > 0 {
+		for _, e := range m.Metadata {
+			l = e.Size()
+			n += 1 + l + sovRoute(uint64(l))
+		}
+	}
+	if len(m.Action) > 0 {
+		for _, e := range m.Action {
+			l = e.Size()
+			n += 1 + l + sovRoute(uint64(l))
+		}
 	}
 	return n
 }
@@ -1941,6 +3059,30 @@ func sovRoute(x uint64) (n int) {
 func sozRoute(x uint64) (n int) {
 	return sovRoute(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
+func (this *TagValueStrList) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&TagValueStrList{`,
+		`Value:` + fmt.Sprintf("%v", this.Value) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *TagItemCondition) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&TagItemCondition{`,
+		`ValueStr:` + fmt.Sprintf("%v", this.ValueStr) + `,`,
+		`ValueList:` + strings.Replace(fmt.Sprintf("%v", this.ValueList), "TagValueStrList", "TagValueStrList", 1) + `,`,
+		`Divisor:` + fmt.Sprintf("%v", this.Divisor) + `,`,
+		`Remainder:` + fmt.Sprintf("%v", this.Remainder) + `,`,
+		`Operator:` + fmt.Sprintf("%v", this.Operator) + `,`,
+		`}`,
+	}, "")
+	return s
+}
 func (this *TagItem) String() string {
 	if this == nil {
 		return "nil"
@@ -1948,7 +3090,7 @@ func (this *TagItem) String() string {
 	s := strings.Join([]string{`&TagItem{`,
 		`Location:` + fmt.Sprintf("%v", this.Location) + `,`,
 		`Key:` + fmt.Sprintf("%v", this.Key) + `,`,
-		`Value:` + fmt.Sprintf("%v", this.Value) + `,`,
+		`Condition:` + strings.Replace(fmt.Sprintf("%v", this.Condition), "TagItemCondition", "TagItemCondition", 1) + `,`,
 		`MatchType:` + fmt.Sprintf("%v", this.MatchType) + `,`,
 		`}`,
 	}, "")
@@ -1975,60 +3117,12 @@ func (this *TagRouter) String() string {
 	}, "")
 	return s
 }
-func (this *Timeout) String() string {
-	if this == nil {
-		return "nil"
-	}
-	s := strings.Join([]string{`&Timeout{`,
-		`ConnectTimeout:` + fmt.Sprintf("%v", this.ConnectTimeout) + `,`,
-		`ReadTimeout:` + fmt.Sprintf("%v", this.ReadTimeout) + `,`,
-		`WriteTimeout:` + fmt.Sprintf("%v", this.WriteTimeout) + `,`,
-		`}`,
-	}, "")
-	return s
-}
-func (this *Upstream) String() string {
-	if this == nil {
-		return "nil"
-	}
-	s := strings.Join([]string{`&Upstream{`,
-		`Target:` + fmt.Sprintf("%v", this.Target) + `,`,
-		`Weight:` + fmt.Sprintf("%v", this.Weight) + `,`,
-		`}`,
-	}, "")
-	return s
-}
-func (this *Metadata) String() string {
-	if this == nil {
-		return "nil"
-	}
-	s := strings.Join([]string{`&Metadata{`,
-		`Key:` + fmt.Sprintf("%v", this.Key) + `,`,
-		`Value:` + fmt.Sprintf("%v", this.Value) + `,`,
-		`}`,
-	}, "")
-	return s
-}
-func (this *VirtualService) String() string {
-	if this == nil {
-		return "nil"
-	}
-	s := strings.Join([]string{`&VirtualService{`,
-		`ServiceName:` + fmt.Sprintf("%v", this.ServiceName) + `,`,
-		`Upstreams:` + strings.Replace(fmt.Sprintf("%v", this.Upstreams), "Upstream", "Upstream", 1) + `,`,
-		`TimeoutMs:` + strings.Replace(fmt.Sprintf("%v", this.TimeoutMs), "Timeout", "Timeout", 1) + `,`,
-		`ForceHttps:` + fmt.Sprintf("%v", this.ForceHttps) + `,`,
-		`Metadata:` + strings.Replace(fmt.Sprintf("%v", this.Metadata), "Metadata", "Metadata", 1) + `,`,
-		`}`,
-	}, "")
-	return s
-}
 func (this *PathRouter) String() string {
 	if this == nil {
 		return "nil"
 	}
 	s := strings.Join([]string{`&PathRouter{`,
-		`Path:` + fmt.Sprintf("%v", this.Path) + `,`,
+		`Prefix:` + fmt.Sprintf("%v", this.Prefix) + `,`,
 		`ServiceName:` + fmt.Sprintf("%v", this.ServiceName) + `,`,
 		`Tags:` + strings.Replace(fmt.Sprintf("%v", this.Tags), "TagRouter", "TagRouter", 1) + `,`,
 		`}`,
@@ -2048,12 +3142,100 @@ func (this *HostRouter) String() string {
 	}, "")
 	return s
 }
+func (this *AppnameRouter) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&AppnameRouter{`,
+		`Appname:` + fmt.Sprintf("%v", this.Appname) + `,`,
+		`ServiceName:` + fmt.Sprintf("%v", this.ServiceName) + `,`,
+		`Tags:` + strings.Replace(fmt.Sprintf("%v", this.Tags), "TagRouter", "TagRouter", 1) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *APIRouter) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&APIRouter{`,
+		`ServiceName:` + fmt.Sprintf("%v", this.ServiceName) + `,`,
+		`Api:` + fmt.Sprintf("%v", this.Api) + `,`,
+		`Tags:` + strings.Replace(fmt.Sprintf("%v", this.Tags), "TagRouter", "TagRouter", 1) + `,`,
+		`}`,
+	}, "")
+	return s
+}
 func (this *Router) String() string {
 	if this == nil {
 		return "nil"
 	}
 	s := strings.Join([]string{`&Router{`,
 		`HostRouter:` + strings.Replace(fmt.Sprintf("%v", this.HostRouter), "HostRouter", "HostRouter", 1) + `,`,
+		`AppnameRouter:` + strings.Replace(fmt.Sprintf("%v", this.AppnameRouter), "AppnameRouter", "AppnameRouter", 1) + `,`,
+		`ApiRouter:` + strings.Replace(fmt.Sprintf("%v", this.ApiRouter), "APIRouter", "APIRouter", 1) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *Upstream) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&Upstream{`,
+		`Target:` + fmt.Sprintf("%v", this.Target) + `,`,
+		`Weight:` + fmt.Sprintf("%v", this.Weight) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *Timeout) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&Timeout{`,
+		`ConnectTimeout:` + fmt.Sprintf("%v", this.ConnectTimeout) + `,`,
+		`ReadTimeout:` + fmt.Sprintf("%v", this.ReadTimeout) + `,`,
+		`WriteTimeout:` + fmt.Sprintf("%v", this.WriteTimeout) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *Metadata) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&Metadata{`,
+		`Key:` + fmt.Sprintf("%v", this.Key) + `,`,
+		`Value:` + fmt.Sprintf("%v", this.Value) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *Action) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&Action{`,
+		`ActionType:` + fmt.Sprintf("%v", this.ActionType) + `,`,
+		`ValueType:` + fmt.Sprintf("%v", this.ValueType) + `,`,
+		`Key:` + fmt.Sprintf("%v", this.Key) + `,`,
+		`Value:` + fmt.Sprintf("%v", this.Value) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *VirtualService) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&VirtualService{`,
+		`ServiceName:` + fmt.Sprintf("%v", this.ServiceName) + `,`,
+		`Upstreams:` + strings.Replace(fmt.Sprintf("%v", this.Upstreams), "Upstream", "Upstream", 1) + `,`,
+		`TimeoutMs:` + strings.Replace(fmt.Sprintf("%v", this.TimeoutMs), "Timeout", "Timeout", 1) + `,`,
+		`ForceHttps:` + fmt.Sprintf("%v", this.ForceHttps) + `,`,
+		`Metadata:` + strings.Replace(fmt.Sprintf("%v", this.Metadata), "Metadata", "Metadata", 1) + `,`,
+		`Action:` + strings.Replace(fmt.Sprintf("%v", this.Action), "Action", "Action", 1) + `,`,
 		`}`,
 	}, "")
 	return s
@@ -2076,6 +3258,269 @@ func valueToStringRoute(v interface{}) string {
 	}
 	pv := reflect.Indirect(rv).Interface()
 	return fmt.Sprintf("*%v", pv)
+}
+func (m *TagValueStrList) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowRoute
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: TagValueStrList: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: TagValueStrList: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Value", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthRoute
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Value = append(m.Value, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipRoute(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *TagItemCondition) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowRoute
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: TagItemCondition: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: TagItemCondition: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValueStr", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthRoute
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ValueStr = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValueList", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthRoute
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.ValueList == nil {
+				m.ValueList = &TagValueStrList{}
+			}
+			if err := m.ValueList.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Divisor", wireType)
+			}
+			m.Divisor = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Divisor |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Remainder", wireType)
+			}
+			m.Remainder = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Remainder |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 5:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Operator", wireType)
+			}
+			m.Operator = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Operator |= OperatorType(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipRoute(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
 }
 func (m *TagItem) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
@@ -2159,9 +3604,9 @@ func (m *TagItem) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Value", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Condition", wireType)
 			}
-			var stringLen uint64
+			var msglen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowRoute
@@ -2171,23 +3616,27 @@ func (m *TagItem) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				msglen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if msglen < 0 {
 				return ErrInvalidLengthRoute
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + msglen
 			if postIndex < 0 {
 				return ErrInvalidLengthRoute
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Value = string(dAtA[iNdEx:postIndex])
+			if m.Condition == nil {
+				m.Condition = &TagItemCondition{}
+			}
+			if err := m.Condition.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
 			iNdEx = postIndex
 		case 4:
 			if wireType != 0 {
@@ -2438,551 +3887,6 @@ func (m *TagRouter) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *Timeout) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowRoute
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Timeout: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Timeout: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ConnectTimeout", wireType)
-			}
-			m.ConnectTimeout = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowRoute
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.ConnectTimeout |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ReadTimeout", wireType)
-			}
-			m.ReadTimeout = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowRoute
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.ReadTimeout |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field WriteTimeout", wireType)
-			}
-			m.WriteTimeout = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowRoute
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.WriteTimeout |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		default:
-			iNdEx = preIndex
-			skippy, err := skipRoute(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if skippy < 0 {
-				return ErrInvalidLengthRoute
-			}
-			if (iNdEx + skippy) < 0 {
-				return ErrInvalidLengthRoute
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *Upstream) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowRoute
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Upstream: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Upstream: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Target", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowRoute
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthRoute
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthRoute
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Target = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Weight", wireType)
-			}
-			m.Weight = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowRoute
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Weight |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		default:
-			iNdEx = preIndex
-			skippy, err := skipRoute(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if skippy < 0 {
-				return ErrInvalidLengthRoute
-			}
-			if (iNdEx + skippy) < 0 {
-				return ErrInvalidLengthRoute
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *Metadata) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowRoute
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Metadata: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Metadata: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Key", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowRoute
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthRoute
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthRoute
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Key = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Value", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowRoute
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthRoute
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthRoute
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Value = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipRoute(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if skippy < 0 {
-				return ErrInvalidLengthRoute
-			}
-			if (iNdEx + skippy) < 0 {
-				return ErrInvalidLengthRoute
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *VirtualService) Unmarshal(dAtA []byte) error {
-	var hasFields [1]uint64
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowRoute
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: VirtualService: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: VirtualService: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ServiceName", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowRoute
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthRoute
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthRoute
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ServiceName = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-			hasFields[0] |= uint64(0x00000001)
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Upstreams", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowRoute
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthRoute
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthRoute
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Upstreams = append(m.Upstreams, &Upstream{})
-			if err := m.Upstreams[len(m.Upstreams)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TimeoutMs", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowRoute
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthRoute
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthRoute
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.TimeoutMs == nil {
-				m.TimeoutMs = &Timeout{}
-			}
-			if err := m.TimeoutMs.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 4:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ForceHttps", wireType)
-			}
-			var v int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowRoute
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				v |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			m.ForceHttps = bool(v != 0)
-		case 5:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Metadata", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowRoute
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthRoute
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthRoute
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Metadata = append(m.Metadata, &Metadata{})
-			if err := m.Metadata[len(m.Metadata)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipRoute(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if skippy < 0 {
-				return ErrInvalidLengthRoute
-			}
-			if (iNdEx + skippy) < 0 {
-				return ErrInvalidLengthRoute
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-	if hasFields[0]&uint64(0x00000001) == 0 {
-		return github_com_gogo_protobuf_proto.NewRequiredNotSetError("service_name")
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
 func (m *PathRouter) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3014,7 +3918,7 @@ func (m *PathRouter) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Path", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Prefix", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -3042,7 +3946,7 @@ func (m *PathRouter) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Path = string(dAtA[iNdEx:postIndex])
+			m.Prefix = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
@@ -3319,6 +4223,308 @@ func (m *HostRouter) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+func (m *AppnameRouter) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowRoute
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: AppnameRouter: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: AppnameRouter: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Appname", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthRoute
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Appname = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ServiceName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthRoute
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ServiceName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Tags", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthRoute
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Tags = append(m.Tags, &TagRouter{})
+			if err := m.Tags[len(m.Tags)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipRoute(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *APIRouter) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowRoute
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: APIRouter: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: APIRouter: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ServiceName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthRoute
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ServiceName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Api", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthRoute
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Api = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Tags", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthRoute
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Tags = append(m.Tags, &TagRouter{})
+			if err := m.Tags[len(m.Tags)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipRoute(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
 func (m *Router) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3384,6 +4590,78 @@ func (m *Router) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AppnameRouter", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthRoute
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.AppnameRouter == nil {
+				m.AppnameRouter = &AppnameRouter{}
+			}
+			if err := m.AppnameRouter.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ApiRouter", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthRoute
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.ApiRouter == nil {
+				m.ApiRouter = &APIRouter{}
+			}
+			if err := m.ApiRouter.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipRoute(dAtA[iNdEx:])
@@ -3401,6 +4679,740 @@ func (m *Router) Unmarshal(dAtA []byte) error {
 			}
 			iNdEx += skippy
 		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *Upstream) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowRoute
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Upstream: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Upstream: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Target", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthRoute
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Target = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Weight", wireType)
+			}
+			m.Weight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Weight |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipRoute(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *Timeout) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowRoute
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Timeout: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Timeout: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ConnectTimeout", wireType)
+			}
+			m.ConnectTimeout = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ConnectTimeout |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ReadTimeout", wireType)
+			}
+			m.ReadTimeout = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ReadTimeout |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field WriteTimeout", wireType)
+			}
+			m.WriteTimeout = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.WriteTimeout |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipRoute(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *Metadata) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowRoute
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Metadata: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Metadata: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Key", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthRoute
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Key = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Value", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthRoute
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Value = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipRoute(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *Action) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowRoute
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Action: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Action: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ActionType", wireType)
+			}
+			m.ActionType = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ActionType |= ActionType(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValueType", wireType)
+			}
+			m.ValueType = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ValueType |= ActionValueType(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Key", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthRoute
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Key = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Value", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthRoute
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Value = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipRoute(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *VirtualService) Unmarshal(dAtA []byte) error {
+	var hasFields [1]uint64
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowRoute
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: VirtualService: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: VirtualService: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ServiceName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthRoute
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ServiceName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+			hasFields[0] |= uint64(0x00000001)
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Upstreams", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthRoute
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Upstreams = append(m.Upstreams, &Upstream{})
+			if err := m.Upstreams[len(m.Upstreams)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TimeoutMs", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthRoute
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.TimeoutMs == nil {
+				m.TimeoutMs = &Timeout{}
+			}
+			if err := m.TimeoutMs.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ForceHttps", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.ForceHttps = bool(v != 0)
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Metadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthRoute
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Metadata = append(m.Metadata, &Metadata{})
+			if err := m.Metadata[len(m.Metadata)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Action", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRoute
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthRoute
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Action = append(m.Action, &Action{})
+			if err := m.Action[len(m.Action)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipRoute(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthRoute
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+	if hasFields[0]&uint64(0x00000001) == 0 {
+		return github_com_gogo_protobuf_proto.NewRequiredNotSetError("service_name")
 	}
 
 	if iNdEx > l {
