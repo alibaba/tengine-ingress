@@ -131,6 +131,8 @@ const (
 	Canary = "Canary"
 	// Default value of Header and cookie
 	Always = "always"
+)
+
 var (
 	sslProtocolVersions = map[string]uint64{
 		"SSLv2":    2,
