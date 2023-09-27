@@ -149,6 +149,7 @@ func (n *NGINXController) syncIngress(interface{}) error {
 	}
 
 	hosts, servers, pcfg := n.getConfiguration(ings)
+
 	n.metricCollector.SetSSLExpireTime(servers)
 
 	if n.runningConfig.Equal(pcfg) {
@@ -228,7 +229,6 @@ func (n *NGINXController) syncIngress(interface{}) error {
 // CheckIngress returns an error in case the provided ingress, when added
 // to the current configuration, generates an invalid configuration
 func (n *NGINXController) CheckIngress(ing *networking.Ingress) error {
-	//TODO: this is wrong
 	if n == nil {
 		return fmt.Errorf("cannot check ingress on a nil ingress controller")
 	}
