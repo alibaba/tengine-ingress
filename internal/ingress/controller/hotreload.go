@@ -312,7 +312,7 @@ func createVirtualService(target string, loc *ingress.Location, serviceName stri
 	return service
 }
 
-func createMetaData(loc *ingress.Location) []*route.Metadata {
+func createMetaData(server *ingress.Server, loc *ingress.Location) []*route.Metadata {
 	var namespace, ingress, service string
 	if loc.Ingress == nil {
 		namespace = ""
