@@ -1,6 +1,6 @@
 /*
 Copyright 2016 The Kubernetes Authors.
-Copyright 2022 The Alibaba Authors.
+Copyright 2022-2023 The Alibaba Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -227,6 +227,8 @@ type Server struct {
 	NeedDefaultCert bool `json:"needDefaultCert,omitempty"`
 	// DefaultCertPort contains a default cert
 	DefaultCertPort int `json:"defaultCertPort,omitempty"`
+	// SSLProtocols indicates ssl protocols for the server
+	SSLProtocols string `json:"ssl-protocols"`
 }
 
 type Servers []*Server
