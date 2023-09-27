@@ -20,7 +20,6 @@ package collectors
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"os"
 	"syscall"
@@ -76,7 +75,7 @@ type SocketCollector struct {
 
 	metricMapping map[string]interface{}
 
-	hosts sets.String
+	hosts sets.Set[string]
 
 	metricsPerHost bool
 }
@@ -430,14 +429,14 @@ func (sc SocketCollector) Collect(ch chan<- prometheus.Metric) {
 
 // SetHosts sets the hostnames that are being served by the ingress controller
 // This set of hostnames is used to filter the metrics to be exposed
-func (sc *SocketCollector) SetHosts(hosts sets.String) {
+func (sc *SocketCollector) SetHosts(hosts sets.Set[string]) {
 	sc.hosts = hosts
 }
 
 // handleMessages process the content received in a network connection
 func handleMessages(conn io.ReadCloser, fn func([]byte)) {
 	defer conn.Close()
-	data, err := ioutil.ReadAll(conn)
+	data, err := io.ReadAll(conn)
 	if err != nil {
 		return
 	}

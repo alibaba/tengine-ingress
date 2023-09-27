@@ -1,5 +1,6 @@
 /*
 Copyright 2015 The Kubernetes Authors.
+Copyright 2022-2023 The Alibaba Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +24,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"net"
 	"net/url"
@@ -71,7 +71,7 @@ type Template struct {
 // NewTemplate returns a new Template instance or an
 // error if the specified template file contains errors
 func NewTemplate(file string) (*Template, error) {
-	data, err := ioutil.ReadFile(file)
+	data, err := os.ReadFile(file)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unexpected error reading template %v", file)
 	}
@@ -574,7 +574,7 @@ rewrite "(?i)%s" %s break;
 // TODO: Needs Unit Tests
 func filterRateLimits(input interface{}) []ratelimit.Config {
 	ratelimits := []ratelimit.Config{}
-	found := sets.String{}
+	found := sets.Set[string]{}
 
 	servers, ok := input.([]*ingress.Server)
 	if !ok {
@@ -598,12 +598,12 @@ func filterRateLimits(input interface{}) []ratelimit.Config {
 // for connection limit by IP address, one for limiting requests per minute, and
 // one for limiting requests per second.
 func buildRateLimitZones(input interface{}) []string {
-	zones := sets.String{}
+	zones := sets.Set[string]{}
 
 	servers, ok := input.([]*ingress.Server)
 	if !ok {
 		klog.Errorf("expected a '[]*ingress.Server' type but %T was returned", input)
-		return zones.List()
+		return zones.UnsortedList()
 	}
 
 	for _, server := range servers {
@@ -642,7 +642,7 @@ func buildRateLimitZones(input interface{}) []string {
 		}
 	}
 
-	return zones.List()
+	return zones.UnsortedList()
 }
 
 // buildRateLimit produces an array of limit_req to be used inside the Path of
@@ -752,7 +752,6 @@ func buildUpstreamName(loc interface{}) string {
 	}
 
 	upstreamName := location.Backend
-
 	return upstreamName
 }
 
@@ -1574,7 +1573,7 @@ modsecurity_rules_file /etc/nginx/modsecurity/modsecurity.conf;
 func buildMirrorLocations(locs []*ingress.Location) string {
 	var buffer bytes.Buffer
 
-	mapped := sets.String{}
+	mapped := sets.Set[string]{}
 
 	for _, loc := range locs {
 		if loc.Mirror.Source == "" || loc.Mirror.Target == "" {

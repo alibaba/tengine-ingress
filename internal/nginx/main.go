@@ -21,7 +21,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -70,7 +70,7 @@ func NewGetStatusRequest(path string) (int, []byte, error) {
 	}
 	defer res.Body.Close()
 
-	data, err := ioutil.ReadAll(res.Body)
+	data, err := io.ReadAll(res.Body)
 	if err != nil {
 		return 0, nil, err
 	}
@@ -94,7 +94,7 @@ func NewPostStatusRequest(path, contentType string, data interface{}) (int, []by
 	}
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return 0, nil, err
 	}
@@ -134,7 +134,7 @@ func readFileToString(path string) (string, error) {
 	}
 	defer f.Close()
 
-	contents, err := ioutil.ReadAll(f)
+	contents, err := io.ReadAll(f)
 	if err != nil {
 		return "", err
 	}

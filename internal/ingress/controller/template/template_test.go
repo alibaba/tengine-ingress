@@ -19,7 +19,6 @@ package template
 import (
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 	"path"
@@ -464,7 +463,7 @@ func TestTemplateWithData(t *testing.T) {
 		t.Errorf("unexpected error reading json file: %v", err)
 	}
 	defer f.Close()
-	data, err := ioutil.ReadFile(f.Name())
+	data, err := os.ReadFile(f.Name())
 	if err != nil {
 		t.Error("unexpected error reading json file: ", err)
 	}
@@ -508,7 +507,7 @@ func BenchmarkTemplateWithData(b *testing.B) {
 		b.Errorf("unexpected error reading json file: %v", err)
 	}
 	defer f.Close()
-	data, err := ioutil.ReadFile(f.Name())
+	data, err := os.ReadFile(f.Name())
 	if err != nil {
 		b.Error("unexpected error reading json file: ", err)
 	}

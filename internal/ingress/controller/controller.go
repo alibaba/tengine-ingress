@@ -1,6 +1,6 @@
 /*
 Copyright 2015 The Kubernetes Authors.
-Copyright 2022 The Alibaba Authors.
+Copyright 2022-2023 The Alibaba Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -482,7 +482,7 @@ func (n *NGINXController) getConfiguration(ingresses []*ingress.Ingress) (sets.S
 	upstreams, servers := n.getBackendServers(ingresses)
 	var passUpstreams []*ingress.SSLPassthroughBackend
 
-	hosts := sets.NewString()
+	hosts := sets.New[string]()
 
 	for _, server := range servers {
 		if !hosts.Has(server.Hostname) {

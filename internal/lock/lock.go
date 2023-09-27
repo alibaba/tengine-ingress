@@ -1,4 +1,6 @@
 /*
+Copyright 2022 The Alibaba Authors.
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -16,7 +18,6 @@ package lock
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"syscall"
@@ -81,7 +82,7 @@ func openLockFile(filePath string) (*os.File, error) {
 func acquireFileLock(file *os.File, how int) error {
 	err := syscall.Flock(int(file.Fd()), how|syscall.LOCK_NB)
 	if err != nil {
-		pid, err := ioutil.ReadFile(file.Name())
+		pid, err := os.ReadFile(file.Name())
 		if err == nil && len(pid) > 0 {
 			klog.Warningf("Process with PID %v has already acquired the lock for %v. Waiting ...", string(pid), file.Name())
 		} else {

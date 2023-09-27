@@ -17,8 +17,8 @@ limitations under the License.
 package runtime
 
 import (
-	"io/ioutil"
 	"math"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -30,7 +30,8 @@ import (
 // NumCPU returns the number of logical CPUs usable by the current process.
 // If CPU cgroups limits are configured, use cfs_quota_us / cfs_period_us
 // as formula
-//  https://www.kernel.org/doc/Documentation/scheduler/sched-bwc.txt
+//
+//	https://www.kernel.org/doc/Documentation/scheduler/sched-bwc.txt
 func NumCPU() int {
 	cpus := runtime.NumCPU()
 
@@ -50,7 +51,7 @@ func NumCPU() int {
 }
 
 func readCgroupFileToInt64(cgroupPath, cgroupFile string) int64 {
-	contents, err := ioutil.ReadFile(filepath.Join(cgroupPath, cgroupFile))
+	contents, err := os.ReadFile(filepath.Join(cgroupPath, cgroupFile))
 	if err != nil {
 		return -1
 	}
