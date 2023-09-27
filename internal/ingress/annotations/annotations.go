@@ -67,6 +67,7 @@ import (
 	"k8s.io/ingress-nginx/internal/ingress/annotations/sessionaffinity"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/snippet"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/sslpassthrough"
+	"k8s.io/ingress-nginx/internal/ingress/annotations/sslprotocols"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/upstreamhashby"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/upstreamvhost"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/xforwardedprefix"
