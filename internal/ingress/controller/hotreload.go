@@ -232,7 +232,7 @@ func createHotCfg(cfg ngx_config.Configuration, ingressCfg ingress.Configuration
 			if upsService == nil {
 				continue
 			}
-			service := createVirtualService(cfg, loc.Backend, loc, pathServiceName, server)
+			service := createVirtualService(loc.Backend, loc, pathServiceName, server)
 			path := &route.PathRouter{
 				Path:        loc.Path,
 				ServiceName: pathServiceName,
@@ -289,7 +289,7 @@ func createHotCfg(cfg ngx_config.Configuration, ingressCfg ingress.Configuration
 	}
 }
 
-func createVirtualService(cfg ngx_config.Configuration, target string, loc *ingress.Location, serviceName string, server *ingress.Server) *route.VirtualService {
+func createVirtualService(target string, loc *ingress.Location, serviceName string, server *ingress.Server) *route.VirtualService {
 	upstream := &route.Upstream{
 		Target: target,
 		Weight: DefaultTotalWeightTraffic,
@@ -395,7 +395,7 @@ func createHeaderCanary(cfg ngx_config.Configuration, seq int, server *ingress.S
 	pathCanaryServiceName := server.Hostname + loc.Path + Canary + strconv.Itoa(seq)
 	klog.Infof("Loc[%v%v], canary[%v], header=[%v], value=[%v]",
 		server.Hostname, loc.Path, pathCanaryServiceName, policy.Header, headerValue)
-	canaryService = createVirtualService(canary.Target, loc, pathCanaryServiceName)
+	canaryService = createVirtualService(canary.Target, loc, pathCanaryServiceName, server)
 
 	tagItem := &route.TagItem{
 		Location:  route.LocHttpHeader,
