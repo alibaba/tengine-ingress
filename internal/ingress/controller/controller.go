@@ -1,6 +1,6 @@
 /*
 Copyright 2015 The Kubernetes Authors.
-Copyright 2022 The Alibaba Authors.
+Copyright 2022-2023 The Alibaba Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -149,6 +149,7 @@ func (n *NGINXController) syncIngress(interface{}) error {
 	}
 
 	hosts, servers, pcfg := n.getConfiguration(ings)
+
 	n.metricCollector.SetSSLExpireTime(servers)
 
 	if n.runningConfig.Equal(pcfg) {
@@ -159,11 +160,13 @@ func (n *NGINXController) syncIngress(interface{}) error {
 	klog.Infof("Configuration changes detected.")
 
 	n.metricCollector.SetHosts(hosts)
+
 	hash, _ := hashstructure.Hash(pcfg, &hashstructure.HashOptions{
 		TagName: "json",
 	})
 
 	pcfg.ConfigurationChecksum = fmt.Sprintf("%v", hash)
+
 	err := n.OnUpdate(*pcfg)
 	if err != nil {
 		n.metricCollector.IncReloadErrorCount()
@@ -226,7 +229,6 @@ func (n *NGINXController) syncIngress(interface{}) error {
 // CheckIngress returns an error in case the provided ingress, when added
 // to the current configuration, generates an invalid configuration
 func (n *NGINXController) CheckIngress(ing *networking.Ingress) error {
-	//TODO: this is wrong
 	if n == nil {
 		return fmt.Errorf("cannot check ingress on a nil ingress controller")
 	}
@@ -477,12 +479,12 @@ func (n *NGINXController) getDefaultUpstream() *ingress.Backend {
 }
 
 // getConfiguration returns the configuration matching the standard kubernetes ingress
-func (n *NGINXController) getConfiguration(ingresses []*ingress.Ingress) (sets.String, []*ingress.Server, *ingress.Configuration) {
+func (n *NGINXController) getConfiguration(ingresses []*ingress.Ingress) (sets.Set[string], []*ingress.Server, *ingress.Configuration) {
 
 	upstreams, servers := n.getBackendServers(ingresses)
 	var passUpstreams []*ingress.SSLPassthroughBackend
 
-	hosts := sets.NewString()
+	hosts := sets.New[string]()
 
 	for _, server := range servers {
 		if !hosts.Has(server.Hostname) {
@@ -1154,6 +1156,7 @@ func (n *NGINXController) createServers(data []*ingress.Ingress,
 				SSLPassthrough:  anns.SSLPassthrough,
 				SSLCiphers:      anns.SSLCiphers,
 				NeedDefaultCert: anns.DefaultCert.NeedDefault,
+				SSLProtocols:    anns.SSLProtocols,
 			}
 		}
 	}

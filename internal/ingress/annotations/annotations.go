@@ -67,6 +67,7 @@ import (
 	"k8s.io/ingress-nginx/internal/ingress/annotations/sessionaffinity"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/snippet"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/sslpassthrough"
+	"k8s.io/ingress-nginx/internal/ingress/annotations/sslprotocols"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/upstreamhashby"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/upstreamvhost"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/xforwardedprefix"
@@ -126,6 +127,7 @@ type Ingress struct {
 	DisableRobots      bool
 	CheckSum           checksum.Config
 	Referrer           referrer.Config
+	SSLProtocols       string
 }
 
 // Extractor defines the annotation parsers to be used in the extraction of annotations
@@ -181,6 +183,7 @@ func NewAnnotationExtractor(cfg resolver.Resolver) Extractor {
 			"DisableRobots":        robots.NewParser(cfg),
 			"CheckSum":             checksum.NewParser(cfg),
 			"Referrer":             referrer.NewParser(cfg),
+			"SSLProtocols":         sslprotocols.NewParser(cfg),
 		},
 	}
 }

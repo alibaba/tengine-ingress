@@ -881,7 +881,13 @@ stream {
         {{ buildDefaultListener $all $server.Hostname $server.DefaultCertPort }}
         {{ end }}
 
-        # include /etc/nginx/cell_server.conf;
+        {{ if not $all.Cfg.TengineReload }}
+        ingress_gateway shm_service_cfg;
+        ingress_gateway_metadata "ssl-protocols" $metadata_ssl_protocols;
+
+        # set log host
+        set $log_host $host;
+        {{ end }}
 
         set $proxy_upstream_name "-";
 
@@ -1115,7 +1121,6 @@ stream {
 
             {{ if eq $server.Hostname "_" }}
             {{ if not $all.Cfg.TengineReload }}
-            ingress_gateway shm_service_cfg;
             set $upstream_read_time $ingress_read_timeout;
             set $https_host_mode $ingress_force_https;
             include /etc/nginx/apps/ssl.conf;
@@ -1477,7 +1482,6 @@ stream {
             {{ buildProxyPass $server.Hostname $all.Backends $location $all.Cfg.TengineReload }}
             {{ end }}
             {{ else }}
-            ingress_gateway shm_service_cfg;
             set $upstream_read_time $ingress_read_timeout;
             set $https_host_mode $ingress_force_https;
             include /etc/nginx/apps/ssl.conf;

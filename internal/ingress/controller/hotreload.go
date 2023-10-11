@@ -1,5 +1,5 @@
 /*
-Copyright 2022 The Alibaba Authors.
+Copyright 2022-2023 The Alibaba Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"k8s.io/ingress-nginx/internal/ingress"
@@ -116,6 +117,9 @@ const (
 
 	// Matadata CORS cors-allow-headers
 	MetaCorsAllowHeaders = "cors-allow-headers"
+
+	// Matadata SSL protocols
+	MetaSSLProtocols = "ssl-protocols"
 )
 
 const (
@@ -127,6 +131,20 @@ const (
 	Canary = "Canary"
 	// Default value of Header and cookie
 	Always = "always"
+)
+
+var (
+	sslProtocolVersions = map[string]uint64{
+		"SSLv2":    2,
+		"SSLv3":    768,
+		"TLSv1":    769,
+		"TLSv1.1":  770,
+		"TLSv1.2":  771,
+		"TLSv1.3":  772,
+		"DTLSv1":   65279,
+		"DTLSv1.2": 65277,
+		"NTLS":     257,
+	}
 )
 
 func hotReload(oldMD5 string, cfg ngx_config.Configuration, ingressCfg ingress.Configuration, init bool) (string, error) {
@@ -214,7 +232,7 @@ func createHotCfg(cfg ngx_config.Configuration, ingressCfg ingress.Configuration
 			if upsService == nil {
 				continue
 			}
-			service := createVirtualService(loc.Backend, loc, pathServiceName)
+			service := createVirtualService(loc.Backend, loc, pathServiceName, server)
 			path := &route.PathRouter{
 				Path:        loc.Path,
 				ServiceName: pathServiceName,
@@ -233,7 +251,7 @@ func createHotCfg(cfg ngx_config.Configuration, ingressCfg ingress.Configuration
 					tagRouter := &route.TagRouter{}
 					policy := canary.TrafficShapingPolicy
 					if len(policy.Header) > 0 {
-						canaryService, tagRouter = createHeaderCanary(i, server, loc, canary)
+						canaryService, tagRouter = createHeaderCanary(cfg, i, server, loc, canary)
 						tags = append(tags, tagRouter)
 						services = append(services, canaryService)
 					} else if policy.Weight > 0 {
@@ -271,7 +289,7 @@ func createHotCfg(cfg ngx_config.Configuration, ingressCfg ingress.Configuration
 	}
 }
 
-func createVirtualService(target string, loc *ingress.Location, serviceName string) *route.VirtualService {
+func createVirtualService(target string, loc *ingress.Location, serviceName string, server *ingress.Server) *route.VirtualService {
 	upstream := &route.Upstream{
 		Target: target,
 		Weight: DefaultTotalWeightTraffic,
@@ -288,13 +306,13 @@ func createVirtualService(target string, loc *ingress.Location, serviceName stri
 		},
 		TimeoutMs:  timeout,
 		ForceHttps: loc.Rewrite.SSLRedirect,
-		Metadata:   createMetaData(loc),
+		Metadata:   createMetaData(server, loc),
 	}
 
 	return service
 }
 
-func createMetaData(loc *ingress.Location) []*route.Metadata {
+func createMetaData(server *ingress.Server, loc *ingress.Location) []*route.Metadata {
 	var namespace, ingress, service string
 	if loc.Ingress == nil {
 		namespace = ""
@@ -355,10 +373,14 @@ func createMetaData(loc *ingress.Location) []*route.Metadata {
 			Key:   MetaCorsMaxAge,
 			Value: strconv.FormatInt(int64(loc.CorsConfig.CorsMaxAge), 10),
 		},
+		&route.Metadata{
+			Key:   MetaSSLProtocols,
+			Value: convertSSLVer(server.SSLProtocols),
+		},
 	}
 }
 
-func createHeaderCanary(seq int, server *ingress.Server, loc *ingress.Location, canary *ingress.Canary) (*route.VirtualService, *route.TagRouter) {
+func createHeaderCanary(cfg ngx_config.Configuration, seq int, server *ingress.Server, loc *ingress.Location, canary *ingress.Canary) (*route.VirtualService, *route.TagRouter) {
 	canaryService := &route.VirtualService{}
 	tagRouter := &route.TagRouter{}
 	policy := canary.TrafficShapingPolicy
@@ -373,7 +395,7 @@ func createHeaderCanary(seq int, server *ingress.Server, loc *ingress.Location, 
 	pathCanaryServiceName := server.Hostname + loc.Path + Canary + strconv.Itoa(seq)
 	klog.Infof("Loc[%v%v], canary[%v], header=[%v], value=[%v]",
 		server.Hostname, loc.Path, pathCanaryServiceName, policy.Header, headerValue)
-	canaryService = createVirtualService(canary.Target, loc, pathCanaryServiceName)
+	canaryService = createVirtualService(canary.Target, loc, pathCanaryServiceName, server)
 
 	tagItem := &route.TagItem{
 		Location:  route.LocHttpHeader,
@@ -429,4 +451,43 @@ func upstreamWeight(canaryUps []*route.Upstream, service *route.VirtualService) 
 	}
 
 	service.Upstreams = upstreams
+}
+
+func convertSSLVer(sslProtocolStr string) string {
+	sslVers := make([]string, 0)
+	sslProtocols := strings.Fields(sslProtocolStr)
+	for _, sslProtocol := range sslProtocols {
+		sslVer, exists := sslProtocolVersions[sslProtocol]
+		if !exists {
+			klog.Errorf("Invalid SSL version [%v] in ssl-protocols [%v]",
+				sslProtocol, sslProtocolStr)
+			continue
+		}
+
+		sslVers = append(sslVers, strconv.FormatUint(sslVer, 10))
+	}
+
+	sslVersionStr := strings.Join(sslVers, " ")
+	klog.Infof("ssl-protocols [%v] is converted to [%v]", sslProtocolStr, sslVersionStr)
+
+	return sslVersionStr
+}
+
+func createCorsOriginRegex(corsOrigins []string) string {
+	if len(corsOrigins) == 1 && corsOrigins[0] == "*" {
+		return "*"
+	}
+
+	var originsRegex string = ""
+	for i, origin := range corsOrigins {
+		originTrimmed := strings.TrimSpace(origin)
+		if len(originTrimmed) > 0 {
+			originsRegex += originTrimmed
+			if i != len(corsOrigins)-1 {
+				originsRegex = originsRegex + ", "
+			}
+		}
+	}
+
+	return originsRegex
 }
