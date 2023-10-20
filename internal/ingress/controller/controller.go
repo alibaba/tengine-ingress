@@ -836,12 +836,7 @@ func (n *NGINXController) createUpstreams(data []*ingress.Ingress, du *ingress.B
 			// configure traffic shaping for canary
 			if anns.Canary.Enabled && n.verifyCanaryReferrer(ingKey, anns) {
 				upstreams[defBackend].NoServer = true
-				upstreams[defBackend].TrafficShapingPolicy = ingress.TrafficShapingPolicy{
-					Weight:      anns.Canary.Weight,
-					Header:      anns.Canary.Header,
-					HeaderValue: anns.Canary.HeaderValue,
-					Cookie:      anns.Canary.Cookie,
-				}
+				setTrafficShapingPolicy(anns, &upstreams[defBackend].TrafficShapingPolicy)
 			}
 
 			if len(upstreams[defBackend].Endpoints) == 0 {
@@ -904,13 +899,8 @@ func (n *NGINXController) createUpstreams(data []*ingress.Ingress, du *ingress.B
 
 				// configure traffic shaping for canary
 				if anns.Canary.Enabled && n.verifyCanaryReferrer(ingKey, anns) {
-					upstreams[name].NoServer = true
-					upstreams[name].TrafficShapingPolicy = ingress.TrafficShapingPolicy{
-						Weight:      anns.Canary.Weight,
-						Header:      anns.Canary.Header,
-						HeaderValue: anns.Canary.HeaderValue,
-						Cookie:      anns.Canary.Cookie,
-					}
+					upstreams[svcName].NoServer = true
+					setTrafficShapingPolicy(anns, &upstreams[svcName].TrafficShapingPolicy)
 				}
 
 				if len(upstreams[name].Endpoints) == 0 {
@@ -1645,4 +1635,24 @@ func (n *NGINXController) verifyCanaryReferrer(ingKey string, anns *annotations.
 	n.metricCollector.IncCanaryReferInvalidCount()
 	klog.Warningf("Canary ingress[%v] with referrer [%v] is illegal, ignored", ingKey, anns.Canary.Referrer)
 	return false
+}
+
+func setTrafficShapingPolicy(anns *annotations.Ingress, policy *ingress.TrafficShapingPolicy) {
+	*policy = ingress.TrafficShapingPolicy{
+		Weight:           anns.Canary.Weight,
+		Header:           anns.Canary.Header,
+		HeaderValue:      anns.Canary.HeaderValue,
+		Cookie:           anns.Canary.Cookie,
+		CookieValue:      anns.Canary.CookieValue,
+		Query:            anns.Canary.Query,
+		QueryValue:       anns.Canary.QueryValue,
+		ModDivisor:       uint64(anns.Canary.ModDivisor),
+		ModRelationalOpr: anns.Canary.ModRelationalOpr,
+		ModRemainder:     uint64(anns.Canary.ModRemainder),
+		ReqAddHeader:     anns.Canary.ReqAddHeader,
+		ReqAppendHeader:  anns.Canary.ReqAppendHeader,
+		ReqAddQuery:      anns.Canary.ReqAddQuery,
+		RespAddHeader:    anns.Canary.RespAddHeader,
+		RespAppendHeader: anns.Canary.RespAppendHeader,
+	}
 }
