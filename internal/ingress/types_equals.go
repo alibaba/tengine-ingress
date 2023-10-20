@@ -709,7 +709,7 @@ func (c1 *Canary) Equal(c2 *Canary) bool {
 		return false
 	}
 
-	if c1.BackendTarget != c2.BackendTarget {
+	if c1.Target != c2.Target {
 		return false
 	}
 
