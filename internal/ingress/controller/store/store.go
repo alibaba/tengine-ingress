@@ -56,9 +56,9 @@ import (
 	"k8s.io/ingress-nginx/internal/file"
 	"k8s.io/ingress-nginx/internal/ingress"
 	"k8s.io/ingress-nginx/internal/ingress/annotations"
-	"k8s.io/ingress-nginx/internal/ingress/annotations/class"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/parser"
 	ngx_config "k8s.io/ingress-nginx/internal/ingress/controller/config"
+	"k8s.io/ingress-nginx/internal/ingress/controller/ingressclass"
 	ngx_template "k8s.io/ingress-nginx/internal/ingress/controller/template"
 	"k8s.io/ingress-nginx/internal/ingress/defaults"
 	"k8s.io/ingress-nginx/internal/ingress/errors"
@@ -145,6 +145,9 @@ type Storer interface {
 
 	// Run initiates the synchronization of the controllers
 	Run(stopCh chan struct{})
+
+	// GetIngressClass validates given ingress against ingress class configuration and returns the ingress class.
+	GetIngressClass(ing *networkingv1.Ingress, icConfig *ingressclass.IngressClassConfiguration) (string, error)
 }
 
 // EventType type of event associated with an informer
@@ -170,10 +173,12 @@ type Event struct {
 // Informer defines the required SharedIndexInformers that interact with the API server.
 type Informer struct {
 	Ingress         cache.SharedIndexInformer
+	IngressClass    cache.SharedIndexInformer
 	Endpoint        cache.SharedIndexInformer
 	Service         cache.SharedIndexInformer
 	Secret          cache.SharedIndexInformer
 	ConfigMap       cache.SharedIndexInformer
+	Namespace       cache.SharedIndexInformer
 	Pod             cache.SharedIndexInformer
 	IngressCheckSum cache.SharedIndexInformer
 	SecretCheckSum  cache.SharedIndexInformer
@@ -182,10 +187,12 @@ type Informer struct {
 // Lister contains object listers (stores).
 type Lister struct {
 	Ingress               IngressLister
+	IngressClass          IngressClassLister
 	Service               ServiceLister
 	Endpoint              EndpointLister
 	Secret                SecretLister
 	ConfigMap             ConfigMapLister
+	Namespace             NamespaceLister
 	IngressWithAnnotation IngressWithAnnotationsLister
 	Pod                   PodLister
 	IngressCheckSum       IngressCheckSumLister
@@ -209,6 +216,9 @@ var useSecretCheckSum = false
 func (i *Informer) Run(stopCh chan struct{}) {
 	go i.Secret.Run(stopCh)
 	go i.Endpoint.Run(stopCh)
+	if i.IngressClass != nil {
+		go i.IngressClass.Run(stopCh)
+	}
 	go i.Service.Run(stopCh)
 	go i.ConfigMap.Run(stopCh)
 	go i.Pod.Run(stopCh)
@@ -223,6 +233,10 @@ func (i *Informer) Run(stopCh chan struct{}) {
 		i.Pod.HasSynced,
 	) {
 		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
+	}
+
+	if i.IngressClass != nil && !cache.WaitForCacheSync(stopCh, i.IngressClass.HasSynced) {
+		runtime.HandleError(fmt.Errorf("timed out waiting for ingress classcaches to sync"))
 	}
 
 	if useIngCheckSum {
@@ -243,6 +257,15 @@ func (i *Informer) Run(stopCh chan struct{}) {
 		i.SecretCheckSum.HasSynced,
 	) {
 		klog.Errorf("CRD SecretCheckSum is not ready")
+	}
+
+	// when limit controller scope to one namespace, skip sync namespaces at cluster scope
+	if i.Namespace != nil {
+		go i.Namespace.Run(stopCh)
+
+		if !cache.WaitForCacheSync(stopCh, i.Namespace.HasSynced) {
+			runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
+		}
 	}
 
 	// in big clusters, deltas can keep arriving even after HasSynced
@@ -313,7 +336,9 @@ type k8sStore struct {
 
 // New creates a new object store to be used in the ingress controller
 func New(
-	namespace, configmap, tcp, udp, defaultSSLCertificate string,
+	namespace string,
+	namespaceSelector labels.Selector,
+	configmap, tcp, udp, defaultSSLCertificate string,
 	resyncPeriod time.Duration,
 	client clientset.Interface,
 	ClientIng clientset.Interface,
@@ -323,7 +348,8 @@ func New(
 	updateCh *channels.RingChannel,
 	pod *k8s.PodInfo,
 	disableCatchAll bool,
-	checksumStatus *ingress.ChecksumStatus) Storer {
+	checksumStatus *ingress.ChecksumStatus,
+	icConfig *ingressclass.IngressClassConfiguration) Storer {
 
 	store := &k8sStore{
 		informers:             &Informer{},
@@ -364,6 +390,20 @@ func New(
 
 	store.listers.IngressWithAnnotation.Store = cache.NewStore(cache.DeletionHandlingMetaNamespaceKeyFunc)
 
+	// As we currently do not filter out kubernetes objects we list, we can
+	// retrieve a huge amount of data from the API server.
+	// In a cluster using HELM < v3 configmaps are used to store binary data.
+	// If you happen to have a lot of HELM releases in the cluster it will make
+	// the memory consumption of nginx-ingress-controller explode.
+	// In order to avoid that we filter out labels OWNER=TILLER.
+	labelsTweakListOptionsFunc := func(options *metav1.ListOptions) {
+		if len(options.LabelSelector) > 0 {
+			options.LabelSelector += ",OWNER!=TILLER"
+		} else {
+			options.LabelSelector = "OWNER!=TILLER"
+		}
+	}
+
 	// create informers factory, enable and assign required informers
 	infFactory := informers.NewSharedInformerFactoryWithOptions(client, resyncPeriod,
 		informers.WithNamespace(namespace),
@@ -386,6 +426,17 @@ func New(
 	store.informers.Ingress = store.getIngInformer(useStorageCluster, infFactory, ingFactory)
 	store.listers.Ingress.Store = store.informers.Ingress.GetStore()
 
+	if !icConfig.IgnoreIngressClass {
+		// store.informers.IngressClass = infFactory.Networking().V1().IngressClasses().Informer()
+		if useStorageCluster {
+			store.informers.IngressClass = ingFactory.Networking().V1().IngressClasses().Informer()
+		} else {
+			store.informers.IngressClass = infFactory.Networking().V1().IngressClasses().Informer()
+		}
+
+		store.listers.IngressClass.Store = cache.NewStore(cache.MetaNamespaceKeyFunc)
+	}
+
 	store.informers.IngressCheckSum = ingCheckCrdFactory.Tengine().V1().IngressCheckSums().Informer()
 	store.listers.IngressCheckSum.Store = store.informers.IngressCheckSum.GetStore()
 
@@ -395,11 +446,13 @@ func New(
 	store.informers.Endpoint = infFactory.Core().V1().Endpoints().Informer()
 	store.listers.Endpoint.Store = store.informers.Endpoint.GetStore()
 
+	// store.informers.Secret = infFactory.Core().V1().Secrets().Informer()
 	if useStorageCluster {
 		store.informers.Secret = ingFactory.Core().V1().Secrets().Informer()
 	} else {
 		store.informers.Secret = infFactory.Core().V1().Secrets().Informer()
 	}
+
 	store.listers.Secret.Store = store.informers.Secret.GetStore()
 
 	store.informers.ConfigMap = infFactory.Core().V1().ConfigMaps().Informer()
@@ -426,6 +479,35 @@ func New(
 	)
 	store.listers.Pod.Store = store.informers.Pod.GetStore()
 
+	// avoid caching namespaces at cluster scope when watching single namespace
+	if namespaceSelector != nil && !namespaceSelector.Empty() {
+		// cache informers factory for namespaces
+		infFactoryNamespaces := informers.NewSharedInformerFactoryWithOptions(client, resyncPeriod,
+			informers.WithTweakListOptions(labelsTweakListOptionsFunc),
+		)
+
+		store.informers.Namespace = infFactoryNamespaces.Core().V1().Namespaces().Informer()
+		store.listers.Namespace.Store = store.informers.Namespace.GetStore()
+	}
+
+	watchedNamespace := func(namespace string) bool {
+		if namespaceSelector == nil || namespaceSelector.Empty() {
+			return true
+		}
+
+		item, ok, err := store.listers.Namespace.GetByKey(namespace)
+		if !ok {
+			klog.Errorf("Namespace %s not existed: %v.", namespace, err)
+			return false
+		}
+		ns, ok := item.(*corev1.Namespace)
+		if !ok {
+			return false
+		}
+
+		return namespaceSelector.Matches(labels.Set(ns.Labels))
+	}
+
 	ingDeleteHandler := func(obj interface{}) {
 		ing, ok := toIngress(obj)
 		if !ok {
@@ -442,10 +524,16 @@ func New(
 			}
 		}
 
-		if !class.IsValid(ing) {
-			klog.Infof("ignoring delete for ingress %v based on annotation %v", ing.Name, class.IngressKey)
+		if !watchedNamespace(ing.Namespace) {
 			return
 		}
+
+		_, err := store.GetIngressClass(ing, icConfig)
+		if err != nil {
+			klog.Infof("Ignoring ingress [%v/%v] because of error while validating ingress class: %v.", ing.Namespace, ing.Name, err)
+			return
+		}
+
 		if isCatchAllIngress(ing.Spec) && disableCatchAll {
 			klog.Infof("ignoring delete for catch-all ingress %v/%v because of --disable-catch-all", ing.Namespace, ing.Name)
 			return
@@ -467,11 +555,19 @@ func New(
 	ingEventHandler := cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			ing, _ := toIngress(obj)
-			if !class.IsValid(ing) {
-				a, _ := parser.GetStringAnnotation(class.IngressKey, ing)
-				klog.Infof("ignoring add for ingress %v based on annotation %v with value %v", ing.Name, class.IngressKey, a)
+
+			if !watchedNamespace(ing.Namespace) {
 				return
 			}
+
+			ic, err := store.GetIngressClass(ing, icConfig)
+			if err != nil {
+				klog.Infof("Ignoring ingress [%v/%v] because of error while validating ingress class: %v.", ing.Namespace, ing.Name, err)
+				return
+			}
+
+			klog.Infof("Found valid IngressClass %v for ingress %v.", ic, ing)
+
 			if isCatchAllIngress(ing.Spec) && disableCatchAll {
 				klog.Infof("ignoring add for catch-all ingress %v/%v because of --disable-catch-all", ing.Namespace, ing.Name)
 				return
@@ -493,21 +589,30 @@ func New(
 			oldIng, _ := toIngress(old)
 			curIng, _ := toIngress(cur)
 
-			validOld := class.IsValid(oldIng)
-			validCur := class.IsValid(curIng)
-			if !validOld && validCur {
+			if !watchedNamespace(oldIng.Namespace) {
+				return
+			}
+
+			var errOld, errCur error
+			var classCur string
+			if !icConfig.IgnoreIngressClass {
+				_, errOld = store.GetIngressClass(oldIng, icConfig)
+				classCur, errCur = store.GetIngressClass(curIng, icConfig)
+			}
+
+			if errOld != nil && errCur == nil {
 				if isCatchAllIngress(curIng.Spec) && disableCatchAll {
 					klog.Infof("ignoring update for catch-all ingress %v/%v because of --disable-catch-all", curIng.Namespace, curIng.Name)
 					return
 				}
 
-				klog.Infof("creating ingress %v based on annotation %v", curIng.Name, class.IngressKey)
+				klog.Infof("creating ingress [%v/%v] based on ingress class %v", curIng.Namespace, curIng.Name, classCur)
 				recorder.Eventf(curIng, corev1.EventTypeNormal, "CREATE", fmt.Sprintf("Ingress %s/%s", curIng.Namespace, curIng.Name))
-			} else if validOld && !validCur {
-				klog.Infof("removing ingress %v based on annotation %v", curIng.Name, class.IngressKey)
+			} else if errOld == nil && errCur != nil {
+				klog.Infof("removing ingress [%v/%v] based on ingress class %v with error: %v", curIng.Namespace, curIng.Name, classCur, errCur)
 				ingDeleteHandler(old)
 				return
-			} else if validCur && !reflect.DeepEqual(old, cur) {
+			} else if errCur == nil && !reflect.DeepEqual(old, cur) {
 				if isCatchAllIngress(curIng.Spec) && disableCatchAll {
 					klog.Infof("ignoring update for catch-all ingress %v/%v and delete old one because of --disable-catch-all", curIng.Namespace, curIng.Name)
 					ingDeleteHandler(old)
@@ -516,7 +621,7 @@ func New(
 
 				recorder.Eventf(curIng, corev1.EventTypeNormal, "UPDATE", fmt.Sprintf("Ingress %s/%s", curIng.Namespace, curIng.Name))
 			} else {
-				klog.V(3).Infof("No changes on ingress %v/%v. Skipping update", curIng.Namespace, curIng.Name)
+				klog.V(3).Infof("No changes on ingress [%v/%v]. Skipping update", curIng.Namespace, curIng.Name)
 				return
 			}
 
@@ -528,6 +633,68 @@ func New(
 			updateCh.In() <- Event{
 				Type: UpdateEvent,
 				Obj:  cur,
+			}
+		},
+	}
+
+	ingressClassEventHandler := cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			ingressclass := obj.(*networkingv1.IngressClass)
+			foundClassByName := false
+			if icConfig.IngressClassByName && ingressclass.Name == icConfig.AnnotationValue {
+				klog.Infof("adding ingressclass as ingress-class-by-name is configured: %v", ingressclass)
+				foundClassByName = true
+			}
+			if !foundClassByName && ingressclass.Spec.Controller != icConfig.Controller {
+				klog.Infof("ignoring ingressclass as the spec.controller is not the same of this ingress: %v", ingressclass)
+				return
+			}
+			err := store.listers.IngressClass.Add(ingressclass)
+			if err != nil {
+				klog.Infof("error adding ingressclass to store: %v", err)
+				return
+			}
+
+			updateCh.In() <- Event{
+				Type: CreateEvent,
+				Obj:  obj,
+			}
+		},
+		DeleteFunc: func(obj interface{}) {
+			ingressclass := obj.(*networkingv1.IngressClass)
+			if ingressclass.Spec.Controller != icConfig.Controller {
+				klog.Infof("ignoring ingressclass as the spec.controller is not the same of this ingress: %v", ingressclass)
+				return
+			}
+			err := store.listers.IngressClass.Delete(ingressclass)
+			if err != nil {
+				klog.Infof("error removing ingressclass %v from store: %v", ingressclass, err)
+				return
+			}
+			updateCh.In() <- Event{
+				Type: DeleteEvent,
+				Obj:  obj,
+			}
+		},
+		UpdateFunc: func(old, cur interface{}) {
+			oic := old.(*networkingv1.IngressClass)
+			cic := cur.(*networkingv1.IngressClass)
+			if cic.Spec.Controller != icConfig.Controller {
+				klog.Infof("ignoring ingressclass as the spec.controller is not the same of this ingress: %v", cic)
+				return
+			}
+			// TODO: In a future we might be interested in parse parameters and use as
+			// current IngressClass for this case, crossing with configmap
+			if !reflect.DeepEqual(cic.Spec.Parameters, oic.Spec.Parameters) {
+				err := store.listers.IngressClass.Update(cic)
+				if err != nil {
+					klog.Infof("error updating ingressclass %v in store: %v", cic, err)
+					return
+				}
+				updateCh.In() <- Event{
+					Type: UpdateEvent,
+					Obj:  cur,
+				}
 			}
 		},
 	}
@@ -566,6 +733,10 @@ func New(
 			if !reflect.DeepEqual(old, cur) {
 				sec := cur.(*corev1.Secret)
 				key := k8s.MetaNamespaceKey(sec)
+
+				if !watchedNamespace(sec.Namespace) {
+					return
+				}
 
 				if store.defaultSSLCertificate == key {
 					store.syncSecret(store.defaultSSLCertificate, mc)
@@ -607,6 +778,10 @@ func New(
 					klog.Errorf("Tombstone contained object that is not a Secret: %#v", obj)
 					return
 				}
+			}
+
+			if !watchedNamespace(sec.Namespace) {
+				return
 			}
 
 			store.listers.SecretWithAnnotation.Delete(sec)
@@ -782,6 +957,40 @@ func New(
 		},
 	}
 
+	serviceHandler := cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			svc := obj.(*corev1.Service)
+			if svc.Spec.Type == corev1.ServiceTypeExternalName {
+				updateCh.In() <- Event{
+					Type: CreateEvent,
+					Obj:  obj,
+				}
+			}
+		},
+		DeleteFunc: func(obj interface{}) {
+			svc := obj.(*corev1.Service)
+			if svc.Spec.Type == corev1.ServiceTypeExternalName {
+				updateCh.In() <- Event{
+					Type: DeleteEvent,
+					Obj:  obj,
+				}
+			}
+		},
+		UpdateFunc: func(old, cur interface{}) {
+			oldSvc := old.(*corev1.Service)
+			curSvc := cur.(*corev1.Service)
+
+			if reflect.DeepEqual(oldSvc, curSvc) {
+				return
+			}
+
+			updateCh.In() <- Event{
+				Type: UpdateEvent,
+				Obj:  cur,
+			}
+		},
+	}
+
 	podEventHandler := cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			updateCh.In() <- Event{
@@ -811,11 +1020,16 @@ func New(
 	}
 
 	store.informers.Ingress.AddEventHandler(ingEventHandler)
+	if !icConfig.IgnoreIngressClass {
+		store.informers.IngressClass.AddEventHandler(ingressClassEventHandler)
+	}
+
 	store.informers.IngressCheckSum.AddEventHandler(icEventHandler)
 	store.informers.SecretCheckSum.AddEventHandler(scEventHandler)
 	store.informers.Endpoint.AddEventHandler(epEventHandler)
 	store.informers.Secret.AddEventHandler(secrEventHandler)
 	store.informers.ConfigMap.AddEventHandler(cmEventHandler)
+	store.informers.Service.AddEventHandler(serviceHandler)
 	store.informers.Service.AddEventHandler(cache.ResourceEventHandlerFuncs{})
 	store.informers.Pod.AddEventHandler(podEventHandler)
 
@@ -971,6 +1185,32 @@ func (s *k8sStore) ListLocalSSLCerts() []*ingress.SSLCert {
 // GetService returns the Service matching key.
 func (s *k8sStore) GetService(key string) (*corev1.Service, error) {
 	return s.listers.Service.ByKey(key)
+}
+
+func (s *k8sStore) GetIngressClass(ing *networkingv1.Ingress, icConfig *ingressclass.IngressClassConfiguration) (string, error) {
+	// First we try ingressClassName
+	if !icConfig.IgnoreIngressClass && ing.Spec.IngressClassName != nil {
+		iclass, err := s.listers.IngressClass.ByKey(*ing.Spec.IngressClassName)
+		if err != nil {
+			return "", err
+		}
+		return iclass.Name, nil
+	}
+
+	// Then we try annotation
+	if ingressclass, ok := ing.GetAnnotations()[ingressclass.IngressKey]; ok {
+		if ingressclass != icConfig.AnnotationValue {
+			return "", fmt.Errorf("ingress class annotation is not equal to the expected by Ingress Controller")
+		}
+		return ingressclass, nil
+	}
+
+	// Then we accept if the WithoutClass is enabled
+	if icConfig.WatchWithoutClass {
+		// Reserving "_" as a "wildcard" name
+		return "_", nil
+	}
+	return "", fmt.Errorf("ingress does not contain a valid IngressClass")
 }
 
 // getIngress returns the Ingress matching key.

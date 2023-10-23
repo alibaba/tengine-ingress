@@ -40,6 +40,7 @@ import (
 	"k8s.io/ingress-nginx/internal/ingress"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/class"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/parser"
+	"k8s.io/ingress-nginx/internal/ingress/controller/ingressclass"
 	"k8s.io/ingress-nginx/internal/k8s"
 	"k8s.io/ingress-nginx/test/e2e/framework"
 )
@@ -274,6 +275,8 @@ func TestStore(t *testing.T) {
 	t.Run("should not receive updates for ingress with invalid class", func(t *testing.T) {
 		ns := createNamespace(clientSet, t)
 		defer deleteNamespace(ns, clientSet, t)
+		ic := createIngressClass(clientSet, t, ingressclass.DefaultControllerName)
+		defer deleteIngressClass(ic, clientSet, t)
 		createConfigMap(clientSet, ns, t)
 
 		stopCh := make(chan struct{})

@@ -32,6 +32,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 
 	"k8s.io/ingress-nginx/internal/ingress"
+	"k8s.io/ingress-nginx/internal/ingress/controller/config"
 	"k8s.io/ingress-nginx/internal/nginx"
 )
 
@@ -547,5 +548,122 @@ func TestCleanTempNginxCfg(t *testing.T) {
 
 	if len(files) != 1 {
 		t.Errorf("expected one file but %d were found", len(files))
+	}
+}
+
+func TestHotreload(t *testing.T) {
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%v", nginx.StatusPort))
+	if err != nil {
+		t.Fatalf("creating tcp listener: %s", err)
+	}
+	defer listener.Close()
+
+	streamListener, err := net.Listen("tcp", fmt.Sprintf(":%v", nginx.StreamPort))
+	if err != nil {
+		t.Fatalf("creating tcp listener: %s", err)
+	}
+	defer streamListener.Close()
+
+	endpointStats := map[string]int{"/configuration/backends": 0, "/configuration/general": 0, "/configuration/servers": 0}
+
+	server := &httptest.Server{
+		Listener: listener,
+		Config: &http.Server{
+			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusCreated)
+
+				if r.Method != "POST" {
+					t.Errorf("expected a 'POST' request, got '%s'", r.Method)
+				}
+
+				b, err := io.ReadAll(r.Body)
+				if err != nil && err != io.EOF {
+					t.Fatal(err)
+				}
+				body := string(b)
+
+				endpointStats[r.URL.Path]++
+
+				switch r.URL.Path {
+				case "/configuration/backends":
+					{
+						if strings.Contains(body, "target") {
+							t.Errorf("unexpected target reference in JSON content: %v", body)
+						}
+
+						if !strings.Contains(body, "service") {
+							t.Errorf("service reference should be present in JSON content: %v", body)
+						}
+					}
+				case "/configuration/general":
+					{
+						if !strings.Contains(body, "controllerPodsCount") {
+							t.Errorf("controllerPodsCount should be present in JSON content: %v", body)
+						}
+					}
+				case "/configuration/servers":
+					{
+						if !strings.Contains(body, `{"certificates":{},"servers":{"myapp.fake":["-1"]}}`) {
+							t.Errorf("controllerPodsCount should be present in JSON content: %v", body)
+						}
+					}
+				default:
+					t.Errorf("unknown request to %s", r.URL.Path)
+				}
+			}),
+		},
+	}
+	defer server.Close()
+	server.Start()
+
+	target := &apiv1.ObjectReference{}
+
+	backends := []*ingress.Backend{{
+		Name:    "fakenamespace-myapp-80",
+		Service: &apiv1.Service{},
+		Endpoints: []ingress.Endpoint{
+			{
+				Address: "10.0.0.1",
+				Port:    "8080",
+				Target:  target,
+			},
+			{
+				Address: "10.0.0.2",
+				Port:    "8080",
+				Target:  target,
+			},
+		},
+	}}
+
+	servers := []*ingress.Server{{
+		Hostname: "myapp.fake",
+		Locations: []*ingress.Location{
+			{
+				Path:          "/",
+				Backend:       "fakenamespace-myapp-80",
+				Service:       &apiv1.Service{},
+				LoadBalancing: "addr",
+			},
+		},
+	}}
+
+	commonConfig := &ingress.Configuration{
+		Backends:            backends,
+		Servers:             servers,
+		ControllerPodsCount: 2,
+	}
+
+	cfg := config.NewDefault()
+	cfg.ShmServiceCfgFileLock = "./shm_service_cfg.lock"
+	cfg.IngressShmSize = 1024
+	cfg.UseSinfo = false
+
+	err = hotReload(cfg, *commonConfig, false)
+	if err != nil {
+		t.Logf("Hot reloading failed:\n%v", err)
+	}
+
+	if cfg.UseSinfo {
+		t.Errorf("expected 'UseSinfo' disabled, got '%v'", cfg.UseSinfo)
 	}
 }
