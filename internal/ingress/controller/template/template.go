@@ -183,6 +183,7 @@ var (
 		"shouldLoadOpentracingModule":        shouldLoadOpentracingModule,
 		"buildModSecurityForLocation":        buildModSecurityForLocation,
 		"buildMirrorLocations":               buildMirrorLocations,
+		"buildCorsOriginRegex":               buildCorsOriginRegex,
 		"buildDefaultListener":               buildDefaultListener,
 		"buildHTTPSCustomListener":           buildHTTPSCustomListener,
 	}
@@ -1596,6 +1597,33 @@ proxy_pass %v;
 
 	return buffer.String()
 }
+
+func buildOriginRegex(origin string) string {
+	origin = regexp.QuoteMeta(origin)
+	origin = strings.Replace(origin, "\\*", `[A-Za-z0-9\-]+`, 1)
+	return fmt.Sprintf("(%s)", origin)
+}
+
+func buildCorsOriginRegex(corsOrigins []string) string {
+	if len(corsOrigins) == 1 && corsOrigins[0] == "*" {
+		return "set $http_origin *;\nset $cors 'true';"
+	}
+
+	var originsRegex string = "if ($http_origin ~* ("
+	for i, origin := range corsOrigins {
+		originTrimmed := strings.TrimSpace(origin)
+		if len(originTrimmed) > 0 {
+			builtOrigin := buildOriginRegex(originTrimmed)
+			originsRegex += builtOrigin
+			if i != len(corsOrigins)-1 {
+				originsRegex = originsRegex + "|"
+			}
+		}
+	}
+	originsRegex = originsRegex + ")$ ) { set $cors 'true'; }"
+	return originsRegex
+}
+
 func buildHTTPSCustomListener(t interface{}, s interface{}) string {
 	var out []string
 
