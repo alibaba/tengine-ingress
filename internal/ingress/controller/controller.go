@@ -1134,6 +1134,7 @@ func (n *NGINXController) createServers(data []*ingress.Ingress,
 				Backend:       un,
 				Service:       &apiv1.Service{},
 				DisableRobots: anns.DisableRobots,
+				WeightTotal:   anns.Canary.WeightTotal,
 			}
 			locationApplyAnnotations(loc, anns)
 
