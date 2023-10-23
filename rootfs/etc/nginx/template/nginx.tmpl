@@ -239,6 +239,10 @@ http {
     large_client_header_buffers     {{ $cfg.LargeClientHeaderBuffers }};
     client_body_buffer_size         {{ $cfg.ClientBodyBufferSize }};
     client_body_timeout             {{ $cfg.ClientBodyTimeout }}s;
+
+    http2_max_field_size            {{ $cfg.HTTP2MaxFieldSize }};
+    http2_max_header_size           {{ $cfg.HTTP2MaxHeaderSize }};
+    http2_max_requests              {{ $cfg.HTTP2MaxRequests }};
     http2_max_concurrent_streams    {{ $cfg.HTTP2MaxConcurrentStreams }};
 
     types_hash_max_size             2048;
@@ -847,24 +851,33 @@ stream {
 
 {{/* CORS support from https://michielkalkman.com/snippets/nginx-cors-open-configuration.html */}}
 {{ define "CORS" }}
-        {{ $cors := .CorsConfig }}
-        # Cors Preflight methods needs additional options and different Return Code
-        if ($request_method = 'OPTIONS') {
-            more_set_headers 'Access-Control-Allow-Origin: {{ $cors.CorsAllowOrigin }}';
-            {{ if $cors.CorsAllowCredentials }} more_set_headers 'Access-Control-Allow-Credentials: {{ $cors.CorsAllowCredentials }}'; {{ end }}
-            more_set_headers 'Access-Control-Allow-Methods: {{ $cors.CorsAllowMethods }}';
-            more_set_headers 'Access-Control-Allow-Headers: {{ $cors.CorsAllowHeaders }}';
-            more_set_headers 'Access-Control-Max-Age: {{ $cors.CorsMaxAge }}';
-            more_set_headers 'Content-Type: text/plain charset=UTF-8';
-            more_set_headers 'Content-Length: 0';
-            return 204;
-        }
+     {{ $cors := .CorsConfig }}
+     # Cors Preflight methods needs additional options and different Return Code
+     {{ if $cors.CorsAllowOrigin }}
+        {{ buildCorsOriginRegex $cors.CorsAllowOrigin }}
+     {{ end }}
+     if ($request_method = 'OPTIONS') {
+        set $cors ${cors}options;
+     }
 
-        more_set_headers 'Access-Control-Allow-Origin: {{ $cors.CorsAllowOrigin }}';
+     if ($cors = "true") {
+        more_set_headers 'Access-Control-Allow-Origin: $http_origin';
         {{ if $cors.CorsAllowCredentials }} more_set_headers 'Access-Control-Allow-Credentials: {{ $cors.CorsAllowCredentials }}'; {{ end }}
         more_set_headers 'Access-Control-Allow-Methods: {{ $cors.CorsAllowMethods }}';
         more_set_headers 'Access-Control-Allow-Headers: {{ $cors.CorsAllowHeaders }}';
+        more_set_headers 'Access-Control-Max-Age: {{ $cors.CorsMaxAge }}';
+     }
 
+     if ($cors = "trueoptions") {
+        more_set_headers 'Access-Control-Allow-Origin: $http_origin';
+        {{ if $cors.CorsAllowCredentials }} more_set_headers 'Access-Control-Allow-Credentials: {{ $cors.CorsAllowCredentials }}'; {{ end }}
+        more_set_headers 'Access-Control-Allow-Methods: {{ $cors.CorsAllowMethods }}';
+        more_set_headers 'Access-Control-Allow-Headers: {{ $cors.CorsAllowHeaders }}';
+        more_set_headers 'Access-Control-Max-Age: {{ $cors.CorsMaxAge }}';
+        more_set_headers 'Content-Type: text/plain charset=UTF-8';
+        more_set_headers 'Content-Length: 0';
+        return 204;
+     }
 {{ end }}
 
 {{/* definition of server-template to avoid repetitions with server-alias */}}
@@ -1255,42 +1268,6 @@ stream {
 
             set $enable_cors_options_credentials "${metadata_enable_cors}_${request_method}_${metadata_cors_allow_credentials}";
             set $metadata_enable_cors_credentials "${metadata_enable_cors}_${metadata_cors_allow_credentials}";
-  
-            if ($enable_cors_options_credentials = "true_OPTIONS_true") {
-                # Cors Preflight methods needs additional options and different Return Code
-                more_set_headers 'Access-Control-Allow-Origin: $metadata_cors_allow_origin';
-                more_set_headers 'Access-Control-Allow-Credentials: $metadata_cors_allow_credentials';
-                more_set_headers 'Access-Control-Allow-Methods: $metadata_cors_allow_methods';
-                more_set_headers 'Access-Control-Allow-Headers: $metadata_cors_allow_headers';
-                more_set_headers 'Access-Control-Max-Age: $metadata_cors_max_age';
-                more_set_headers 'Content-Type: text/plain charset=UTF-8';
-                more_set_headers 'Content-Length: 0';
-                return 204;
-            }
-
-            if ($enable_cors_options_credentials = "true_OPTIONS_false") {
-                # Cors Preflight methods needs additional options and different Return Code
-                more_set_headers 'Access-Control-Allow-Origin: $metadata_cors_allow_origin';
-                more_set_headers 'Access-Control-Allow-Methods: $metadata_cors_allow_methods';
-                more_set_headers 'Access-Control-Allow-Headers: $metadata_cors_allow_headers';
-                more_set_headers 'Access-Control-Max-Age: $metadata_cors_max_age';
-                more_set_headers 'Content-Type: text/plain charset=UTF-8';
-                more_set_headers 'Content-Length: 0';
-                return 204;
-            }
-
-            if ($metadata_enable_cors_credentials = "true_true") {
-                more_set_headers 'Access-Control-Allow-Origin: $metadata_cors_allow_origin';
-                more_set_headers 'Access-Control-Allow-Credentials: $metadata_cors_allow_credentials';
-                more_set_headers 'Access-Control-Allow-Methods: $metadata_cors_allow_methods';
-                more_set_headers 'Access-Control-Allow-Headers: $metadata_cors_allow_headers';
-            }
-
-            if ($metadata_enable_cors_credentials = "true_false") {
-                more_set_headers 'Access-Control-Allow-Origin: $metadata_cors_allow_origin';
-                more_set_headers 'Access-Control-Allow-Methods: $metadata_cors_allow_methods';
-                more_set_headers 'Access-Control-Allow-Headers: $metadata_cors_allow_headers';
-            }
             {{ end }}
 
             {{ buildInfluxDB $location.InfluxDB }}
@@ -1369,6 +1346,44 @@ stream {
             # Custom headers to proxied server
             {{ range $k, $v := $all.ProxySetHeaders }}
             {{ $proxySetHeader }} {{ $k }}                    {{ $v | quote }};
+            {{ end }}
+
+            {{ if not $all.Cfg.TengineReload }}
+            if ($enable_cors_options_credentials = "true_OPTIONS_true") {
+                # Cors Preflight methods needs additional options and different Return Code
+                more_set_headers 'Access-Control-Allow-Origin: $metadata_cors_allow_origin';
+                more_set_headers 'Access-Control-Allow-Credentials: $metadata_cors_allow_credentials';
+                more_set_headers 'Access-Control-Allow-Methods: $metadata_cors_allow_methods';
+                more_set_headers 'Access-Control-Allow-Headers: $metadata_cors_allow_headers';
+                more_set_headers 'Access-Control-Max-Age: $metadata_cors_max_age';
+                more_set_headers 'Content-Type: text/plain charset=UTF-8';
+                more_set_headers 'Content-Length: 0';
+                return 204;
+            }
+
+            if ($enable_cors_options_credentials = "true_OPTIONS_false") {
+                # Cors Preflight methods needs additional options and different Return Code
+                more_set_headers 'Access-Control-Allow-Origin: $metadata_cors_allow_origin';
+                more_set_headers 'Access-Control-Allow-Methods: $metadata_cors_allow_methods';
+                more_set_headers 'Access-Control-Allow-Headers: $metadata_cors_allow_headers';
+                more_set_headers 'Access-Control-Max-Age: $metadata_cors_max_age';
+                more_set_headers 'Content-Type: text/plain charset=UTF-8';
+                more_set_headers 'Content-Length: 0';
+                return 204;
+            }
+
+            if ($metadata_enable_cors_credentials = "true_true") {
+                more_set_headers 'Access-Control-Allow-Origin: $metadata_cors_allow_origin';
+                more_set_headers 'Access-Control-Allow-Credentials: $metadata_cors_allow_credentials';
+                more_set_headers 'Access-Control-Allow-Methods: $metadata_cors_allow_methods';
+                more_set_headers 'Access-Control-Allow-Headers: $metadata_cors_allow_headers';
+            }
+
+            if ($metadata_enable_cors_credentials = "true_false") {
+                more_set_headers 'Access-Control-Allow-Origin: $metadata_cors_allow_origin';
+                more_set_headers 'Access-Control-Allow-Methods: $metadata_cors_allow_methods';
+                more_set_headers 'Access-Control-Allow-Headers: $metadata_cors_allow_headers';
+            }
             {{ end }}
 
             proxy_connect_timeout                   {{ $location.Proxy.ConnectTimeout }}s;
