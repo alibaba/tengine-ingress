@@ -762,6 +762,10 @@ type Configuration struct {
 	// Value Format: server_port: domain, server_port: domain[, server_port: domain]*
 	// custom-port-domain: "443: xxx.com, 2443: yyy.com"
 	CustomPortDomain map[string]string `json:"custom-port-domain"`
+
+	// Sleep time for layer 4 load balancer during stop process
+	// Unit: seconds
+	MaxSleepTimeForStop int `json:"max-stop-sleep-time-for-stop"`
 }
 
 // NewDefault returns the default nginx configuration
@@ -939,6 +943,7 @@ func NewDefault() Configuration {
 		MaxRespAddHeaderNum:          2,
 		MaxRespAppendHeaderNum:       2,
 		User:                         "root",
+		MaxSleepTimeForStop:          35,
 	}
 
 	if klog.V(5) {
