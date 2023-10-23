@@ -184,6 +184,7 @@ var (
 		"buildModSecurityForLocation":        buildModSecurityForLocation,
 		"buildMirrorLocations":               buildMirrorLocations,
 		"buildDefaultListener":               buildDefaultListener,
+		"buildHTTPSCustomListener":           buildHTTPSCustomListener,
 	}
 )
 
@@ -1227,7 +1228,7 @@ func buildHTTPSListener(t interface{}, s interface{}) string {
 		addrV4 = tc.Cfg.BindAddressIpv4
 	}
 
-	out = append(out, httpsListener(addrV4, co, tc)...)
+	out = append(out, httpsListener(addrV4, co, tc, tc.ListenPorts.HTTPS)...)
 
 	if !tc.IsIPV6Enabled {
 		return strings.Join(out, "\n")
@@ -1238,7 +1239,7 @@ func buildHTTPSListener(t interface{}, s interface{}) string {
 		addrV6 = tc.Cfg.BindAddressIpv6
 	}
 
-	out = append(out, httpsListener(addrV6, co, tc)...)
+	out = append(out, httpsListener(addrV6, co, tc, tc.ListenPorts.HTTPS)...)
 
 	return strings.Join(out, "\n")
 }
@@ -1397,7 +1398,7 @@ func httpListener(addresses []string, co string, tc config.TemplateConfig) []str
 	return out
 }
 
-func httpsListener(addresses []string, co string, tc config.TemplateConfig) []string {
+func httpsListener(addresses []string, co string, tc config.TemplateConfig, port int) []string {
 	out := make([]string, 0)
 	for _, address := range addresses {
 		l := make([]string, 0)
@@ -1413,9 +1414,9 @@ func httpsListener(addresses []string, co string, tc config.TemplateConfig) []st
 			l = append(l, "proxy_protocol")
 		} else {
 			if address == "" {
-				l = append(l, fmt.Sprintf("%v", tc.ListenPorts.HTTPS))
+				l = append(l, fmt.Sprintf("%v", port))
 			} else {
-				l = append(l, fmt.Sprintf("%v:%v", address, tc.ListenPorts.HTTPS))
+				l = append(l, fmt.Sprintf("%v:%v", address, port))
 			}
 
 			if tc.Cfg.UseProxyProtocol {
@@ -1594,4 +1595,54 @@ proxy_pass %v;
 	}
 
 	return buffer.String()
+}
+func buildHTTPSCustomListener(t interface{}, s interface{}) string {
+	var out []string
+
+	tc, ok := t.(config.TemplateConfig)
+	if !ok {
+		klog.Errorf("expected a 'config.TemplateConfig' type but %T was returned", t)
+		return ""
+	}
+
+	hostname, ok := s.(string)
+	if !ok {
+		klog.Errorf("expected a 'string' type but %T was returned", s)
+		return ""
+	}
+
+	customPortDomain := tc.Cfg.CustomPortDomain
+	for key, _ := range customPortDomain {
+		port, err := strconv.Atoi(key)
+		if err != nil {
+			klog.Errorf("Custom HTTPS port [%v] is invalid", key)
+			return ""
+		}
+
+		if port == tc.ListenPorts.HTTPS {
+			continue
+		}
+
+		co := commonListenOptions(tc, hostname)
+
+		addrV4 := []string{""}
+		if len(tc.Cfg.BindAddressIpv4) > 0 {
+			addrV4 = tc.Cfg.BindAddressIpv4
+		}
+
+		out = append(out, httpsListener(addrV4, co, tc, port)...)
+
+		if !tc.IsIPV6Enabled {
+			return strings.Join(out, "\n")
+		}
+
+		addrV6 := []string{"[::]"}
+		if len(tc.Cfg.BindAddressIpv6) > 0 {
+			addrV6 = tc.Cfg.BindAddressIpv6
+		}
+
+		out = append(out, httpsListener(addrV6, co, tc, port)...)
+	}
+
+	return strings.Join(out, "\n")
 }
