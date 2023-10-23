@@ -756,6 +756,11 @@ type Configuration struct {
 
 	// Set user of Tengine worker processes
 	User string `json:"user"`
+	// The mapping between server port and domain defined in the SSL certificate
+	// If the client does not support SNI, tengine-ingress will use secret which has the domain based on server port of TLS connection.
+	// Value Format: server_port: domain, server_port: domain[, server_port: domain]*
+	// custom-port-domain: "443: xxx.com, 2443: yyy.com"
+	CustomPortDomain map[string]string `json:"custom-port-domain"`
 }
 
 // NewDefault returns the default nginx configuration
