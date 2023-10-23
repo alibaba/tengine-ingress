@@ -56,6 +56,7 @@ import (
 	"k8s.io/ingress-nginx/internal/file"
 	"k8s.io/ingress-nginx/internal/ingress"
 	"k8s.io/ingress-nginx/internal/ingress/annotations"
+	ing_gray "k8s.io/ingress-nginx/internal/ingress/annotations/gray"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/parser"
 	ngx_config "k8s.io/ingress-nginx/internal/ingress/controller/config"
 	"k8s.io/ingress-nginx/internal/ingress/controller/ingressclass"
@@ -65,6 +66,7 @@ import (
 	"k8s.io/ingress-nginx/internal/ingress/metric"
 	"k8s.io/ingress-nginx/internal/ingress/resolver"
 	"k8s.io/ingress-nginx/internal/ingress/secannotations"
+	sec_gray "k8s.io/ingress-nginx/internal/ingress/secannotations/secretgray"
 	"k8s.io/ingress-nginx/internal/k8s"
 	"k8s.io/ingress-nginx/internal/nginx"
 )
@@ -1508,7 +1510,8 @@ func (s *k8sStore) verifyIngressReferrer(key string, anns *annotations.Ingress) 
 		return true
 	}
 
-	ingReferrers := strings.Split(s.GetBackendConfiguration().IngressReferrer, ",")
+	cfg := s.GetBackendConfiguration()
+	ingReferrers := strings.Split(cfg.IngressReferrer, ",")
 	for _, ingReferrer := range ingReferrers {
 		if ingReferrer == anns.Referrer.IngReferrer {
 			return true
@@ -1529,6 +1532,8 @@ func (s *k8sStore) GetIngressGrayStatus(key string, anns *annotations.Ingress) (
 	podOrdinal := astsutils.GetPodOrdinal(s.pod)
 	ingGrayIndex := int32(anns.IngGray.IngGrayIndex)
 	if !anns.IngGray.IngGrayFlag {
+		gray.Type = ingress.Active
+	} else if ingGrayIndex == ing_gray.PodIndexDone {
 		gray.Type = ingress.Active
 	} else if ingGrayIndex > 0 && podOrdinal >= 0 && podOrdinal < ingGrayIndex {
 		gray.Type = ingress.ActiveGray
@@ -1558,6 +1563,8 @@ func (s *k8sStore) GetSecretGrayStatus(key string) (ingress.SecretGray, error) {
 	podOrdinal := astsutils.GetPodOrdinal(s.pod)
 	secGrayIndex := int32(anns.SecretGray.SecGrayIndex)
 	if !anns.SecretGray.SecGrayFlag {
+		gray.Type = ingress.Active
+	} else if secGrayIndex == sec_gray.PodIndexDone {
 		gray.Type = ingress.Active
 	} else if secGrayIndex > 0 && podOrdinal >= 0 && podOrdinal < secGrayIndex {
 		gray.Type = ingress.ActiveGray

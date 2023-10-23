@@ -39,8 +39,10 @@ const (
 )
 
 const (
-	// Index empty
-	PodIndexEmpty = -1
+	// Gray process is not start
+	PodIndexEmpty = 0
+	// Gary process is done
+	PodIndexDone = -1
 )
 
 // Config returns gray configuration for an Ingress rule
