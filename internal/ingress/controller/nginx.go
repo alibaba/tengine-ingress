@@ -436,8 +436,13 @@ func (n *NGINXController) Stop() error {
 		}
 	}
 
+	cfg := n.store.GetBackendConfiguration()
+	lock.RemoveFile(cfg.StatusTengineFilePath)
+	klog.Infof("Sleeping %v seconds for traffic from layer 4 LB", cfg.MaxSleepTimeForStop)
+	time.Sleep(time.Duration(cfg.MaxSleepTimeForStop) * time.Second)
+
 	// send stop signal to Tengine
-	klog.Info("Stopping Tengine process")
+	klog.Info("Stopping Tengine process gracefully")
 	cmd := n.command.ExecCommand("-s", "quit")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -450,7 +455,7 @@ func (n *NGINXController) Stop() error {
 	timer := time.NewTicker(time.Second * 1)
 	for range timer.C {
 		if !nginx.IsRunning() {
-			klog.Info("Tengine process has stopped")
+			klog.Info("Tengine process has stopped gracefully")
 			timer.Stop()
 			break
 		}
