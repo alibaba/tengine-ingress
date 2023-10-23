@@ -437,7 +437,7 @@ func New(
 		store.listers.IngressClass.Store = cache.NewStore(cache.MetaNamespaceKeyFunc)
 	}
 
-	store.informers.IngressCheckSum = ingCheckCrdFactory.Koastline().V1alpha1().IngressCheckSums().Informer()
+	store.informers.IngressCheckSum = ingCheckCrdFactory.Tengine().V1().IngressCheckSums().Informer()
 	store.listers.IngressCheckSum.Store = store.informers.IngressCheckSum.GetStore()
 
 	store.informers.SecretCheckSum = secretCheckCrdFactory.Tengine().V1().SecretCheckSums().Informer()
@@ -1499,21 +1499,6 @@ func (s *k8sStore) ListIngsWithAnnotation() []*ingress.Ingress {
 	})
 
 	return ingresses
-}
-
-// verifyAPIReferrer used to verify the API referrer
-func (s *k8sStore) verifyAPIReferrer(key string, anns *annotations.Ingress) bool {
-	cfg := s.GetBackendConfiguration()
-	apiReferrers := strings.Split(cfg.APIReferrer, ",")
-	for _, apiReferrer := range apiReferrers {
-		if apiReferrer == anns.API.Referrer {
-			return true
-		}
-	}
-
-	s.mc.IncAPIReferInvalidCount()
-	klog.Warningf("API ingress[%v] with referrer [%v] is illegal, ignored", key, anns.API.Referrer)
-	return false
 }
 
 // verifyIngressReferrer used to verify the ingress referrer
