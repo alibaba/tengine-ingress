@@ -129,6 +129,7 @@ func NewNGINXController(config *Configuration, mc metric.Collector) *NGINXContro
 
 	n.store = store.New(
 		config.Namespace,
+		config.WatchNamespaceSelector,
 		config.ConfigMapName,
 		config.TCPConfigMapName,
 		config.UDPConfigMapName,
@@ -142,7 +143,8 @@ func NewNGINXController(config *Configuration, mc metric.Collector) *NGINXContro
 		n.updateCh,
 		k8s.IngressPodDetails,
 		config.DisableCatchAll,
-		n.checksumStatus)
+		n.checksumStatus,
+		config.IngressClassConfiguration)
 
 	n.syncQueue = task.NewTaskQueue(n.syncIngress)
 
@@ -633,6 +635,7 @@ func (n NGINXController) generateTemplate(cfg ngx_config.Configuration, ingressC
 	}
 
 	cfg.SSLDHParam = sslDHParam
+
 	cfg.DefaultSSLCertificate = n.getDefaultSSLCertificate()
 
 	var tc ngx_config.TemplateConfig
@@ -994,7 +997,7 @@ func (n *NGINXController) configureDynamically(pcfg *ingress.Configuration) erro
 			n.metricCollector.IncSecretChecksumCount()
 			n.metricCollector.ClearSecretChecksumErrorCount()
 			err := configureCertificates(pcfg.Servers)
-			if err != nil {
+			if err0 != nil {
 				return err
 			}
 		} else if err0 != nil {
