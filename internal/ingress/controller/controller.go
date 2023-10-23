@@ -27,6 +27,7 @@ import (
 	"github.com/mitchellh/hashstructure"
 	apiv1 "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -35,11 +36,11 @@ import (
 	secretcheckclient "k8s.io/ingress-nginx/internal/checksum/secret/client/clientset/versioned"
 	"k8s.io/ingress-nginx/internal/ingress"
 	"k8s.io/ingress-nginx/internal/ingress/annotations"
-	"k8s.io/ingress-nginx/internal/ingress/annotations/class"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/log"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/parser"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/proxy"
 	ngx_config "k8s.io/ingress-nginx/internal/ingress/controller/config"
+	"k8s.io/ingress-nginx/internal/ingress/controller/ingressclass"
 	"k8s.io/ingress-nginx/internal/ingress/inspector"
 	"k8s.io/ingress-nginx/internal/k8s"
 	"k8s.io/ingress-nginx/internal/lock"
@@ -72,6 +73,8 @@ type Configuration struct {
 
 	Namespace string
 
+	WatchNamespaceSelector labels.Selector
+
 	// +optional
 	TCPConfigMapName string
 	// +optional
@@ -102,6 +105,8 @@ type Configuration struct {
 	SyncRateLimit float32
 
 	DisableCatchAll bool
+
+	IngressClassConfiguration *ingressclass.IngressClassConfiguration
 
 	ValidationWebhook         string
 	ValidationWebhookCertPath string
@@ -238,8 +243,14 @@ func (n *NGINXController) CheckIngress(ing *networking.Ingress) error {
 		return nil
 	}
 
-	if !class.IsValid(ing) {
-		klog.Infof("ignoring ingress %v in %v based on annotation %v", ing.Name, ing.ObjectMeta.Namespace, class.IngressKey)
+	// Skip checks if the ingress is marked as deleted
+	if !ing.DeletionTimestamp.IsZero() {
+		return nil
+	}
+
+	// Do not attempt to validate an ingress that's not meant to be controlled by the current instance of the controller.
+	if ingressClass, err := n.store.GetIngressClass(ing, n.cfg.IngressClassConfiguration); ingressClass == "" {
+		klog.Warningf("ignoring ingress %v in %v based on annotation %v: %v", ing.Name, ing.ObjectMeta.Namespace, ingressClass, err)
 		return nil
 	}
 
@@ -597,7 +608,7 @@ func (n *NGINXController) getBackendServers(ingresses []*ingress.Ingress) ([]*in
 					continue
 				}
 
-				upsName := upstreamName(ing.Namespace, path.Backend.Service)
+				upsName, _ := upstreamName(ing.Namespace, ing.Name, path.Backend.Service)
 				ups := upstreams[upsName]
 
 				// Backend is not referenced to by a server
@@ -808,7 +819,7 @@ func (n *NGINXController) createUpstreams(data []*ingress.Ingress, du *ingress.B
 
 		var defBackend string
 		if ing.Spec.DefaultBackend != nil && ing.Spec.DefaultBackend.Service != nil {
-			defBackend = upstreamName(ing.Namespace, ing.Spec.DefaultBackend.Service)
+			defBackend, _ = upstreamName(ing.Namespace, ing.Name, ing.Spec.DefaultBackend.Service)
 
 			klog.V(3).Infof("Creating upstream %q", defBackend)
 			upstreams[defBackend] = newUpstream(defBackend)
@@ -867,7 +878,7 @@ func (n *NGINXController) createUpstreams(data []*ingress.Ingress, du *ingress.B
 					continue
 				}
 
-				name := upstreamName(ing.Namespace, path.Backend.Service)
+				name := upstreamName(ing.Namespace, ing.Name, path.Backend.Service)
 				svcName, svcPort := upstreamServiceNameAndPort(path.Backend.Service)
 				if _, ok := upstreams[name]; ok {
 					continue
@@ -1087,7 +1098,7 @@ func (n *NGINXController) createServers(data []*ingress.Ingress,
 		}
 
 		if ing.Spec.DefaultBackend != nil && ing.Spec.DefaultBackend.Service != nil {
-			defUpstream := upstreamName(ing.Namespace, ing.Spec.DefaultBackend.Service)
+			defUpstream, _ := upstreamName(ing.Namespace, ing.Name, ing.Spec.DefaultBackend.Service)
 
 			if backendUpstream, ok := upstreams[defUpstream]; ok {
 				// use backend specified in Ingress as the default backend for all its rules
@@ -1354,7 +1365,7 @@ func (n *NGINXController) mergeAlternativeBackends(ing *ingress.Ingress, upstrea
 
 	// merge catch-all alternative backends
 	if ing.Spec.DefaultBackend != nil {
-		upsName := upstreamName(ing.Namespace, ing.Spec.DefaultBackend.Service)
+		upsName, _ := upstreamName(ing.Namespace, ing.Name, ing.Spec.DefaultBackend.Service)
 		altUps := upstreams[upsName]
 
 		if altUps == nil {
@@ -1401,7 +1412,7 @@ func (n *NGINXController) mergeAlternativeBackends(ing *ingress.Ingress, upstrea
 				continue
 			}
 
-			upsName := upstreamName(ing.Namespace, path.Backend.Service)
+			upsName, _ := upstreamName(ing.Namespace, ing.Name, path.Backend.Service)
 
 			altUps := upstreams[upsName]
 

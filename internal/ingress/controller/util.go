@@ -48,16 +48,18 @@ func newUpstream(name string) *ingress.Backend {
 }
 
 // upstreamName returns a formatted upstream name based on namespace, service, and port
-func upstreamName(namespace string, service *networking.IngressServiceBackend) string {
+func upstreamName(namespace string, name string, service *networking.IngressServiceBackend) (string, intstr.IntOrString) {
+	port := intstr.IntOrString{}
 	if service != nil {
 		if service.Port.Number > 0 {
-			return fmt.Sprintf("%s-%s-%d", namespace, service.Name, service.Port.Number)
+			port = intstr.FromInt(int(service.Port.Number))
 		}
 		if service.Port.Name != "" {
-			return fmt.Sprintf("%s-%s-%s", namespace, service.Name, service.Port.Name)
+			port = intstr.FromString(service.Port.Name)
 		}
 	}
-	return fmt.Sprintf("%s-INVALID", namespace)
+
+	return fmt.Sprintf("%v-%v-%v-%v", namespace, name, service.Name, port), port
 }
 
 // upstreamServiceNameAndPort verifies if service is not nil, and then return the

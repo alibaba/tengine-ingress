@@ -45,16 +45,24 @@ import (
 	"k8s.io/ingress-nginx/internal/ingress/annotations/canary"
 	"k8s.io/ingress-nginx/internal/ingress/controller/config"
 	ngx_config "k8s.io/ingress-nginx/internal/ingress/controller/config"
+	"k8s.io/ingress-nginx/internal/ingress/controller/ingressclass"
 	"k8s.io/ingress-nginx/internal/ingress/controller/store"
 	"k8s.io/ingress-nginx/internal/ingress/defaults"
 	"k8s.io/ingress-nginx/internal/ingress/metric"
 	"k8s.io/ingress-nginx/internal/ingress/resolver"
 	"k8s.io/ingress-nginx/internal/k8s"
 	"k8s.io/ingress-nginx/internal/net/ssl"
+
+	ingcheckv1 "k8s.io/ingress-nginx/internal/checksum/ingress/apis/checksum/v1"
+	secretcheckv1 "k8s.io/ingress-nginx/internal/checksum/secret/apis/checksum/v1"
 )
 
 type fakeIngressStore struct {
 	ingresses []*ingress.Ingress
+}
+
+func (fakeIngressStore) GetIngressClass(ing *networking.Ingress, icConfig *ingressclass.IngressClassConfiguration) (string, error) {
+	return "tengine", nil
 }
 
 func (fakeIngressStore) GetBackendConfiguration() ngx_config.Configuration {
@@ -99,6 +107,42 @@ func (fakeIngressStore) GetAuthCertificate(string) (*resolver.AuthSSLCert, error
 
 func (fakeIngressStore) GetDefaultBackend() defaults.Backend {
 	return defaults.Backend{}
+}
+
+func (fakeIngressStore) GetIngressCheckSum(key string) (*ingcheckv1.IngressCheckSum, error) {
+	return nil, fmt.Errorf("test error")
+}
+
+func (fakeIngressStore) GetLocalIngressCheckSum(key string) (*ingcheckv1.IngressCheckSum, error) {
+	return nil, fmt.Errorf("test error")
+}
+
+func (fakeIngressStore) GetLocalSecretCheckSum(key string) (*secretcheckv1.SecretCheckSum, error) {
+	return nil, fmt.Errorf("test error")
+}
+
+func (fakeIngressStore) GetSecretCheckSum(key string) (*secretcheckv1.SecretCheckSum, error) {
+	return nil, fmt.Errorf("test error")
+}
+
+func (fakeIngressStore) GetSecretWithAnnotation(key string) (*ingress.Secret, error) {
+	return nil, fmt.Errorf("test error")
+}
+
+func (fakeIngressStore) ListIngsWithAnnotation() []*ingress.Ingress {
+	return nil
+}
+
+func (fakeIngressStore) ListLocalIngressCheckSums(store.IngressCheckFilterFunc) []*ingcheckv1.IngressCheckSum {
+	return nil
+}
+
+func (fakeIngressStore) ListLocalSecretCheckSums(store.SecretCheckFilterFunc) []*secretcheckv1.SecretCheckSum {
+	return nil
+}
+
+func (fakeIngressStore) ListSecretsWithAnnotation() []*ingress.Secret {
+	return nil
 }
 
 func (fakeIngressStore) Run(stopCh chan struct{}) {}
@@ -1356,6 +1400,54 @@ func TestGetBackendServers(t *testing.T) {
 				}
 			},
 		},
+		{
+			Ingresses: []*ingress.Ingress{
+				{
+					Ingress: networking.Ingress{
+						ObjectMeta: metav1.ObjectMeta{
+							Namespace: "example",
+						},
+						Spec: networking.IngressSpec{
+							Rules: []networking.IngressRule{
+								{
+									Host: "taobao.com",
+									IngressRuleValue: networking.IngressRuleValue{
+										HTTP: &networking.HTTPIngressRuleValue{
+											Paths: []networking.HTTPIngressPath{
+												{
+													Path: "/",
+													Backend: networking.IngressBackend{
+														ServiceName: "http-taobao-canary",
+														ServicePort: intstr.IntOrString{
+															Type:   intstr.Int,
+															IntVal: 80,
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					ParsedAnnotations: &annotations.Ingress{
+						LoadBalancing: "addr",
+					},
+				},
+			},
+			Validate: func(upstreams []*ingress.Backend, servers []*ingress.Server) {
+				if len(servers) != 2 {
+					t.Errorf("servers count should be 2, got %d", len(servers))
+					return
+				}
+
+				s := servers[1]
+				if s.Locations[0].LoadBalancing != "addr" {
+					t.Errorf("server loadbalancing mode should be addr")
+				}
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -1394,9 +1486,14 @@ func newNGINXController(t *testing.T) *NGINXController {
 		"",
 		10*time.Minute,
 		clientSet,
+		nil,
+		nil,
+		nil,
+		nil,
 		channels.NewRingChannel(10),
 		pod,
-		false)
+		false,
+		nil)
 
 	sslCert := ssl.GetFakeSSLCert()
 	config := &Configuration{
@@ -1407,9 +1504,10 @@ func newNGINXController(t *testing.T) *NGINXController {
 	}
 
 	return &NGINXController{
-		store:   storer,
-		cfg:     config,
-		command: NewNginxCommand(),
+		store:           storer,
+		cfg:             config,
+		command:         NewNginxCommand(),
+		metricCollector: metric.DummyCollector{},
 	}
 }
 
