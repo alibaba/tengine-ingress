@@ -878,7 +878,7 @@ func (n *NGINXController) createUpstreams(data []*ingress.Ingress, du *ingress.B
 					continue
 				}
 
-				name := upstreamName(ing.Namespace, ing.Name, path.Backend.Service)
+				name, _ := upstreamName(ing.Namespace, ing.Name, path.Backend.Service)
 				svcName, svcPort := upstreamServiceNameAndPort(path.Backend.Service)
 				if _, ok := upstreams[name]; ok {
 					continue
