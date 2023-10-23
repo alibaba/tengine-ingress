@@ -401,7 +401,7 @@ func createMetaData(server *ingress.Server, loc *ingress.Location) []*route.Meta
 		},
 		&route.Metadata{
 			Key:   MetaCorsAllowOrigin,
-			Value: loc.CorsConfig.CorsAllowOrigin,
+			Value: createCorsOriginRegex(loc.CorsConfig.CorsAllowOrigin),
 		},
 		&route.Metadata{
 			Key:   MetaCorsAllowMethods,

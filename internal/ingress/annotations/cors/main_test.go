@@ -102,7 +102,7 @@ func TestIngressCorsConfigValid(t *testing.T) {
 		t.Errorf("expected %v but returned %v", data[parser.GetAnnotationWithPrefix("cors-allow-methods")], nginxCors.CorsAllowMethods)
 	}
 
-	if nginxCors.CorsAllowOrigin != "https://origin123.test.com:4443" {
+	if nginxCors.CorsAllowOrigin[0] != "https://origin123.test.com:444 {
 		t.Errorf("expected %v but returned %v", data[parser.GetAnnotationWithPrefix("cors-allow-origin")], nginxCors.CorsAllowOrigin)
 	}
 

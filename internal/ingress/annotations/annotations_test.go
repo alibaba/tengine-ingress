@@ -200,14 +200,14 @@ func TestCors(t *testing.T) {
 		corsenabled bool
 		methods     string
 		headers     string
-		origin      string
+		origin      []string
 		credentials bool
 	}{
-		{map[string]string{annotationCorsEnabled: "true"}, true, defaultCorsMethods, defaultCorsHeaders, "*", true},
-		{map[string]string{annotationCorsEnabled: "true", annotationCorsAllowMethods: "POST, GET, OPTIONS", annotationCorsAllowHeaders: "$nginx_version", annotationCorsAllowCredentials: "false"}, true, "POST, GET, OPTIONS", defaultCorsHeaders, "*", false},
-		{map[string]string{annotationCorsEnabled: "true", annotationCorsAllowCredentials: "false"}, true, defaultCorsMethods, defaultCorsHeaders, "*", false},
-		{map[string]string{}, false, defaultCorsMethods, defaultCorsHeaders, "*", true},
-		{nil, false, defaultCorsMethods, defaultCorsHeaders, "*", true},
+		{map[string]string{annotationCorsEnabled: "true"}, true, defaultCorsMethods, defaultCorsHeaders, []string{"*"}, true},
+		{map[string]string{annotationCorsEnabled: "true", annotationCorsAllowMethods: "POST, GET, OPTIONS", annotationCorsAllowHeaders: "$nginx_version", annotationCorsAllowCredentials: "false"}, true, "POST, GET, OPTIONS", defaultCorsHeaders, []string{"*"}, false},
+		{map[string]string{annotationCorsEnabled: "true", annotationCorsAllowCredentials: "false"}, true, defaultCorsMethods, defaultCorsHeaders, []string{"*"}, false},
+		{map[string]string{}, false, defaultCorsMethods, defaultCorsHeaders, []string{"*"}, true},
+		{nil, false, defaultCorsMethods, defaultCorsHeaders, []string{"*"}, true},
 	}
 
 	for _, foo := range fooAnns {
@@ -227,8 +227,14 @@ func TestCors(t *testing.T) {
 			t.Errorf("Returned %v but expected %v for Cors Methods", r.CorsAllowMethods, foo.methods)
 		}
 
-		if r.CorsAllowOrigin != foo.origin {
-			t.Errorf("Returned %v but expected %v for Cors Methods", r.CorsAllowOrigin, foo.origin)
+		if len(r.CorsAllowOrigin) != len(foo.origin) {
+			t.Errorf("Lengths of Cors Origins are not equal. Expected %v - Actual %v", r.CorsAllowOrigin, foo.origin)
+		}
+
+		for i, v := range r.CorsAllowOrigin {
+			if v != foo.origin[i] {
+				t.Errorf("Values of Cors Origins are not equal. Expected %v - Actual %v", r.CorsAllowOrigin, foo.origin)
+			}
 		}
 
 		if r.CorsAllowCredentials != foo.credentials {
