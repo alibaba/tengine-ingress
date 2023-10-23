@@ -70,6 +70,7 @@ import (
 const (
 	tempNginxPattern = "nginx-cfg"
 	emptyUID         = "-1"
+	maxCertsNum      = 2
 )
 
 // NewNGINXController creates a new Tengine Ingress controller.
@@ -996,7 +997,7 @@ func (n *NGINXController) configureDynamically(pcfg *ingress.Configuration) erro
 			n.checksumStatus.SecretChecksumStatus = true
 			n.metricCollector.IncSecretChecksumCount()
 			n.metricCollector.ClearSecretChecksumErrorCount()
-			err := configureCertificates(pcfg.Servers)
+			err := configureCertificates(pcfg.Servers, n.store.GetBackendConfiguration())
 			if err0 != nil {
 				return err
 			}
@@ -1116,7 +1117,7 @@ type sslConfiguration struct {
 
 // configureCertificates JSON encodes certificates and POSTs it to an internal HTTP endpoint
 // that is handled by Lua
-func configureCertificates(rawServers []*ingress.Server) error {
+func configureCertificates(rawServers []*ingress.Server, cfg ngx_config.Configuration) error {
 	configuration := &sslConfiguration{
 		Certificates: map[string]string{},
 		Servers:      map[string][]string{},
@@ -1124,15 +1125,46 @@ func configureCertificates(rawServers []*ingress.Server) error {
 
 	configure := func(hostname string, sslCert *ingress.SSLCert) {
 		uid := emptyUID
-
 		if sslCert != nil {
 			uid = sslCert.UID
-
 			if _, ok := configuration.Certificates[uid]; !ok {
+				klog.Infof("Configure certificate uid[%v]", uid)
 				configuration.Certificates[uid] = sslCert.PemCertKey
 			}
 		}
 
+		if uid != emptyUID {
+			// save config "custom-port-domain" to certificate shared dict
+			for port, doamin := range cfg.CustomPortDomain {
+				isUIDExisted := false
+				klog.Infof("configureCertificates: port[%v]:domain[%v]", port, doamin)
+				if len(configuration.Servers[port]) >= maxCertsNum {
+					continue
+				}
+
+				for _, v := range configuration.Servers[port] {
+					if v == uid {
+						isUIDExisted = true
+						break
+					}
+				}
+
+				if isUIDExisted {
+					continue
+				}
+
+				for _, cn := range sslCert.CN {
+					klog.Infof("configureCertificates: port[%v]:domain[%v] for CN[%v]", port, doamin, cn)
+					if doamin == cn {
+						klog.Infof("Save port[%v]:domain[%v] with secret UID[%v] to certificate shared dict", port, doamin, uid)
+						configuration.Servers[port] = append(configuration.Servers[port], uid)
+						break
+					}
+				}
+			}
+		}
+
+		klog.Infof("Configure server[%v] with certificate uid[%v]", hostname, uid)
 		configuration.Servers[hostname] = append(configuration.Servers[hostname], uid)
 	}
 

@@ -125,3 +125,30 @@ func TestIntElementsMatch(t *testing.T) {
 		}
 	}
 }
+
+func TestLocationElementsMatch(t *testing.T) {
+	testCases := []struct {
+		locA     Location
+		locB     Location
+		expected bool
+	}{
+		{Location{LoadBalancing: "addr"}, Location{LoadBalancing: "round_robin"}, false},
+		{
+			Location{LoadBalancing: "addr", DisableRobots: true},
+			Location{LoadBalancing: "addr"},
+			false,
+		},
+		{
+			Location{LoadBalancing: "addr", DisableRobots: false},
+			Location{LoadBalancing: "addr", DisableRobots: false},
+			true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		result := testCase.locA.Equal(&testCase.locB)
+		if result != testCase.expected {
+			t.Errorf("expected %v but returned %v (%v - %v)", testCase.expected, result, testCase.locA, testCase.locB)
+		}
+	}
+}

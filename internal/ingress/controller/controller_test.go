@@ -891,7 +891,8 @@ func TestGetBackendServers(t *testing.T) {
 					},
 					ParsedAnnotations: &annotations.Ingress{
 						Canary: canary.Config{
-							Enabled: true,
+							Enabled:  true,
+							Referrer: "tengine",
 						},
 					},
 				},
@@ -933,7 +934,8 @@ func TestGetBackendServers(t *testing.T) {
 					},
 					ParsedAnnotations: &annotations.Ingress{
 						Canary: canary.Config{
-							Enabled: true,
+							Enabled:  true,
+							Referrer: "tengine",
 						},
 					},
 				},
@@ -953,7 +955,8 @@ func TestGetBackendServers(t *testing.T) {
 					},
 					ParsedAnnotations: &annotations.Ingress{
 						Canary: canary.Config{
-							Enabled: false,
+							Enabled:  false,
+							Referrer: "tengine",
 						},
 					},
 				},
@@ -1010,7 +1013,8 @@ func TestGetBackendServers(t *testing.T) {
 					},
 					ParsedAnnotations: &annotations.Ingress{
 						Canary: canary.Config{
-							Enabled: true,
+							Enabled:  true,
+							Referrer: "tengine",
 						},
 					},
 				},
@@ -1068,7 +1072,8 @@ func TestGetBackendServers(t *testing.T) {
 					},
 					ParsedAnnotations: &annotations.Ingress{
 						Canary: canary.Config{
-							Enabled: false,
+							Enabled:  false,
+							Referrer: "tengine",
 						},
 					},
 				},
@@ -1104,7 +1109,8 @@ func TestGetBackendServers(t *testing.T) {
 					},
 					ParsedAnnotations: &annotations.Ingress{
 						Canary: canary.Config{
-							Enabled: true,
+							Enabled:  true,
+							Referrer: "tengine",
 						},
 					},
 				},
@@ -1171,7 +1177,8 @@ func TestGetBackendServers(t *testing.T) {
 					},
 					ParsedAnnotations: &annotations.Ingress{
 						Canary: canary.Config{
-							Enabled: false,
+							Enabled:  false,
+							Referrer: "tengine",
 						},
 					},
 				},
@@ -1207,7 +1214,8 @@ func TestGetBackendServers(t *testing.T) {
 					},
 					ParsedAnnotations: &annotations.Ingress{
 						Canary: canary.Config{
-							Enabled: true,
+							Enabled:  true,
+							Referrer: "tengine",
 						},
 					},
 				},
@@ -1243,7 +1251,8 @@ func TestGetBackendServers(t *testing.T) {
 					},
 					ParsedAnnotations: &annotations.Ingress{
 						Canary: canary.Config{
-							Enabled: false,
+							Enabled:  false,
+							Referrer: "tengine",
 						},
 					},
 				},
@@ -1279,7 +1288,8 @@ func TestGetBackendServers(t *testing.T) {
 					},
 					ParsedAnnotations: &annotations.Ingress{
 						Canary: canary.Config{
-							Enabled: true,
+							Enabled:  true,
+							Referrer: "tengine",
 						},
 					},
 				},
@@ -1315,7 +1325,8 @@ func TestGetBackendServers(t *testing.T) {
 					},
 					ParsedAnnotations: &annotations.Ingress{
 						Canary: canary.Config{
-							Enabled: false,
+							Enabled:  false,
+							Referrer: "tengine",
 						},
 					},
 				},
@@ -1351,7 +1362,8 @@ func TestGetBackendServers(t *testing.T) {
 					},
 					ParsedAnnotations: &annotations.Ingress{
 						Canary: canary.Config{
-							Enabled: true,
+							Enabled:  true,
+							Referrer: "tengine",
 						},
 					},
 				},

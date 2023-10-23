@@ -62,6 +62,7 @@ const (
 	globalAuthCacheKey        = "global-auth-cache-key"
 	globalAuthCacheDuration   = "global-auth-cache-duration"
 	luaSharedDictsKey         = "lua-shared-dicts"
+	customPortDomainKey       = "custom-port-domain"
 )
 
 var (
@@ -104,8 +105,9 @@ func ReadConfig(src map[string]string) config.Configuration {
 	blockRefererList := make([]string, 0)
 	responseHeaders := make([]string, 0)
 	luaSharedDicts := make(map[string]int)
+	customPortDomain := make(map[string]string)
 
-	//parse lua shared dict values
+	// parse lua shared dict values
 	if val, ok := conf[luaSharedDictsKey]; ok {
 		delete(conf, luaSharedDictsKey)
 		lsd := strings.Split(val, ",")
@@ -137,6 +139,20 @@ func ReadConfig(src map[string]string) config.Configuration {
 			luaSharedDicts[k] = v
 		}
 	}
+
+	// parse the mapping between server port and root domain defined in the SSL certificate
+	if val, ok := conf[customPortDomainKey]; ok {
+		delete(conf, customPortDomainKey)
+		cpd := strings.Split(val, ",")
+		for _, v := range cpd {
+			v = strings.Replace(v, " ", "", -1)
+			results := strings.SplitN(v, ":", 2)
+			serverPort := results[0]
+			rootDomain := results[1]
+			customPortDomain[serverPort] = rootDomain
+		}
+	}
+
 	if val, ok := conf[customHTTPErrors]; ok {
 		delete(conf, customHTTPErrors)
 		for _, i := range strings.Split(val, ",") {
@@ -355,6 +371,7 @@ func ReadConfig(src map[string]string) config.Configuration {
 	to.ProxyStreamResponses = streamResponses
 	to.DisableIpv6DNS = !ing_net.IsIPv6Enabled()
 	to.LuaSharedDicts = luaSharedDicts
+	to.CustomPortDomain = customPortDomain
 
 	config := &mapstructure.DecoderConfig{
 		Metadata:         nil,
