@@ -240,9 +240,6 @@ http {
     client_body_buffer_size         {{ $cfg.ClientBodyBufferSize }};
     client_body_timeout             {{ $cfg.ClientBodyTimeout }}s;
 
-    http2_max_field_size            {{ $cfg.HTTP2MaxFieldSize }};
-    http2_max_header_size           {{ $cfg.HTTP2MaxHeaderSize }};
-    http2_max_requests              {{ $cfg.HTTP2MaxRequests }};
     http2_max_concurrent_streams    {{ $cfg.HTTP2MaxConcurrentStreams }};
 
     types_hash_max_size             2048;
@@ -918,6 +915,8 @@ stream {
             root /etc/nginx/htdocs;
         }
 
+        
+
         {{ if not (empty $server.AuthTLSError) }}
         # {{ $server.AuthTLSError }}
         return 403;
@@ -1474,6 +1473,7 @@ stream {
             {{ end }}
         }
 
+        {{ if eq $path "/" }}
         location /robots.txt  {
             header_filter_by_lua_block {
                 lua_ingress.header()
@@ -1490,7 +1490,6 @@ stream {
             set $log_host "robots.tengine.com";
             proxy_set_header Host                $http_host;
             proxy_set_header X-Request-From      {{ $all.Cfg.TengineIngressAppName }};
-            add_header       Timing-Allow-Origin $https_use_timing;
 
             {{ if $all.Cfg.TengineReload }}
             {{ if not $location.DisableRobots }}
@@ -1517,6 +1516,7 @@ stream {
             }
             {{ end }}
         }
+        {{ end }}
         {{ end }}
         {{ end }}
 
