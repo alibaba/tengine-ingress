@@ -1493,7 +1493,6 @@ stream {
             set $log_host "robots.tengine.com";
             proxy_set_header Host                $http_host;
             proxy_set_header X-Request-From      {{ $all.Cfg.TengineIngressAppName }};
-            add_header       Timing-Allow-Origin $https_use_timing;
 
             {{ if $all.Cfg.TengineReload }}
             {{ if not $location.DisableRobots }}
