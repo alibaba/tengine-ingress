@@ -235,10 +235,5 @@ func (c canary) Parse(ing *networking.Ingress) (interface{}, error) {
 		return nil, errors.NewInvalidAnnotationConfiguration("canary", "configured but not enabled")
 	}
 
-	if config.Enabled && len(config.Referrer) == 0 {
-		klog.Warningf("Canary ingress[%v/%v] with empty referrer, ignored", ing.Namespace, ing.Name)
-		return nil, errors.NewInvalidAnnotationConfiguration("canary", "referrer is empty")
-	}
-
 	return config, nil
 }
