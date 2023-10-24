@@ -29,6 +29,7 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -119,6 +120,16 @@ func main() {
 		klog.Fatalf("tengine-ingress requires Kubernetes v1.19.0 or higher")
 	}
 
+	_, err = kubeClient.NetworkingV1().IngressClasses().List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		if !errors.IsNotFound(err) {
+			if errors.IsForbidden(err) {
+				klog.Warningf("No permissions to list and get Ingress Classes: %v, IngressClass feature will be disabled", err)
+				conf.IngressClassConfiguration.IgnoreIngressClass = true
+			}
+		}
+	}
+
 	conf.Client = kubeClient
 	conf.ClientIng = kubeIngClient
 	conf.ClientIngCheck = kubeIngCheckClient
@@ -126,8 +137,8 @@ func main() {
 
 	reg := prometheus.NewRegistry()
 
-	reg.MustRegister(prometheus.NewGoCollector())
-	reg.MustRegister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{
+	reg.MustRegister(collectors.NewGoCollector())
+	reg.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{
 		PidFn:        func() (int, error) { return os.Getpid(), nil },
 		ReportErrors: true,
 	}))
