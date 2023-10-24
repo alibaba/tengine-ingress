@@ -918,6 +918,8 @@ stream {
             root /etc/nginx/htdocs;
         }
 
+        
+
         {{ if not (empty $server.AuthTLSError) }}
         # {{ $server.AuthTLSError }}
         return 403;
@@ -1474,6 +1476,7 @@ stream {
             {{ end }}
         }
 
+        {{ if eq $path "/" }}
         location /robots.txt  {
             header_filter_by_lua_block {
                 lua_ingress.header()
@@ -1517,6 +1520,7 @@ stream {
             }
             {{ end }}
         }
+        {{ end }}
         {{ end }}
         {{ end }}
 
