@@ -26,12 +26,13 @@ import (
 	"github.com/spf13/pflag"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/klog"
 
-	"k8s.io/ingress-nginx/internal/ingress/annotations/class"
 	"k8s.io/ingress-nginx/internal/ingress/annotations/parser"
 	"k8s.io/ingress-nginx/internal/ingress/controller"
 	ngx_config "k8s.io/ingress-nginx/internal/ingress/controller/config"
+	"k8s.io/ingress-nginx/internal/ingress/controller/ingressclass"
 	"k8s.io/ingress-nginx/internal/ingress/status"
 	ing_net "k8s.io/ingress-nginx/internal/net"
 	"k8s.io/ingress-nginx/internal/nginx"
@@ -58,10 +59,21 @@ only when the flag --apiserver-host is specified.`)
 Takes the form "namespace/name". The controller configures NGINX to forward
 requests to the first port of this Service.`)
 
-		ingressClass = flags.String("ingress-class", "",
-			`Name of the ingress class this controller satisfies.
-The class of an Ingress object is set using the annotation "kubernetes.io/ingress.class".
-All ingress classes are satisfied if this parameter is left empty.`)
+		ingressClassAnnotation = flags.String("ingress-class", ingressclass.DefaultAnnotationValue,
+			`[IN DEPRECATION] Name of the ingress class this controller satisfies.
+The class of an Ingress object is set using the annotation "kubernetes.io/ingress.class" (deprecated).
+The parameter --controller-class has precedence over this.`)
+
+		ingressClassController = flags.String("controller-class", ingressclass.DefaultControllerName,
+			`Ingress Class Controller value this Ingress satisfies.
+The class of an Ingress object is set using the field IngressClassName in Kubernetes clusters version v1.19.0 or higher. The .spec.controller value of the IngressClass
+referenced in an Ingress Object should be the same value specified here to make this object be watched.`)
+
+		watchWithoutClass = flags.Bool("watch-ingress-without-class", false,
+			`Define if Ingress Controller should also watch for Ingresses without an IngressClass or the annotation specified.`)
+
+		ingressClassByName = flags.Bool("ingress-class-by-name", false,
+			`Define if Ingress Controller should watch for Ingress Class by Name together with Controller Class.`)
 
 		configMap = flags.String("configmap", "",
 			`Name of the ConfigMap containing custom global configurations for the controller.`)
@@ -91,6 +103,9 @@ either be a port name or number.`)
 			`Namespace the controller watches for updates to Kubernetes objects.
 This includes Ingresses, Services and all configuration resources. All
 namespaces are watched if this parameter is left empty.`)
+
+		watchNamespaceSelector = flags.String("watch-namespace-selector", "",
+			`Selector selects namespaces the controller watches for updates to Kubernetes objects.`)
 
 		profiling = flags.Bool("profiling", true,
 			`Enable profiling via web interface host:port/debug/pprof/`)
@@ -213,16 +228,6 @@ https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-g
 		status.UpdateInterval = *statusUpdateInterval
 	}
 
-	if *ingressClass != "" {
-		klog.Infof("Watching for Ingress class: %s", *ingressClass)
-
-		if *ingressClass != class.DefaultClass {
-			klog.Warningf("Only Ingresses with class %q will be processed by this Ingress controller", *ingressClass)
-		}
-
-		class.IngressClass = *ingressClass
-	}
-
 	parser.AnnotationsPrefix = *annotationsPrefix
 
 	// check port collisions
@@ -276,6 +281,19 @@ https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-g
 		nginx.HealthCheckTimeout = time.Duration(*defHealthCheckTimeout) * time.Second
 	}
 
+	if len(*watchNamespace) != 0 && len(*watchNamespaceSelector) != 0 {
+		return false, nil, fmt.Errorf("flags --watch-namespace and --watch-namespace-selector are mutually exclusive")
+	}
+
+	var namespaceSelector labels.Selector
+	if len(*watchNamespaceSelector) != 0 {
+		var err error
+		namespaceSelector, err = labels.Parse(*watchNamespaceSelector)
+		if err != nil {
+			return false, nil, fmt.Errorf("failed to parse --watch-namespace-selector=%s, error: %v", *watchNamespaceSelector, err)
+		}
+	}
+
 	ngx_config.EnableSSLChainCompletion = *enableSSLChainCompletion
 
 	config := &controller.Configuration{
@@ -290,6 +308,7 @@ https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-g
 		ResyncPeriod:           *resyncPeriod,
 		DefaultService:         *defaultSvc,
 		Namespace:              *watchNamespace,
+		WatchNamespaceSelector: namespaceSelector,
 		ConfigMapName:          *configMap,
 		TCPConfigMapName:       *tcpConfigMapName,
 		UDPConfigMapName:       *udpConfigMapName,
@@ -306,6 +325,12 @@ https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-g
 			HTTPS:    *httpsPort,
 			QUIC:     *quicPort,
 			SSLProxy: *sslProxyPort,
+		},
+		IngressClassConfiguration: &ingressclass.IngressClassConfiguration{
+			Controller:         *ingressClassController,
+			AnnotationValue:    *ingressClassAnnotation,
+			WatchWithoutClass:  *watchWithoutClass,
+			IngressClassByName: *ingressClassByName,
 		},
 		DisableCatchAll:           *disableCatchAll,
 		ValidationWebhook:         *validationWebhook,
