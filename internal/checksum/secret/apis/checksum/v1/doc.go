@@ -21,4 +21,4 @@ limitations under the License.
 // +groupName=tengine.taobao.org
 
 // Package v1 holds api types of version v1 for group "tengine.taobao.org".
-package v1 // import "tengine.taobao.org/checksum/secret/apis/checksum/v1"
+package v1 // import "k8s.io/ingress-nginx/internal/checksum/secret/apis/checksum/v1"
