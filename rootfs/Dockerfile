@@ -22,7 +22,7 @@ ARG GOLANG_VERSION
 ARG GOLANG_SHA
 
 LABEL org.opencontainers.image.title="Tengine Ingress Controller for Kubernetes"
-LABEL org.opencontainers.image.documentation="https://tengine.taobao.org/ingress/"
+LABEL org.opencontainers.image.documentation="https://tengine.taobao.org/ingress.html"
 LABEL org.opencontainers.image.source="https://github.com/alibaba/tengine-ingress"
 LABEL org.opencontainers.image.vendor="The Alibaba Authors"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
@@ -36,7 +36,12 @@ WORKDIR  /etc/nginx
 
 COPY --chown=admin:admin . /
 
-RUN rpm --rebuilddb && yum install -y golang-bin
+#RUN rpm --rebuilddb && yum install -y -b current golang-bin
+RUN ["chmod", "+x", "/build.sh"]
+RUN /build.sh -v "1.17.13" -s "/"
+
+ENV GOROOT "/.goroot"
+ENV PATH "$PATH:$GOROOT/bin"
 
 RUN set -eux; \
 	export \
@@ -59,7 +64,8 @@ RUN set -eux; \
 #	esac; \
 #	\
 	#wget -O go.tgz "https://golang.org/dl/go$GOLANG_VERSION.src.tar.gz"; \
-        mv /source/go1.13.8.src.tar.gz go.tgz; \
+	#wget -O go.tgz "http:// tengine-console.oss-cn-beijing.aliyuncs.com/go1.20.6.src.tar.gz"; \
+        mv /source/go1.20.6.src.tar.gz go.tgz; \
 	echo "$GOLANG_SHA *go.tgz" | sha256sum -c -; \
 	tar -C /usr/local -xzf go.tgz; \
 	rm go.tgz; \
