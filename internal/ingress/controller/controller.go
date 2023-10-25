@@ -608,7 +608,7 @@ func (n *NGINXController) getBackendServers(ingresses []*ingress.Ingress) ([]*in
 					continue
 				}
 
-				upsName, _ := upstreamName(ing.Namespace, ing.Name, path.Backend.Service)
+				upsName := upstreamName(ing.Namespace, path.Backend.Service)
 				ups := upstreams[upsName]
 
 				// Backend is not referenced to by a server
@@ -819,7 +819,7 @@ func (n *NGINXController) createUpstreams(data []*ingress.Ingress, du *ingress.B
 
 		var defBackend string
 		if ing.Spec.DefaultBackend != nil && ing.Spec.DefaultBackend.Service != nil {
-			defBackend, _ = upstreamName(ing.Namespace, ing.Name, ing.Spec.DefaultBackend.Service)
+			defBackend = upstreamName(ing.Namespace, ing.Spec.DefaultBackend.Service)
 
 			klog.V(3).Infof("Creating upstream %q", defBackend)
 			upstreams[defBackend] = newUpstream(defBackend)
@@ -878,7 +878,7 @@ func (n *NGINXController) createUpstreams(data []*ingress.Ingress, du *ingress.B
 					continue
 				}
 
-				name, _ := upstreamName(ing.Namespace, ing.Name, path.Backend.Service)
+				name := upstreamName(ing.Namespace, path.Backend.Service)
 				svcName, svcPort := upstreamServiceNameAndPort(path.Backend.Service)
 				if _, ok := upstreams[name]; ok {
 					continue
@@ -910,8 +910,8 @@ func (n *NGINXController) createUpstreams(data []*ingress.Ingress, du *ingress.B
 
 				// configure traffic shaping for canary
 				if anns.Canary.Enabled && n.verifyCanaryReferrer(ingKey, anns) {
-					upstreams[svcName].NoServer = true
-					setTrafficShapingPolicy(anns, &upstreams[svcName].TrafficShapingPolicy)
+					upstreams[name].NoServer = true
+					setTrafficShapingPolicy(anns, &upstreams[name].TrafficShapingPolicy)
 				}
 
 				if len(upstreams[name].Endpoints) == 0 {
@@ -1098,7 +1098,7 @@ func (n *NGINXController) createServers(data []*ingress.Ingress,
 		}
 
 		if ing.Spec.DefaultBackend != nil && ing.Spec.DefaultBackend.Service != nil {
-			defUpstream, _ := upstreamName(ing.Namespace, ing.Name, ing.Spec.DefaultBackend.Service)
+			defUpstream := upstreamName(ing.Namespace, ing.Spec.DefaultBackend.Service)
 
 			if backendUpstream, ok := upstreams[defUpstream]; ok {
 				// use backend specified in Ingress as the default backend for all its rules
@@ -1366,7 +1366,7 @@ func (n *NGINXController) mergeAlternativeBackends(ing *ingress.Ingress, upstrea
 
 	// merge catch-all alternative backends
 	if ing.Spec.DefaultBackend != nil {
-		upsName, _ := upstreamName(ing.Namespace, ing.Name, ing.Spec.DefaultBackend.Service)
+		upsName := upstreamName(ing.Namespace, ing.Spec.DefaultBackend.Service)
 		altUps := upstreams[upsName]
 
 		if altUps == nil {
@@ -1413,7 +1413,7 @@ func (n *NGINXController) mergeAlternativeBackends(ing *ingress.Ingress, upstrea
 				continue
 			}
 
-			upsName, _ := upstreamName(ing.Namespace, ing.Name, path.Backend.Service)
+			upsName := upstreamName(ing.Namespace, path.Backend.Service)
 
 			altUps := upstreams[upsName]
 
