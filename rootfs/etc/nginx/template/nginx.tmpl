@@ -1195,7 +1195,11 @@ stream {
             port_in_redirect {{ if $location.UsePortInRedirects }}on{{ else }}off{{ end }};
 
             set $balancer_ewma_score -1;
-            #set $proxy_upstream_name {{ buildUpstreamName $location | quote }};
+            
+            {{ if $all.Cfg.TengineReload }}
+            set $proxy_upstream_name {{ buildUpstreamName $location | quote }};
+            {{ end }}
+
             set $proxy_host          $proxy_upstream_name;
             set $pass_access_scheme  $scheme;
 
