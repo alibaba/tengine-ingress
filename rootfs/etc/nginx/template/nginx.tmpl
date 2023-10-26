@@ -660,10 +660,6 @@ http {
             }
         }
 
-        location /deny_reload_data {
-            content_by_lua_file /etc/nginx/lua/load_deny.lua;
-        }
-
         # for health check on alibaba
         location = /status.tengine {
             root /etc/nginx/htdocs;
@@ -677,17 +673,6 @@ http {
             allow 192.168.0.0/16;
             deny all;
             req_status_show;
-        }
-
-        location = /nginx_status {
-            allow 10.0.0.0/8;
-            allow 11.0.0.0/8;
-            allow 172.16.0.0/12;
-            allow 127.0.0.1/32;
-            allow 192.168.0.0/16;
-            allow 33.0.0.0/8;
-            deny all;
-            stub_status on;
         }
     }
 }
@@ -1575,16 +1560,6 @@ stream {
             sysguard   off;
             access_log off;
             req_status_show;
-        }
-
-        location /deny_reload_data {
-            {{ if $all.Cfg.EnableOpentracing }}
-            opentracing off;
-            {{ end }}
-
-            sysguard   off;
-            access_log off;
-            content_by_lua_file /etc/nginx/lua/load_deny.lua;
         }
         {{ end }}
 
