@@ -20,7 +20,7 @@ fi
 
 ver=$1
 if [ -z "$ver" ]; then
-    ver="1.0.0"
+    ver="1.1.0"
 fi
 
 set -o errexit

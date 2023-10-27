@@ -18,12 +18,17 @@ Tengine-Ingress is an Ingress controller for Kubernetes using [Tengine](https://
 Tengine-Ingress supports the standard Ingress specification based on [kubernetes/ingress-nginx](https://github.com/kubernetes/ingress-nginx) repo.
 
 ## Features
-* Dynamically reconfigure the servers, locations and upstreams for Ingress, Secret, Service and Endpoint changes, without reloading or restarting worker processes.
-* Dynamically reconfigure canary routing based on standard and custom HTTP headers, header value, and weights.
-* Dynamically reconfigure timeout setting, SSL Redirects, CORS and enabling/disabling robots for the ingress/path.
-* Dynamically reconfigure certificates and keys.
-* Support for hybrid ECC and RSA certificates for the same ingress/path.
+* Dynamically configure the servers, locations and upstreams for Ingress, Secret, Service and Endpoint changes, without reloading or restarting worker processes.
 * HTTP/3 support (QUIC v1 and draft-29).
+* Dynamically configure different TLS protocols for different server names.
+* Dynamically configure multiple default TLS certificates for client-hello without SNI.
+* Support for hybrid ECC and RSA certificates for the same ingress/path.
+* Dynamically configure certificates and keys.
+* Dynamically configure canary routing based on multiple values of a specific header, cookie or query parameter.
+* Dynamically configure canary routing based on multiple upstream according to weight.
+* Dynamically configure timeout setting, SSL Redirects, CORS and enabling/disabling robots for the ingress/path.
+* Dynamically configure canary routing to add/append custom headers or add query parameter to the HTTP request.
+* Dynamically configure canary routing to add custom headers to the HTTP response.
 * Supports watching Ingress and Secrets in a dedicated storage k8s cluster via kubeconfig.
 * Watch changes in Ingress and Secrets and do rolling upgrades for associated StatefulSet of Tengine-Ingress, without tengine reload.
 * New CRD IngressCheckSum and SecretCheckSum to verify the integrity of Ingress and Secret in the cluster.
@@ -35,15 +40,15 @@ Supported linux distributions:
 * [Alpine](https://hub.docker.com/_/alpine)
 
 Supported tags:
-* `1.0.0` : based on image [Anolis](https://hub.docker.com/r/openanolis/anolisos)
-* `1.0.0-alpine` : based on image [Alpine](https://hub.docker.com/_/alpine)
+* `1.1.0` : based on image [Anolis](https://hub.docker.com/r/openanolis/anolisos)
+* `1.1.0-alpine` : based on image [Alpine](https://hub.docker.com/_/alpine)
 
 Supported architectures:
 * AMD64, ARM64
 
 Pull image command:
 ```
-docker pull tengine-ingress-registry.cn-hangzhou.cr.aliyuncs.com/tengine/tengine-ingress:1.0.0
+docker pull tengine-ingress-registry.cn-hangzhou.cr.aliyuncs.com/tengine/tengine-ingress:1.1.0
 ```
 
 ### Building from source
@@ -56,10 +61,10 @@ Supported Linux distributions:
 Build image command:
 ```
 # First: build tengine image
-docker build --no-cache --build-arg BASE_IMAGE="docker.io/openanolis/anolisos:latest" --build-arg LINUX_RELEASE="anolisos" -t tengine:3.0.0 images/tengine/rootfs/
+docker build --no-cache --build-arg BASE_IMAGE="docker.io/openanolis/anolisos:latest" --build-arg LINUX_RELEASE="anolisos" -t tengine:3.1.0 images/tengine/rootfs/
 
 # Second: build tengine-ingress image
-docker build --no-cache --build-arg BASE_IMAGE="tengine:3.0.0" --build-arg VERSION="1.0.0" -f build/Dockerfile -t tengine-ingress:1.0.0 .
+docker build --no-cache --build-arg BASE_IMAGE="tengine:3.1.0" --build-arg VERSION="1.1.0" -f build/Dockerfile -t tengine-ingress:1.1.0 .
 ```
 
 ## Changelog
@@ -71,7 +76,7 @@ For detailed changes for each release; please check the [Changelog.tengine.md](C
 |    | Tengine-Ingress Version | Tengine Version | K8s Supported Version | Anolis Linux Version | Alpine Linux Version | Helm Chart Version |
 |:--:|-------------------------|-----------------|-----------------------|----------------------|----------------------|--------------------|
 | 🔄 | **v1.0.0**              | v3.0.0          | 1.27,1.26,1.25,1.24<br>1.23,1.22,1.21,1.20   | 8.6                  | 3.18.2               |                    |
-| 🔄 |                         |                 |                       |                      |                      |                    |
+| 🔄 | **v1.1.0**              | v3.1.0          | 1.28,1.27,1.26,1.25<br>1.24,1.23,1.22,1.21<br>1.20 | 8.6                  | 3.18.4               |                    |
 
 ## Documentation
 
