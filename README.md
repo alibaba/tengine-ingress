@@ -75,8 +75,8 @@ For detailed changes for each release; please check the [Changelog.tengine.md](C
 ### Supported Versions table
 |    | Tengine-Ingress Version | Tengine Version | K8s Supported Version | Anolis Linux Version | Alpine Linux Version | Helm Chart Version |
 |:--:|-------------------------|-----------------|-----------------------|----------------------|----------------------|--------------------|
-| 🔄 | **v1.0.0**              | v3.0.0          | 1.27,1.26,1.25,1.24<br>1.23,1.22,1.21,1.20   | 8.6                  | 3.18.2               |                    |
 | 🔄 | **v1.1.0**              | v3.1.0          | 1.28,1.27,1.26,1.25<br>1.24,1.23,1.22,1.21<br>1.20 | 8.6                  | 3.18.4               |                    |
+| 🔄 | **v1.0.0**              | v3.0.0          | 1.27,1.26,1.25,1.24<br>1.23,1.22,1.21,1.20   | 8.6                  | 3.18.2               |                    |
 
 ## Documentation
 
