@@ -47,6 +47,13 @@ Supported architectures:
 * AMD64, ARM64
 
 Pull image command:
+
+from docker.io mirror:
+```
+docker pull tengineimages/tengine-ingress:1.1.0
+```
+
+from aliyun mirror:
 ```
 docker pull tengine-ingress-registry.cn-hangzhou.cr.aliyuncs.com/tengine/tengine-ingress:1.1.0
 ```
