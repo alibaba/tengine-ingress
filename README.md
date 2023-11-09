@@ -18,7 +18,7 @@ Tengine-Ingress is an Ingress controller for Kubernetes using [Tengine](https://
 Tengine-Ingress supports the standard Ingress specification based on [kubernetes/ingress-nginx](https://github.com/kubernetes/ingress-nginx) repo.
 
 ## Features
-* [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) specification support
+* [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) specification support.
 * Dynamically configure the servers, locations and upstreams for Ingress, Secret, Service and Endpoint changes, without reloading or restarting worker processes.
 * HTTP/3 support (QUIC v1 and draft-29).
 * Dynamically configure different TLS protocols for different ingress.
