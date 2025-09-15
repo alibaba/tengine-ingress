@@ -1,9 +1,10 @@
 
+rm -rf ~/rpmbuild
 mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
 
-cp ../source/tengine-* ~/rpmbuild/SOURCES
-cp ../source/jemalloc-* ~/rpmbuild/SOURCES
-cp ../source/BabaSSL-* ~/rpmbuild/SOURCES
+cp ../rootfs/source/tengine-* ~/rpmbuild/SOURCES
+cp ../rootfs/source/jemalloc-* ~/rpmbuild/SOURCES
+cp ../rootfs/source/BabaSSL-* ~/rpmbuild/SOURCES
 
 cp tengine.spec ~/rpmbuild/SPECS
 
