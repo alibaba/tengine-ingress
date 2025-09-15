@@ -26,6 +26,7 @@ Source2:        BabaSSL-8.3.2.tar.gz
 Source3:        zlib-1.2.8.tar.gz
 Source4:        luajit2-2.1-20220411.tar.gz
 Source5:        pcre-8.45.tar.gz
+Source6:        lua-resty-core-0.1.27.tar.gz
 
 # BSD License (two clause)
 License:        BSD
@@ -44,6 +45,7 @@ Changes: https://tengine.taobao.org/changelog.html
 %setup -b 3
 %setup -b 4
 %setup -b 5
+%setup -b 6
 
 %build
 
@@ -131,19 +133,11 @@ make
 rm -rf %{buildroot}
 
 mkdir -p %{buildroot}%{tengine_sbindir}/
-cp objs/nginx %{buildroot}%{tengine_sbindir}/
+cp objs/nginx %{buildroot}%{tengine_sbindir}/tengine
 
 %files
-%defattr(755, root, %{tengine_group}, -)
-%{tengine_home_data}
 %dir %{tengine_sbindir}
-%{tengine_sbindir}/nginxctl
-%{tengine_sbindir}/nginx-mem.sh
-%{tengine_sbindir}/nginx-admin-ctl
-####%{tengine_sbindir}/dso-tool
-%{tengine_sbindir}/setup_services.sh
-%{tengine_sbindir}/nginx2tengine.sh
-%{tengine_sbindir}/reqstatus.py
-
+%{tengine_sbindir}/tengine
+%attr(6755, root, %{tengine_group}) %{tengine_sbindir}/tengine
 
 %changelog
