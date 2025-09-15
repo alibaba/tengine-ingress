@@ -23,6 +23,7 @@ Source:         %{tengine_name}-%{tengine_version}.tar.gz
 
 Source1:        jemalloc-4.0.4.tar.gz
 Source2:        BabaSSL-8.3.2.tar.gz
+Source3:        zlib-1.2.8.tar.gz
 
 # BSD License (two clause)
 License:        BSD
@@ -37,6 +38,8 @@ Changes: https://tengine.taobao.org/changelog.html
 %prep
 %setup -q
 %setup -b 1
+%setup -b 2
+%setup -b 3
 
 %build
 
@@ -46,6 +49,16 @@ echo "build jemalloc"
 cd jemalloc-4.0.4
 ./autogen.sh
 make -j 32
+cd ../
+
+echo "build BabaSSL"
+cd Tongsuo-8.3.2
+./config --prefix=/usr/local/babassl
+make
+SSL_TYPE_STR="babassl"
+SSL_PATH_STR="${PWD}"
+SSL_INC_PATH_STR="${PWD}/include"
+SSL_LIB_PATH_STR="${PWD}/libssl.a;${PWD}/libcrypto.a"
 cd ../
 
 cd %{tengine_name}-%{tengine_version}
@@ -65,29 +78,21 @@ cd %{tengine_name}-%{tengine_version}
     --http-scgi-temp-path=data/scgi \
     ${WITH_FLAGS} \
     ${notinarm_flags} \
-    --includedir=data/include \
-    --with-http_spdy_module \
     --with-http_v2_module \
-    --with-xquic-inc="$libxquic_path/include" \
-    --with-xquic-lib=%{tengine_libdir} \
-    --with-xquic-link=$libxquic_path/build \
-    --add-module=modules/ngx_http_xquic_module \
+    --with-openssl="%_builddir/Tongsuo-$BABASSL_VERSION" \
     --with-http_realip_module \
     --without-select_module \
     --without-poll_module \
     --with-http_secure_link_module \
     --with-http_gzip_static_module \
-    --with-openssl=/usr/local/babassl \
-    --with-zlib=libs/zlib-1.2.8 \
+    --with-zlib=%_builddir/zlib-1.2.8 \
     --with-zlib-opt='-O3 -fPIC' \
-    --with-jemalloc=libs/jemalloc-4.0.4 \
-    --with-ssl-proxy \
+    --with-jemalloc=%_builddir/jemalloc-4.0.4 \
     --add-module=modules/ngx_http_lua_module \
     --add-module=modules/ngx_debug_pool \
     --add-module=modules/mod_common \
     --add-module=modules/mod_strategy \
     --add-module=modules/ngx_backtrace_module \
-    --add-module=modules/ngx_http_xquic_module \
     --add-module=modules/ngx_http_sysguard_module \
     --add-module=modules/ngx_http_footer_filter_module \
     --add-module=modules/ngx_http_trim_filter_module \
