@@ -91,7 +91,6 @@ cd %{tengine_name}-%{tengine_version}
     --add-module=modules/ngx_http_lua_module \
     --add-module=modules/ngx_debug_pool \
     --add-module=modules/mod_common \
-    --add-module=modules/mod_strategy \
     --add-module=modules/ngx_backtrace_module \
     --add-module=modules/ngx_http_sysguard_module \
     --add-module=modules/ngx_http_footer_filter_module \
@@ -102,7 +101,6 @@ cd %{tengine_name}-%{tengine_version}
     --add-module=modules/ngx_http_upstream_dyups_module \
     --add-module=modules/ngx_http_upstream_dynamic_module \
     --add-module=modules/ngx_http_upstream_session_sticky_module \
-    --add-module=modules/ngx_ingress_module \
     --with-cc-opt="-fgnu89-inline -DT_HTTP_X_BODY_STREAM -fPIC %{optflags} $(pcre-config --cflags) -DT_RPM_VERSION=\\\"%{tengine_name}-%{tengine_version}\\\" -Wp,-U_FORTIFY_SOURCE -I modules/ngx_http_lua_module/src " \
     --with-ld-opt="-Wl,-rpath=%{tengine_libdir}"
 
