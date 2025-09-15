@@ -21,28 +21,34 @@ Summary:        Robust, small and high performance http and reverse proxy server
 Group:          System Environment/Daemons
 Source:         %{tengine_name}-%{tengine_version}.tar.gz
 
+Source1:        jemalloc-4.0.4.tar.gz
+Source2:        BabaSSL-8.3.2.tar.gz
+
 # BSD License (two clause)
 License:        BSD
 URL:            git@github.com:alibaba/tengine.git
 BuildRoot:      %{_tmppath}/%{name}-%{tengine_version}-%{release}-root-%(%{__id_u} -n)
-
-
-Source1:    jemalloc-4.0.4.tar.gz
-Source2:    BabaSSL-8.3.2.tar.gz
 
 %description
 Tengine is an HTTP(S) server, HTTP(S) reverse proxy and IMAP/POP3
 proxy server written by Igor Sysoev.
 Changes: https://tengine.taobao.org/changelog.html
 
+%prep
+%setup -q
+%setup -b 1
+
 %build
 
-##### build jemalloc
+cd ../
+
+echo "build jemalloc"
 cd jemalloc-4.0.4
 ./autogen.sh
 make -j 32
-cd ..
+cd ../
 
+cd %{tengine_name}-%{tengine_version}
 ./configure \
     --group=%{tengine_group} \
     --prefix=%{tengine_home} \
