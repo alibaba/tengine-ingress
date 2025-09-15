@@ -27,6 +27,7 @@ Source3:        zlib-1.2.8.tar.gz
 Source4:        luajit2-2.1-20220411.tar.gz
 Source5:        pcre-8.45.tar.gz
 Source6:        lua-resty-core-0.1.27.tar.gz
+Source7:        lua-resty-lrucache-0.15.tar.gz
 
 # BSD License (two clause)
 License:        BSD
@@ -46,6 +47,7 @@ Changes: https://tengine.taobao.org/changelog.html
 %setup -b 4
 %setup -b 5
 %setup -b 6
+%setup -b 7
 
 %build
 
@@ -137,6 +139,10 @@ mv objs/nginx objs/tengine
 cp objs/tengine %{buildroot}%{tengine_sbindir}/tengine
 
 cd ../lua-resty-core-0.1.27
+mkdir -p %{buildroot}%{tengine_libdir}/lua
+cp -r lib/* %{buildroot}%{tengine_libdir}/lua/
+
+cd ../lua-resty-lrucache-0.15
 mkdir -p %{buildroot}%{tengine_libdir}/lua
 cp -r lib/* %{buildroot}%{tengine_libdir}/lua/
 
