@@ -26,6 +26,7 @@ Source2:        BabaSSL-8.3.2.tar.gz
 Source3:        zlib-1.2.8.tar.gz
 Source4:        luajit2-2.1-20220411.tar.gz
 Source5:        pcre-8.45.tar.gz
+Source6:        lua-resty-core-0.1.27.tar.gz
 
 # BSD License (two clause)
 License:        BSD
@@ -44,6 +45,7 @@ Changes: https://tengine.taobao.org/changelog.html
 %setup -b 3
 %setup -b 4
 %setup -b 5
+%setup -b 6
 
 %build
 
@@ -131,19 +133,63 @@ make
 rm -rf %{buildroot}
 
 mkdir -p %{buildroot}%{tengine_sbindir}/
-cp objs/nginx %{buildroot}%{tengine_sbindir}/
+cp objs/nginx %{buildroot}%{tengine_sbindir}/tengine
+
+cd ../lua-resty-core-0.1.27
+mkdir -p %{buildroot}%{tengine_libdir}/lua
+cp -r lib/* %{buildroot}%{tengine_libdir}/lua/
 
 %files
-%defattr(755, root, %{tengine_group}, -)
-%{tengine_home_data}
 %dir %{tengine_sbindir}
-%{tengine_sbindir}/nginxctl
-%{tengine_sbindir}/nginx-mem.sh
-%{tengine_sbindir}/nginx-admin-ctl
-####%{tengine_sbindir}/dso-tool
-%{tengine_sbindir}/setup_services.sh
-%{tengine_sbindir}/nginx2tengine.sh
-%{tengine_sbindir}/reqstatus.py
-
+%{tengine_sbindir}/tengine
+%attr(6755, root, %{tengine_group}) %{tengine_sbindir}/tengine
+%{tengine_libdir}/lua/ngx/balancer.lua
+%{tengine_libdir}/lua/ngx/balancer.md
+%{tengine_libdir}/lua/ngx/base64.lua
+%{tengine_libdir}/lua/ngx/base64.md
+%{tengine_libdir}/lua/ngx/errlog.lua
+%{tengine_libdir}/lua/ngx/errlog.md
+%{tengine_libdir}/lua/ngx/ocsp.lua
+%{tengine_libdir}/lua/ngx/ocsp.md
+%{tengine_libdir}/lua/ngx/pipe.lua
+%{tengine_libdir}/lua/ngx/pipe.md
+%{tengine_libdir}/lua/ngx/process.lua
+%{tengine_libdir}/lua/ngx/process.md
+%{tengine_libdir}/lua/ngx/re.lua
+%{tengine_libdir}/lua/ngx/re.md
+%{tengine_libdir}/lua/ngx/req.lua
+%{tengine_libdir}/lua/ngx/req.md
+%{tengine_libdir}/lua/ngx/resp.lua
+%{tengine_libdir}/lua/ngx/resp.md
+%{tengine_libdir}/lua/ngx/semaphore.lua
+%{tengine_libdir}/lua/ngx/semaphore.md
+%{tengine_libdir}/lua/ngx/ssl.lua
+%{tengine_libdir}/lua/ngx/ssl.md
+%{tengine_libdir}/lua/ngx/ssl/clienthello.lua
+%{tengine_libdir}/lua/ngx/ssl/clienthello.md
+%{tengine_libdir}/lua/ngx/ssl/session.lua
+%{tengine_libdir}/lua/ngx/ssl/session.md
+%{tengine_libdir}/lua/resty/core.lua
+%{tengine_libdir}/lua/resty/core/base.lua
+%{tengine_libdir}/lua/resty/core/base64.lua
+%{tengine_libdir}/lua/resty/core/coroutine.lua
+%{tengine_libdir}/lua/resty/core/ctx.lua
+%{tengine_libdir}/lua/resty/core/exit.lua
+%{tengine_libdir}/lua/resty/core/hash.lua
+%{tengine_libdir}/lua/resty/core/misc.lua
+%{tengine_libdir}/lua/resty/core/ndk.lua
+%{tengine_libdir}/lua/resty/core/param.lua
+%{tengine_libdir}/lua/resty/core/phase.lua
+%{tengine_libdir}/lua/resty/core/regex.lua
+%{tengine_libdir}/lua/resty/core/request.lua
+%{tengine_libdir}/lua/resty/core/response.lua
+%{tengine_libdir}/lua/resty/core/shdict.lua
+%{tengine_libdir}/lua/resty/core/socket.lua
+%{tengine_libdir}/lua/resty/core/time.lua
+%{tengine_libdir}/lua/resty/core/time.md
+%{tengine_libdir}/lua/resty/core/uri.lua
+%{tengine_libdir}/lua/resty/core/utils.lua
+%{tengine_libdir}/lua/resty/core/var.lua
+%{tengine_libdir}/lua/resty/core/worker.lua
 
 %changelog
