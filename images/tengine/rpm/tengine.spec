@@ -28,6 +28,7 @@ Source4:        luajit2-2.1-20220411.tar.gz
 Source5:        pcre-8.45.tar.gz
 Source6:        lua-resty-core-0.1.27.tar.gz
 Source7:        lua-resty-lrucache-0.15.tar.gz
+Source8:        tengine-proxy.conf.tar.gz
 
 # BSD License (two clause)
 License:        BSD
@@ -48,6 +49,7 @@ Changes: https://tengine.taobao.org/changelog.html
 %setup -b 5
 %setup -b 6
 %setup -b 7
+%setup -b 8
 
 %build
 
@@ -146,6 +148,10 @@ cd ../lua-resty-lrucache-0.15
 mkdir -p %{buildroot}%{tengine_libdir}/lua
 cp -r lib/* %{buildroot}%{tengine_libdir}/lua/
 
+cd ..
+mkdir -p %{buildroot}%{tengine_confdir}
+cp tengine-proxy.conf %{buildroot}%{tengine_confdir}/
+
 %files
 %dir %{tengine_sbindir}
 %{tengine_sbindir}/tengine
@@ -198,5 +204,10 @@ cp -r lib/* %{buildroot}%{tengine_libdir}/lua/
 %{tengine_libdir}/lua/resty/core/utils.lua
 %{tengine_libdir}/lua/resty/core/var.lua
 %{tengine_libdir}/lua/resty/core/worker.lua
+
+%{tengine_libdir}/lua/resty/lrucache/pureffi.lua
+%{tengine_libdir}/lua/resty/lrucache.lua
+
+%{tengine_confdir}/tengine-proxy.conf
 
 %changelog
