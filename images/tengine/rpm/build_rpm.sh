@@ -10,6 +10,10 @@ cp ../rootfs/source/luajit* ~/rpmbuild/SOURCES
 cp ../rootfs/source/pcre-* ~/rpmbuild/SOURCES
 cp ../rootfs/source/lua-resty-* ~/rpmbuild/SOURCES
 
+tar -czf tengine-proxy.conf.tar.gz tengine-proxy.conf
+cp tengine-proxy.conf.tar.gz ~/rpmbuild/SOURCES
+rm tengine-proxy.conf.tar.gz
+
 cp tengine.spec ~/rpmbuild/SPECS
 
 rpmbuild -ba ~/rpmbuild/SPECS/tengine.spec
