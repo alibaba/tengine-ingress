@@ -79,7 +79,7 @@ cd %{tengine_name}-%{tengine_version}
     --group=%{tengine_group} \
     --prefix=%{tengine_home} \
     --sbin-path=bin/tengine \
-    --conf-path=conf/nginx-proxy.conf \
+    --conf-path=conf/tengine-proxy.conf \
     --error-log-path=logs/error.log \
     --pid-path=logs/%{name}.pid \
     --lock-path=logs/%{name}.lock \
@@ -131,7 +131,8 @@ make
 rm -rf %{buildroot}
 
 mkdir -p %{buildroot}%{tengine_sbindir}/
-cp objs/nginx %{buildroot}%{tengine_sbindir}/
+mv objs/nginx objs/tengine
+cp objs/tengine %{buildroot}%{tengine_sbindir}/
 
 %files
 %defattr(755, root, %{tengine_group}, -)
